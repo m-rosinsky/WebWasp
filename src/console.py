@@ -12,7 +12,8 @@ KEY_BACKSPACE = '\x7f'
 try:
     import getch
 except ImportError:
-    print("Run setup.py to install dependencies...")
+    print("[🛑] Error: Missing Dependencies. ")
+    print("[🛑] Run python3 -m pip install -r requirements.txt")
     sys.exit(1)
 
 class Console:
@@ -57,6 +58,7 @@ class Console:
                 self.history.pop()
 
             # Handle command.
+            print(f"You typed: {cmd}")
 
     # Private member functions.
     def _prompt(self):

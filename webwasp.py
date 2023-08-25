@@ -29,22 +29,11 @@ def main():
         sys.stderr.write("[🛑] Invalid version. WebWasp requires Python 3.7 or newer...\n")
         sys.exit(1)
 
-    banner = """
- __        __   _      __        __              
- \ \      / /__| |__   \ \      / /_ _ ___ _ __  
-  \ \ /\ / / _ \ '_ \   \ \ /\ / / _` / __| '_ \ 
-   \ V  V /  __/ |_) |   \ V  V / (_| \__ \ |_) |
-    \_/\_/ \___|_.__/     \_/\_/ \__,_|___/ .__/ 
-      Get Stinging                        |_|
-                              Author: Mike Rosinsky 
-    """
-
-    print(banner)
-
     print("[🐝] Running WebWasp version 1.0...")
+    print("[🐝] Written by Mike Rosinsky")
 
-    c = console.Console()
-    c.run()
+    con = console.Console()
+    con.run()
 
 if __name__=='__main__':
     main()
