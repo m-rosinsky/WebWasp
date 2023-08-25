@@ -6,6 +6,8 @@ This file contains the entry point of the console suite.
 
 import sys
 
+from src import console
+
 def check_version():
     """
     This function validates the version of python being run.
@@ -27,7 +29,10 @@ def main():
         sys.stderr.write("[🛑] Invalid version. WebWasp requires Python 3.7 or newer...\n")
         sys.exit(1)
 
-    print("[🐝] Running WebWasp version 1.0")
+    print("[🐝] Running WebWasp version 1.0...")
+
+    c = console.Console()
+    c.run()
 
 if __name__=='__main__':
     main()
