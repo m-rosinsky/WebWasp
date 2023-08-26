@@ -24,7 +24,7 @@ class CommandInterface(ABC):
         """
         This function prints the help message for the command.
         """
-        print(f"Getting help for command: '{self.name}'...\n")
+        print(f"[🐝] Getting help for command: '{self.name}'...\n")
 
     @abstractmethod
     def get_usage(self):

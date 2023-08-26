@@ -4,6 +4,7 @@ file: src/console.py
 This file contains the class definitions for the console suite.
 """
 
+import os
 import sys
 from src import dispatch
 
@@ -45,6 +46,10 @@ class Console:
         self.cmd = ""
         self.saved_cmd = ""
 
+        # Attempt to load exported variables.
+        self.export_file = "/tmp/.wwvars"
+        self._load_vars()
+
     def run(self):
         """
         This function runs the console suite.
@@ -75,6 +80,39 @@ class Console:
                 self.is_running = False
 
     # Private member functions.
+    def _load_vars(self):
+        """
+        This function attempts to populate the vars member via
+        the saved export file if it exists.
+        """
+        # Test if the file exists.
+        if not os.path.exists(self.export_file):
+            return
+
+        # Open file and read in data.
+        raw_file_data = []
+        with open(self.export_file, "r", encoding="utf-8") as ef:
+            for line in ef:
+                raw_file_data.append(line.strip().split(":"))
+
+        # Parse each line.
+        data_valid = True
+        for entry in raw_file_data:
+            if len(entry) != 2:
+                data_valid = False
+                break
+            
+            # Populate variable table.
+            self.vars[entry[0]] = entry[1]
+
+        # If the data was invalid, overwrite the export file.
+        if not data_valid:
+            print("[🚧] Warning: Export file data was corrupted, blanking...")
+            with open(self.export_file, "w", encoding="utf-8") as ef:
+                pass
+
+        return
+
     def _prompt(self):
         """
         This function prompts the user for input and returns
