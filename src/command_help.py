@@ -1,5 +1,7 @@
 """
-file: src/cmd/cmd_help.py
+file: src/command_help.py
+
+This file contains the help command class definition.
 """
 
 from src.command_interface import Command_Interface

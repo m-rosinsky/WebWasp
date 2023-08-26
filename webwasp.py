@@ -1,5 +1,5 @@
 """
-file: src/webwasp.py
+file: webwasp.py
 
 This file contains the entry point of the console suite.
 """
