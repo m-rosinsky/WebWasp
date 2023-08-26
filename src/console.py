@@ -27,6 +27,8 @@ class Console:
     history         - An array of previous commands.
     max_history_len - The maximum number of previous commands to store.
     max_self.cmd_len     - The maximum size of a command being entered.
+
+    vars            - The vars held by the console.
     """
 
     def __init__(self):
@@ -34,6 +36,8 @@ class Console:
         self.history = []
         self.max_history_len = 20
         self.max_cmd_len = 1024
+
+        self.vars = {}
 
         # Private members for tracking command prompting.
         self.cmd_idx = 0
@@ -65,7 +69,7 @@ class Console:
                 self.history.pop()
 
             # Handle command.
-            status = dispatch.dispatch(cmd)
+            status = dispatch.dispatch(cmd, self.vars, self)
 
             if not status:
                 self.is_running = False
