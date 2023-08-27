@@ -37,6 +37,11 @@ class CommandVar(CommandInterface):
         print("  [-e]  - Export the variable so it is saved b/w sessions")
 
     def run(self, parse, console=None):
+        """
+        This function executes the var command.
+
+        Check interface docs for args and return vals.
+        """
         super().run(parse)
 
         # Ensure console exists.
@@ -84,13 +89,13 @@ class CommandVar(CommandInterface):
             if exp_status:
                 print("Exported successfully")
             else:
-                print("Failed to export variable")
+                print("[🛑] Error: Failed to export variable")
 
         return True
-    
+
     def _export_var(self, name, val, console):
         """
-        This functions writes a variable name/value pair to the export
+        This function writes a variable name/value pair to the export
         file.
 
         Args:
@@ -101,39 +106,39 @@ class CommandVar(CommandInterface):
         Returns:
         True on success, False on failure.
         """
-        # Create file if doesn't exist.
-        if not os.path.exists(console.export_file):
-            with open(console.export_file, "w") as ef:
-                pass
+        try:
+            # Create file if doesn't exist.
+            if not os.path.exists(console.export_file):
+                with open(console.export_file, "w", encoding="utf-8") as exp_f:
+                    pass
+                os.chmod(console.export_file, 0o666) # rw-rw-rw
 
-        # Open the file.
-        raw_file_data = ""
-        with open(console.export_file, "r", encoding="utf-8") as ef:
-            # Read the file
-            for line in ef:
-                raw_file_data += line
+            # Construct entry string.
+            entry_string = f"{name}:{val}"
 
-        # Construct entry string.
-        entry_string = f"{name}:{val}"
+            # Read existing data and update or add the entry.
+            updated_lines = []
+            entry_found = False
+            with open(console.export_file, "r", encoding="utf-8") as exp_f:
+                for line in exp_f:
+                    line_name, _ = line.strip().split(":", 1)
+                    if line_name == name:
+                        updated_lines.append(entry_string)
+                        entry_found = True
+                    else:
+                        updated_lines.append(line.strip())
 
-        # Find entry.
-        entry_found = False
-        file_lines = raw_file_data.split()
-        for i in range(len(file_lines)):
-            line_name = file_lines[i].split(":")[0]
-            if line_name == name:
-                file_lines[i] = entry_string
-                entry_found = True
-                break
+            if not entry_found:
+                updated_lines.append(entry_string)
 
-        if not entry_found:
-            file_lines.append(entry_string)
+            # Write updated data back to the file.
+            with open(console.export_file, "w", encoding="utf-8") as exp_f:
+                for line in updated_lines:
+                    exp_f.write(line + "\n")
 
-        # Write data.
-        with open(console.export_file, "w", encoding="utf-8") as ef:
-            for line in file_lines:
-                ef.write(line + "\n")
-
-        return True
+            return True
+        except OSError as open_err:
+            print(f"{open_err}")
+            return False
 
 ###   end of file   ###
