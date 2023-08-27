@@ -50,6 +50,11 @@ class Console:
         self.export_file = "/tmp/.wwvars"
         self._load_vars()
 
+        # HTTP response fields.
+        self.http_status = 0
+        self.http_text = []
+        self.http_headers = []
+
     def run(self):
         """
         This function runs the console suite.
