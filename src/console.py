@@ -86,30 +86,34 @@ class Console:
         the saved export file if it exists.
         """
         # Test if the file exists.
-        if not os.path.exists(self.export_file):
-            return
+        try:
+            if not os.path.exists(self.export_file):
+                return
 
-        # Open file and read in data.
-        raw_file_data = []
-        with open(self.export_file, "r", encoding="utf-8") as ef:
-            for line in ef:
-                raw_file_data.append(line.strip().split(":"))
+            # Open file and read in data.
+            raw_file_data = []
+            with open(self.export_file, "r", encoding="utf-8") as ef:
+                for line in ef:
+                    raw_file_data.append(line.strip().split(":"))
 
-        # Parse each line.
-        data_valid = True
-        for entry in raw_file_data:
-            if len(entry) != 2:
-                data_valid = False
-                break
-            
-            # Populate variable table.
-            self.vars[entry[0]] = entry[1]
+            # Parse each line.
+            data_valid = True
+            for entry in raw_file_data:
+                if len(entry) != 2:
+                    data_valid = False
+                    break
+                
+                # Populate variable table.
+                self.vars[entry[0]] = entry[1]
 
-        # If the data was invalid, overwrite the export file.
-        if not data_valid:
-            print("[🚧] Warning: Export file data was corrupted, blanking...")
-            with open(self.export_file, "w", encoding="utf-8") as ef:
-                pass
+            # If the data was invalid, overwrite the export file.
+            if not data_valid:
+                print("[🚧] Warning: Export file data was corrupted, blanking...")
+                with open(self.export_file, "w", encoding="utf-8") as ef:
+                    pass
+        except OSError as imp_err:
+            print("[🛑] Error: Could not import saved variables.")
+            print(imp_err)
 
         return
 
