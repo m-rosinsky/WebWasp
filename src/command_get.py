@@ -4,6 +4,7 @@ file: src/command_get.py
 This file contains the get command class.
 """
 
+import http
 import requests
 
 from src.command_interface import CommandInterface
@@ -75,7 +76,15 @@ class CommandGet(CommandInterface):
         console.http_status = req.status_code
 
         # Print the status code.
-        print(f"[🐝] GET request completed. Status code: {console.http_status}")
+        status_code = http.HTTPStatus(req.status_code)
+        print(f"[🐝] GET request completed. Status code: ", end="")
+
+        if req.status_code >= 200 and req.status_code < 300:
+            print(f"\033[32m", end="")
+        if req.status_code >= 400 and req.status_code < 500:
+            print(f"\033[31m", end="")
+        print(f"{console.http_status} ", end="")
+        print(f"\033[0m({status_code.description})")
 
         if console.http_status == 200:
             print(f"{req.text}")

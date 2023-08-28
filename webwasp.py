@@ -6,6 +6,14 @@ This file contains the entry point of the console suite.
 
 import sys
 
+try:
+    import getch
+    import requests
+except ImportError:
+    print("[🛑] Error: Missing Dependencies. ")
+    print("[🛑] Run python3 -m pip install -r requirements.txt")
+    sys.exit(1)
+
 from src import console
 
 def check_version():

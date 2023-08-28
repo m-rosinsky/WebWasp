@@ -6,17 +6,11 @@ This file contains the class definitions for the console suite.
 
 import os
 import sys
+import getch
 from src import dispatch
 
 ESC_SEQUENCE = '\x1b'
 KEY_BACKSPACE = '\x7f'
-
-try:
-    import getch
-except ImportError:
-    print("[🛑] Error: Missing Dependencies. ")
-    print("[🛑] Run python3 -m pip install -r requirements.txt")
-    sys.exit(1)
 
 class Console:
     """
