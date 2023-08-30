@@ -76,18 +76,21 @@ class CommandGet(CommandInterface):
         console.http_status = req.status_code
 
         # Print the status code.
-        status_code = http.HTTPStatus(req.status_code)
         print(f"[🐝] GET request completed. Status code: ", end="")
 
         if req.status_code >= 200 and req.status_code < 300:
             print(f"\033[32m", end="")
-        if req.status_code >= 400 and req.status_code < 500:
+        elif req.status_code >= 300 and req.status_code < 400:
+            print(f"\033[33m", end="")
+        elif req.status_code >= 400 and req.status_code < 500:
             print(f"\033[31m", end="")
-        print(f"{console.http_status} ", end="")
-        print(f"\033[0m({status_code.description})")
+        else:
+            print(f"\033[0m", end="")
+        print(f"{req.status_code} ", end="")
 
-        if console.http_status == 200:
-            print(f"{req.text}")
+        http_code = http.HTTPStatus(req.status_code)
+        print(f"\033[0m({http_code.phrase})")
+
         return True
 
 ###   end of file   ###
