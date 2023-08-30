@@ -6,17 +6,11 @@ This file contains the class definitions for the console suite.
 
 import os
 import sys
+import getch
 from src import dispatch
 
 ESC_SEQUENCE = '\x1b'
 KEY_BACKSPACE = '\x7f'
-
-try:
-    import getch
-except ImportError:
-    print("[🛑] Error: Missing Dependencies. ")
-    print("[🛑] Run python3 -m pip install -r requirements.txt")
-    sys.exit(1)
 
 class Console:
     """
@@ -49,6 +43,11 @@ class Console:
         # Attempt to load exported variables.
         self.export_file = "/tmp/.wwvars"
         self._load_vars()
+
+        # HTTP response fields.
+        self.http_status = 0
+        self.http_text = []
+        self.http_headers = []
 
     def run(self):
         """

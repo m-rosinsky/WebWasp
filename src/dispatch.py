@@ -10,6 +10,7 @@ its respective module for handling.
 from src.command_interface import CommandInterface
 from src.command_clear import CommandClear
 from src.command_var import CommandVar
+from src.command_get import CommandGet
 
 class CommandHelp(CommandInterface):
     """
@@ -61,6 +62,7 @@ class CommandHelp(CommandInterface):
 command_help = CommandHelp("help")
 command_clear = CommandClear("clear")
 command_var = CommandVar("var")
+command_get = CommandGet("get")
 
 command_dict = {
     "help"  : command_help,
@@ -68,6 +70,7 @@ command_dict = {
     "clear" : command_clear,
     "cls"   : command_clear,
     "var"   : command_var,
+    "get"   : command_get,
 }
 
 def dispatch(cmd, vars, console):
