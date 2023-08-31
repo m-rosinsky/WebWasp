@@ -5,6 +5,7 @@ This file contains the var command class.
 """
 
 import os
+import argparse
 
 from src.command_interface import CommandInterface
 
@@ -16,16 +17,33 @@ class CommandVar(CommandInterface):
     def __init__(self, name):
         super().__init__(name)
 
+        # Create argument parser.
+        self.parser = argparse.ArgumentParser(
+            prog=self.name,
+            description="Set local variables for the console. Run command with no arguments to list all variables",
+            epilog="To use variables in commands, preface the variable name with a '$' sign",
+            add_help=False
+        )
+
+        # Add argparse args.
+        self.parser.add_argument(
+            'name',
+            type=str,
+            help='The name of the new variable'
+        )
+        self.parser.add_argument(
+            'value',
+            type=str,
+            help='The value of the new variable'
+        )
+        self.parser.add_argument(
+            '-e',
+            action='store_true',
+            help='Export the variable so it is saved between sessions',
+        )
+
     def get_help(self):
         super().get_help()
-        print("Description:")
-        print("  Set local variables for the console.")
-        print("  Run command with no arguments to list all variables")
-        print("")
-        print("  To use variables in commands, simply preface the")
-        print("  variable name with a '$' sign.")
-        print("")
-        self.get_usage()
 
     def get_usage(self):
         super().get_usage()
@@ -36,18 +54,8 @@ class CommandVar(CommandInterface):
         print("  value - The value for the variable")
         print("  [-e]  - Export the variable so it is saved b/w sessions")
 
-    def run(self, parse, console=None):
-        """
-        This function executes the var command.
-
-        Check interface docs for args and return vals.
-        """
+    def run(self, parse, console):
         super().run(parse)
-
-        # Ensure console exists.
-        if not console:
-            print("[🛑] Error: Missing console context in var call")
-            return False
 
         # If no arguments, list out all variables.
         parse_len = len(parse)
@@ -56,32 +64,33 @@ class CommandVar(CommandInterface):
                 print(f"${name} -> '{val}'")
             return True
 
-        # Check usage.
-        if parse_len < 3 or parse_len > 4:
-            print("[🛑] Error: Invalid number of arguments\n")
-            self.get_usage()
+        # Slice the command name off the parse so we only
+        # parse the arguments.
+        parse_trunc = parse[1:]
+
+        try:
+            args = self.parser.parse_args(parse_trunc)
+        except argparse.ArgumentError:
+            self.get_help()
+            return True
+        except SystemExit:
+            # Don't let argparse exit the program.
             return True
 
-        # If fourth argument is specified, it must be "-e"
-        export_flag = False
-        if parse_len == 4:
-            if parse[3] != "-e":
-                print(f"[🛑] Error: Invalid argument: '{parse[3]}'")
-                return True
-            export_flag = True
+        # Extract arguments.
+        name = args.name
+        val = args.value
+        export_flag = args.e
 
         # Variable names are not allowed to include the ":" character,
         # since it is used in formatting of export files.
-        name = parse[1]
-        val = parse[2]
         if ":" in name:
             print("[🛑] Error: var names cannot contain the ':' character")
             return True
 
         # Add variable entry to console's var property.
-        if console:
-            console.vars[name] = val
-            print(f"${name} -> {val}")
+        console.vars[name] = val
+        print(f"${name} -> {val}")
 
         # Export if flag is set.
         if export_flag:
