@@ -18,6 +18,7 @@ class CommandInterface(ABC):
     """
     def __init__(self, name):
         self.name = name
+        self.parser = None
 
     @abstractmethod
     def get_help(self):
@@ -25,13 +26,7 @@ class CommandInterface(ABC):
         This function prints the help message for the command.
         """
         print(f"[🐝] Getting help for command: '{self.name}'...\n")
-
-    @abstractmethod
-    def get_usage(self):
-        """
-        This function prints the usage for the command.
-        """
-        print("Usage: ", end="")
+        self.parser.print_help()
 
     @abstractmethod
     def run(self, parse, console=None):
@@ -44,6 +39,6 @@ class CommandInterface(ABC):
         This should return False if the console should exit after
         execution of the command.
         """
-        return
+        return True
 
 ###   end of file   ###

@@ -6,6 +6,7 @@ This file contains the get command class.
 
 import http
 import requests
+import argparse
 
 from src.command_interface import CommandInterface
 
@@ -17,47 +18,46 @@ class CommandGet(CommandInterface):
     def __init__(self, name):
         super().__init__(name)
 
+        # Create argument parser.
+        self.parser = argparse.ArgumentParser(
+            prog=self.name,
+            description="Send an HTTP 1.1 GET request to a server/url",
+            add_help=False
+        )
+
+        # Add argparse args.
+        self.parser.add_argument(
+            'url',
+            type=str,
+            help="The url to make a request to")
+
     def get_help(self):
         super().get_help()
-        print("Description:")
-        print("  Send an HTTP 1.1 GET request to a server/url")
-        print("")
-        self.get_usage()
 
-    def get_usage(self):
-        super().get_usage()
-        print("get url\n")
-
-        print("Arguments:")
-        print("  url - The url to perform a GET request")
-
-    def run(self, parse, console=None):
-        """
-        This function executes the get command.
-
-        Check interface docs for args and return vals.
-        """
+    def run(self, parse, console):
         super().run(parse)
+        # Slice the command name off the parse so we only
+        # parse the arguments.
+        parse_trunc = parse[1:]
 
-        # Ensure console exists.
-        if not console:
-            print("[🛑] Error: Missing console context in get call")
-            return False
-
-        # Check usage.
-        parse_len = len(parse)
-        if parse_len != 2:
-            print("[🛑] Error: Invalid number of arguments\n")
-            self.get_usage()
+        try:
+            args = self.parser.parse_args(parse_trunc)
+        except argparse.ArgumentError:
+            self.get_help()
+            return True
+        except SystemExit:
+            # Don't let argparse exit the program.
             return True
 
+        # Extract arguments.
+        url = args.url
+
         # Add "http://" onto from of URL if no scheme is supplied.
-        url = parse[1]
         if not url.startswith("http://") and not url.startswith("https://"):
             url = "http://" + url
 
         # Inform the user the full URL.
-        print(f"[🐝] Sending GET request to {url}...")
+        print(f"[🐝] Sending GET request to \033[36m{url}\033[0m...")
 
         # Perform get request from request lib.
         req = None

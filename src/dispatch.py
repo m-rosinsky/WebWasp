@@ -8,6 +8,7 @@ its respective module for handling.
 """
 
 from src.command_interface import CommandInterface
+from src.command_response import CommandResponse
 from src.command_clear import CommandClear
 from src.command_var import CommandVar
 from src.command_get import CommandGet
@@ -63,14 +64,17 @@ command_help = CommandHelp("help")
 command_clear = CommandClear("clear")
 command_var = CommandVar("var")
 command_get = CommandGet("get")
+command_response = CommandResponse("response")
 
 command_dict = {
-    "help"  : command_help,
-    "h"     : command_help,
-    "clear" : command_clear,
-    "cls"   : command_clear,
-    "var"   : command_var,
-    "get"   : command_get,
+    "help"      : command_help,
+    "h"         : command_help,
+    "clear"     : command_clear,
+    "cls"       : command_clear,
+    "var"       : command_var,
+    "get"       : command_get,
+    "resp"      : command_response,
+    "response"  : command_response,
 }
 
 def dispatch(cmd, vars, console):

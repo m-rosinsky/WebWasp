@@ -5,6 +5,7 @@ This file contains the clear command class.
 """
 
 import os
+import argparse
 
 from src.command_interface import CommandInterface
 
@@ -15,24 +16,29 @@ class CommandClear(CommandInterface):
     def __init__(self, name):
         super().__init__(name)
 
+        # Create argument parser.
+        self.parser = argparse.ArgumentParser(
+            prog=self.name,
+            description="Clear the screen",
+            add_help=False
+        )
+
     def get_help(self):
         super().get_help()
-        print("Description:")
-        print("  Clear the terminal\n")
-        self.get_usage()
-
-    def get_usage(self):
-        super().get_usage()
-        print("clear\n")
 
     def run(self, parse, console=None):
         super().run(parse)
+        # Slice the command name off the parse so we only
+        # parse the arguments.
+        parse_trunc = parse[1:]
 
-        parse_len = len(parse)
-        # Check usage.
-        if parse_len != 1:
-            print("[🛑] Error: Extra arguments\n")
-            self.get_usage()
+        try:
+            args = self.parser.parse_args(parse_trunc)
+        except argparse.ArgumentError:
+            self.get_help()
+            return True
+        except SystemExit:
+            # Don't let argparse exit the program.
             return True
 
         # Clear the screen with OS call.

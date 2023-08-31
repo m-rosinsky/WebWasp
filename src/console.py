@@ -8,6 +8,7 @@ import os
 import sys
 import getch
 from src import dispatch
+from src.response import Response
 
 ESC_SEQUENCE = '\x1b'
 KEY_BACKSPACE = '\x7f'
@@ -44,10 +45,8 @@ class Console:
         self.export_file = "/tmp/.wwvars"
         self._load_vars()
 
-        # HTTP response fields.
-        self.http_status = 0
-        self.http_text = []
-        self.http_headers = []
+        # This class holds the most recent response information.
+        self.response = Response()
 
     def run(self):
         """
