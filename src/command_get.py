@@ -7,6 +7,7 @@ This file contains the get command class.
 import http
 import requests
 import argparse
+import datetime
 
 from src.command_interface import CommandInterface
 
@@ -72,9 +73,6 @@ class CommandGet(CommandInterface):
                 req.close()
             return True
 
-        # Save fields in console members.
-        console.http_status = req.status_code
-
         # Print the status code.
         print(f"[🐝] GET request completed. Status code: ", end="")
 
@@ -90,6 +88,16 @@ class CommandGet(CommandInterface):
 
         http_code = http.HTTPStatus(req.status_code)
         print(f"\033[0m({http_code.phrase})")
+
+        # Save the response fields to the console.
+        console.response.date_time = datetime.datetime.now()
+        console.response.status_code = req.status_code
+        console.response.text = req.text
+
+        # Set the console flag to indicate a response has been captured,
+        # and report.
+        console.has_response = True
+        print("[🐝] Response captured! Use 'response' command for details")
 
         return True
 

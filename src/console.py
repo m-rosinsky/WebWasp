@@ -47,6 +47,7 @@ class Console:
 
         # This class holds the most recent response information.
         self.response = Response()
+        self.has_response = False
 
     def run(self):
         """

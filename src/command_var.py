@@ -45,15 +45,6 @@ class CommandVar(CommandInterface):
     def get_help(self):
         super().get_help()
 
-    def get_usage(self):
-        super().get_usage()
-        print("var [name value [-e]]\n")
-
-        print("Arguments:")
-        print("  name  - The variable name")
-        print("  value - The value for the variable")
-        print("  [-e]  - Export the variable so it is saved b/w sessions")
-
     def run(self, parse, console):
         super().run(parse)
 

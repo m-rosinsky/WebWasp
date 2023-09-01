@@ -62,8 +62,18 @@ class CommandResponse(CommandInterface):
             # Don't let argparse exit the program.
             return True
 
-        print("Text: ", args.t)
-        print("Export: ", args.e)
-        print("Report: ", args.r)
+        if not console.has_response:
+            print("[🐝] No response captured")
+            return True
+
+        # If the -t option is specified, only print the text.
+        # Otherwise, print the response summary.
+        if args.t:
+            print(console.response.text)
+        elif not args.e and not args.r:
+            console.response.print_summary()
+            print("\n[🐝] Re-run with '-t' flag to show response text")
 
         return True
+
+###   end of file   ###
