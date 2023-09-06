@@ -49,6 +49,9 @@ class Console:
         self.response = Response()
         self.has_response = False
 
+        # This holds the timeout value for requests (seconds).
+        self.timeout_s = 2
+
     def run(self):
         """
         This function runs the console suite.

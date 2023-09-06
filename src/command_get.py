@@ -63,7 +63,10 @@ class CommandGet(CommandInterface):
         # Perform get request from request lib.
         req = None
         try:
-            req = requests.get(url)
+            req = requests.get(
+                url,
+                timeout=console.timeout_s
+            )
         except requests.exceptions.RequestException as req_ex:
             print(f"{req_ex}")
             return True
