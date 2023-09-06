@@ -57,7 +57,16 @@ class CommandHelp(CommandInterface):
             return True
 
         # Get generalized help.
-        print("Getting general help...")
+        for _, obj in command_dict.items():
+            if obj.parser is not None:
+                print(f"{obj.name}", end="")
+
+                # Determine number of tabs so all indents are aligned.
+                num_tabs = 1 if len(obj.name) >= 8 else 2
+                for _ in range(num_tabs):
+                    print("\t", end="")
+
+                print(f"{obj.parser.description}")
         return True
 
 # This defines the global mapping of command names to their respective classes.
@@ -70,12 +79,9 @@ command_timeout = CommandTimeout("timeout")
 
 command_dict = {
     "help"      : command_help,
-    "h"         : command_help,
     "clear"     : command_clear,
-    "cls"       : command_clear,
     "var"       : command_var,
     "get"       : command_get,
-    "resp"      : command_response,
     "response"  : command_response,
     "timeout"   : command_timeout,
 }
