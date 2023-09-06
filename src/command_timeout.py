@@ -27,7 +27,7 @@ class CommandTimeout(CommandInterface):
         # Add argparse args.
         self.parser.add_argument(
             'value',
-            type=int,
+            type=float,
             nargs='?',
             help="The timeout value in seconds"
         )
@@ -54,6 +54,7 @@ class CommandTimeout(CommandInterface):
         value = args.value
 
         if value is not None:
+            value = round(value, 2)
             # If the value was provided, ensure it is positive
             if value <= 0:
                 console.timeout_s = None
@@ -61,12 +62,10 @@ class CommandTimeout(CommandInterface):
                 console.timeout_s = value
 
         # Display the timeout value.
-        print(f"Timeout: {console.timeout_s}", end="")
+        print(f"Timeout -> {console.timeout_s}", end="")
         
         if console.timeout_s is not None:
-            print(" second", end="")
-            if console.timeout_s > 1:
-                print("s", end="")
+            print(" seconds", end="")
         print("")
 
         return True
