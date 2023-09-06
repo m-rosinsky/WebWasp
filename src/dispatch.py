@@ -7,12 +7,12 @@ It is responsible for parsing and dispatching a command to
 its respective module for handling.
 """
 
-from src.command_interface import CommandInterface
-from src.command_response import CommandResponse
-from src.command_timeout import CommandTimeout
-from src.command_clear import CommandClear
-from src.command_var import CommandVar
 from src.command_get import CommandGet
+from src.command_var import CommandVar
+from src.command_clear import CommandClear
+from src.command_timeout import CommandTimeout
+from src.command_response import CommandResponse
+from src.command_interface import CommandInterface
 
 class CommandHelp(CommandInterface):
     """
@@ -70,12 +70,12 @@ class CommandHelp(CommandInterface):
         return True
 
 # This defines the global mapping of command names to their respective classes.
-command_help = CommandHelp("help")
-command_clear = CommandClear("clear")
 command_var = CommandVar("var")
 command_get = CommandGet("get")
-command_response = CommandResponse("response")
+command_help = CommandHelp("help")
+command_clear = CommandClear("clear")
 command_timeout = CommandTimeout("timeout")
+command_response = CommandResponse("response")
 
 command_dict = {
     "help"      : command_help,
