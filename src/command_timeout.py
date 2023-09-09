@@ -23,6 +23,7 @@ class CommandTimeout(CommandInterface):
             add_help=False,
             epilog="Specify 0 for value to disable timeout"
         )
+        super().add_help(self.parser)
 
         # Add argparse args.
         self.parser.add_argument(
@@ -31,9 +32,6 @@ class CommandTimeout(CommandInterface):
             nargs='?',
             help="The timeout value in seconds"
         )
-
-    def get_help(self):
-        super().get_help()
 
     def run(self, parse, console):
         super().run(parse)

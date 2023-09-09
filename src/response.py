@@ -37,6 +37,11 @@ class Response:
 
         print("[🐝] Summary of captured response:\n")
 
+        # Print the response url.
+        url = "put url here"
+        print("Response url:", end="\n   ")
+        print(f"\033[36m{url}\033[0m...")
+
         # Print date_time in mm/dd/yyyy   hh/mm/ss format.
         print("Response date/time:", end="\n   ")
         print(self.date_time.strftime("%m/%d/%Y   %H:%M:%S"))

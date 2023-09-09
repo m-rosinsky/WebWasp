@@ -24,36 +24,14 @@ class CommandHelp(CommandInterface):
     def __init__(self, name):
         super().__init__(name)
 
-    def get_help(self):
-        super().get_help()
-        print("Description:")
-        print("  Get general help, or help for a specified command\n")
-        self.get_usage()
-
-    def get_usage(self):
-        super().get_usage()
-        print("help [cmd]\n")
-
-        print("Arguments:")
-        print("  [cmd] - Optional command to get help entry for")
-
     def run(self, parse, console=None):
         super().run(parse)
 
         parse_len = len(parse)
         # Check usage.
-        if parse_len > 2:
-            print("[🛑] Error: Extra arguments\n")
-            self.get_usage()
-            return True
-
-        # If command is specified, ensure it exists.
-        if parse_len == 2:
-            help_entry = command_dict.get(parse[1])
-            if not help_entry:
-                print(f"No help entry for command: '{parse[1]}'")
-            else:
-                help_entry.get_help()
+        if parse_len != 1:
+            print("[🛑] Error: Invalid arguments")
+            print("Run any command with '-h' option for more specific help")
             return True
 
         # Get generalized help.
@@ -67,6 +45,8 @@ class CommandHelp(CommandInterface):
                     print("\t", end="")
 
                 print(f"{obj.parser.description}")
+
+        print("\nRun any command with '-h' option for more specific help")
         return True
 
 # This defines the global mapping of command names to their respective classes.

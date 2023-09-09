@@ -24,6 +24,7 @@ class CommandVar(CommandInterface):
             epilog="To use variables in commands, preface the variable name with a '$' sign",
             add_help=False
         )
+        super().add_help(self.parser)
 
         # Add argparse args.
         self.parser.add_argument(
@@ -41,9 +42,6 @@ class CommandVar(CommandInterface):
             action='store_true',
             help='Export the variable so it is saved between sessions',
         )
-
-    def get_help(self):
-        super().get_help()
 
     def run(self, parse, console):
         super().run(parse)

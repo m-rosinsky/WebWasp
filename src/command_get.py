@@ -19,21 +19,19 @@ class CommandGet(CommandInterface):
     def __init__(self, name):
         super().__init__(name)
 
-        # Create argument parser.
+        # Create argument parser and help.
         self.parser = argparse.ArgumentParser(
             prog=self.name,
             description="Send an HTTP 1.1 GET request to a server/url",
             add_help=False
         )
+        super().add_help(self.parser)
 
         # Add argparse args.
         self.parser.add_argument(
             'url',
             type=str,
             help="The url to make a request to")
-
-    def get_help(self):
-        super().get_help()
 
     def run(self, parse, console):
         super().run(parse)
