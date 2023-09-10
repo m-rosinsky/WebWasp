@@ -6,6 +6,7 @@ to store the most recent response.
 """
 
 import http
+import requests
 
 class Response:
     """
@@ -22,8 +23,8 @@ class Response:
         # Date/time details.
         self.date_time = None
 
-        self.status_code = 0
-        self.text = ""
+        # The requests object response.
+        self.req = None
 
     def print_summary(self):
         """
@@ -37,23 +38,27 @@ class Response:
 
         print("[🐝] Summary of captured response:\n")
 
+        # Print the response url.
+        print("Response url:", end="\n   ")
+        print(f"\033[36m{self.req.url}\033[0m")
+
         # Print date_time in mm/dd/yyyy   hh/mm/ss format.
         print("Response date/time:", end="\n   ")
         print(self.date_time.strftime("%m/%d/%Y   %H:%M:%S"))
 
         # Print the status code with color formatting.
         print("Status code:", end="\n   ")
-        if self.status_code >= 200 and self.status_code < 300:
+        if self.req.status_code >= 200 and self.req.status_code < 300:
             print(f"\033[32m", end="")
-        elif self.status_code >= 300 and self.status_code < 400:
+        elif self.req.status_code >= 300 and self.req.status_code < 400:
             print(f"\033[33m", end="")
-        elif self.status_code >= 400 and self.status_code < 500:
+        elif self.req.status_code >= 400 and self.req.status_code < 500:
             print(f"\033[31m", end="")
         else:
             print(f"\033[0m", end="")
-        print(f"{self.status_code} ", end="")
+        print(f"{self.req.status_code} ", end="")
 
-        http_code = http.HTTPStatus(self.status_code)
+        http_code = http.HTTPStatus(self.req.status_code)
         print(f"\033[0m({http_code.phrase})")
 
 ###   end of file   ###

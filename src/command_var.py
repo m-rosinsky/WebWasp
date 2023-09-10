@@ -20,10 +20,14 @@ class CommandVar(CommandInterface):
         # Create argument parser.
         self.parser = argparse.ArgumentParser(
             prog=self.name,
-            description="Set local variables for the console. Run command with no arguments to list all variables",
-            epilog="To use variables in commands, preface the variable name with a '$' sign",
+            description="Set local variables for the console",
+            epilog="""
+            To use variables in commands, preface the variable name with a '$' sign.
+            Run command with no arguments to list all variables
+            """,
             add_help=False
         )
+        super().add_help(self.parser)
 
         # Add argparse args.
         self.parser.add_argument(
@@ -41,9 +45,6 @@ class CommandVar(CommandInterface):
             action='store_true',
             help='Export the variable so it is saved between sessions',
         )
-
-    def get_help(self):
-        super().get_help()
 
     def run(self, parse, console):
         super().run(parse)

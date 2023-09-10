@@ -19,21 +19,19 @@ class CommandGet(CommandInterface):
     def __init__(self, name):
         super().__init__(name)
 
-        # Create argument parser.
+        # Create argument parser and help.
         self.parser = argparse.ArgumentParser(
             prog=self.name,
             description="Send an HTTP 1.1 GET request to a server/url",
             add_help=False
         )
+        super().add_help(self.parser)
 
         # Add argparse args.
         self.parser.add_argument(
             'url',
             type=str,
             help="The url to make a request to")
-
-    def get_help(self):
-        super().get_help()
 
     def run(self, parse, console):
         super().run(parse)
@@ -94,13 +92,12 @@ class CommandGet(CommandInterface):
 
         # Save the response fields to the console.
         console.response.date_time = datetime.datetime.now()
-        console.response.status_code = req.status_code
-        console.response.text = req.text
+        console.response.req = req
 
         # Set the console flag to indicate a response has been captured,
         # and report.
         console.has_response = True
-        print("[🐝] Response captured! Use 'response' command for details")
+        print("[🐝] Response captured! Type 'response show' for summary")
 
         return True
 

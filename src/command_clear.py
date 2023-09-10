@@ -22,9 +22,7 @@ class CommandClear(CommandInterface):
             description="Clear the screen",
             add_help=False
         )
-
-    def get_help(self):
-        super().get_help()
+        super().add_help(self.parser)
 
     def run(self, parse, console=None):
         super().run(parse)

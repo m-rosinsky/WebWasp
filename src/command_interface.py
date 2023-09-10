@@ -5,6 +5,7 @@ This file contains the command interface class, which outlines the
 interface that all command classes must follow.
 """
 
+import argparse
 from abc import ABC, abstractmethod
 
 class CommandInterface(ABC):
@@ -20,13 +21,14 @@ class CommandInterface(ABC):
         self.name = name
         self.parser = None
 
-    @abstractmethod
-    def get_help(self):
-        """
-        This function prints the help message for the command.
-        """
-        print(f"[🐝] Getting help for command: '{self.name}'...\n")
-        self.parser.print_help()
+    def add_help(self, parser):
+        parser.add_argument(
+            "-h",
+            "--help",
+            action="help",
+            default=argparse.SUPPRESS,
+            help="show this help message"
+        )
 
     @abstractmethod
     def run(self, parse, console=None):
