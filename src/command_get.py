@@ -92,13 +92,12 @@ class CommandGet(CommandInterface):
 
         # Save the response fields to the console.
         console.response.date_time = datetime.datetime.now()
-        console.response.status_code = req.status_code
-        console.response.text = req.text
+        console.response.req = req
 
         # Set the console flag to indicate a response has been captured,
         # and report.
         console.has_response = True
-        print("[🐝] Response captured! Use 'response' command for details")
+        print("[🐝] Response captured! Type 'response show' for summary")
 
         return True
 

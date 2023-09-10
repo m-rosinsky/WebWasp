@@ -94,9 +94,9 @@ class CommandResponse(CommandInterface):
         print("\nRe-run 'response show' with '-t' option to show response text")
 
     def _show_text(self, console):
-        print(console.response.text)
+        print(console.response.req.text)
 
-    def _report(self, args):
+    def _report(self, args, console):
         print("report")
 
 ###   end of file   ###
