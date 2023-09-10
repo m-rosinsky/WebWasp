@@ -52,6 +52,9 @@ class Console:
         # This holds the timeout value for requests (seconds).
         self.timeout_s = 2
 
+        # This holds the request parameters.
+        self.params = {}
+
     def run(self):
         """
         This function runs the console suite.

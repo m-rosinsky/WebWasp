@@ -10,6 +10,7 @@ its respective module for handling.
 from src.command_get import CommandGet
 from src.command_var import CommandVar
 from src.command_clear import CommandClear
+from src.command_params import CommandParams
 from src.command_timeout import CommandTimeout
 from src.command_response import CommandResponse
 from src.command_interface import CommandInterface
@@ -54,6 +55,7 @@ command_var = CommandVar("var")
 command_get = CommandGet("get")
 command_help = CommandHelp("help")
 command_clear = CommandClear("clear")
+command_params = CommandParams("params")
 command_timeout = CommandTimeout("timeout")
 command_response = CommandResponse("response")
 
@@ -64,6 +66,7 @@ command_dict = {
     "get"       : command_get,
     "response"  : command_response,
     "timeout"   : command_timeout,
+    "params"    : command_params,
 }
 
 def dispatch(cmd, vars, console):

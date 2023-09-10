@@ -29,9 +29,15 @@ class CommandGet(CommandInterface):
 
         # Add argparse args.
         self.parser.add_argument(
-            'url',
+            "url",
             type=str,
-            help="The url to make a request to")
+            help="The url to make a request to"
+        )
+        self.parser.add_argument(
+            "--no-params",
+            action="store_true",
+            help="Perform request without stored parameters in url"
+        )
 
     def run(self, parse, console):
         super().run(parse)
@@ -55,14 +61,22 @@ class CommandGet(CommandInterface):
         if not url.startswith("http://") and not url.startswith("https://"):
             url = "http://" + url
 
+        # If the --no-params flag was specified, unset params.
+        params = console.params
+        if args.no_params:
+            params = {}
+
+        # Prepare the full URL.
+        prep = requests.Request("GET", url, params=params).prepare()
+
         # Inform the user the full URL.
-        print(f"[🐝] Sending GET request to \033[36m{url}\033[0m...")
+        print(f"[🐝] Sending GET request to \033[36m{prep.url}\033[0m...")
 
         # Perform get request from request lib.
         req = None
         try:
             req = requests.get(
-                url,
+                prep.url,
                 timeout=console.timeout_s
             )
         except requests.exceptions.RequestException as req_ex:
