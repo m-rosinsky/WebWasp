@@ -72,12 +72,26 @@ class CommandGet(CommandInterface):
         # Inform the user the full URL.
         print(f"[🐝] Sending GET request to \033[36m{prep.url}\033[0m...")
 
+        # Construct the headers dictionary with only fields are are not None
+        # in the console's headers object.
+        headers = {}
+        for field, value in console.headers.fields.items():
+            if value is not None:
+                headers[field] = value
+
+        # Construct the auth dictionary.
+        auth = None
+        if console.headers.auth["auth-user"] is not None:
+            auth = (console.headers.auth["auth-user"], console.headers.auth["auth-pass"])
+
         # Perform get request from request lib.
         req = None
         try:
             req = requests.get(
                 prep.url,
-                timeout=console.timeout_s
+                timeout=console.timeout_s,
+                auth=auth,
+                headers=headers
             )
         except requests.exceptions.RequestException as req_ex:
             print(f"{req_ex}")

@@ -11,6 +11,7 @@ from src.command_get import CommandGet
 from src.command_var import CommandVar
 from src.command_clear import CommandClear
 from src.command_params import CommandParams
+from src.command_headers import CommandHeaders
 from src.command_timeout import CommandTimeout
 from src.command_response import CommandResponse
 from src.command_interface import CommandInterface
@@ -56,6 +57,7 @@ command_get = CommandGet("get")
 command_help = CommandHelp("help")
 command_clear = CommandClear("clear")
 command_params = CommandParams("params")
+command_headers = CommandHeaders("headers")
 command_timeout = CommandTimeout("timeout")
 command_response = CommandResponse("response")
 
@@ -67,6 +69,7 @@ command_dict = {
     "response"  : command_response,
     "timeout"   : command_timeout,
     "params"    : command_params,
+    "headers"   : command_headers,
 }
 
 def dispatch(cmd, vars, console):

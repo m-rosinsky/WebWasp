@@ -9,6 +9,7 @@ import sys
 import getch
 from src import dispatch
 from src.response import Response
+from src.headers import Headers
 
 ESC_SEQUENCE = '\x1b'
 KEY_BACKSPACE = '\x7f'
@@ -54,6 +55,9 @@ class Console:
 
         # This holds the request parameters.
         self.params = {}
+
+        # This holds the request headers.
+        self.headers = Headers()
 
     def run(self):
         """
