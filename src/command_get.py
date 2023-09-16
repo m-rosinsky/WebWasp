@@ -38,6 +38,11 @@ class CommandGet(CommandInterface):
             action="store_true",
             help="Perform request without stored parameters in url"
         )
+        self.parser.add_argument(
+            "--no-cookies",
+            action="store_true",
+            help="Perform request without stored cookies"
+        )
 
     def run(self, parse, console):
         super().run(parse)
@@ -69,6 +74,11 @@ class CommandGet(CommandInterface):
         # Prepare the full URL.
         prep = requests.Request("GET", url, params=params).prepare()
 
+        # If the --no-cookies flag was specified, unset cookies.
+        cookies = console.cookies
+        if args.no_cookies:
+            cookies = {}
+
         # Inform the user the full URL.
         print(f"[🐝] Sending GET request to \033[36m{prep.url}\033[0m...")
 
@@ -91,7 +101,8 @@ class CommandGet(CommandInterface):
                 prep.url,
                 timeout=console.timeout_s,
                 auth=auth,
-                headers=headers
+                headers=headers,
+                cookies=cookies,
             )
         except requests.exceptions.RequestException as req_ex:
             print(f"{req_ex}")
