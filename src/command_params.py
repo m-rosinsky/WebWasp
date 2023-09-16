@@ -84,7 +84,7 @@ class CommandParams(CommandInterface):
             # Don't let argparse exit the program.
             return True
 
-        # If no subcommand was specified, show help.
+        # If no subcommand was specified, show list.
         if not hasattr(args, "func"):
             self._list(console)
             return True
@@ -101,7 +101,7 @@ class CommandParams(CommandInterface):
         """
         print("Current stored parameters:")
         for name, value in console.params.items():
-            print(f"  '{name}' : '{value}'")
+            print(f"   '{name}' : '{value}'")
 
     def _add(self, args, console):
         """
