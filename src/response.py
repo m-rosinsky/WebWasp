@@ -72,7 +72,7 @@ class Response:
         
         print("[🐝] Response cookies:")
 
-        for cookie, value in req.cookies.items():
+        for cookie, value in self.req.cookies.items():
             print(f"   {cookie}\t: {value}")
 
 ###   end of file   ###

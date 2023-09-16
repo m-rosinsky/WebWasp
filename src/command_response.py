@@ -91,10 +91,10 @@ class CommandResponse(CommandInterface):
         return True
 
     def _show(self, args, console):
-        if args.t:
+        if args.text:
             print(console.response.req.text)
-        elif args.c:
-            self.console.response.print_cookies()
+        elif args.cookies:
+            console.response.print_cookies()
         else:
             self._show_summary(console)
 
