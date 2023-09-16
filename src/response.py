@@ -32,7 +32,7 @@ class Response:
         exists.
         """
         # If date_time is None, a response has not been generated.
-        if not self.date_time:
+        if not self.req:
             print("[🐝] No response captured")
             return
 
@@ -60,5 +60,19 @@ class Response:
 
         http_code = http.HTTPStatus(self.req.status_code)
         print(f"\033[0m({http_code.phrase})")
+    
+    def print_cookies(self):
+        """
+        This function prints the cookies from the latest resposne
+        to the console.
+        """
+        if not self.req:
+            print("[🐝] No response captured")
+            return
+        
+        print("[🐝] Response cookies:")
+
+        for cookie, value in req.cookies.items():
+            print(f"   {cookie}\t: {value}")
 
 ###   end of file   ###
