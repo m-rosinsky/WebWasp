@@ -16,6 +16,7 @@ class Headers():
     def __init__(self):
         self.fields = {
             "user-agent" : None,
+            "referer" : None,
         }
         self.auth = {
             "auth-user" : None,

@@ -5,9 +5,9 @@ This file contains the get command class.
 """
 
 import http
-import requests
 import argparse
 import datetime
+import requests
 
 from src.command_interface import CommandInterface
 
@@ -103,16 +103,16 @@ class CommandGet(CommandInterface):
             return True
 
         # Print the status code.
-        print(f"[🐝] GET request completed. Status code: ", end="")
+        print("[🐝] GET request completed. Status code: ", end="")
 
         if req.status_code >= 200 and req.status_code < 300:
-            print(f"\033[32m", end="")
+            print("\033[32m", end="")
         elif req.status_code >= 300 and req.status_code < 400:
-            print(f"\033[33m", end="")
+            print("\033[33m", end="")
         elif req.status_code >= 400 and req.status_code < 500:
-            print(f"\033[31m", end="")
+            print("\033[31m", end="")
         else:
-            print(f"\033[0m", end="")
+            print("\033[0m", end="")
         print(f"{req.status_code} ", end="")
 
         http_code = http.HTTPStatus(req.status_code)
