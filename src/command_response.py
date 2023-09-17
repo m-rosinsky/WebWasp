@@ -44,8 +44,15 @@ class CommandResponse(CommandInterface):
         )
         self.parser_show.add_argument(
             "-t",
+            "--text",
             action="store_true",
             help="show the text of the response"
+        )
+        self.parser_show.add_argument(
+            "-c",
+            "--cookies",
+            action="store_true",
+            help="show the cookies of the response"
         )
 
         # Create the response report command subparser.
@@ -84,17 +91,16 @@ class CommandResponse(CommandInterface):
         return True
 
     def _show(self, args, console):
-        if args.t:
-            self._show_text(console)
+        if args.text:
+            print(console.response.req.text)
+        elif args.cookies:
+            console.response.print_cookies()
         else:
             self._show_summary(console)
 
     def _show_summary(self, console):
         console.response.print_summary()
         print("\nRe-run 'response show' with '-t' option to show response text")
-
-    def _show_text(self, console):
-        print(console.response.req.text)
 
     def _report(self, args, console):
         print("report")

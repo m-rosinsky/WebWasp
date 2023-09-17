@@ -56,6 +56,9 @@ class Console:
         # This holds the request parameters.
         self.params = {}
 
+        # This holds the request cookies.
+        self.cookies = {}
+
         # This holds the request headers.
         self.headers = Headers()
 
