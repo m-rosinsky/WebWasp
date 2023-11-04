@@ -9,7 +9,7 @@ import argparse
 import datetime
 import requests
 
-from src.command_interface import CommandInterface
+from src.command.command_interface import CommandInterface
 
 class CommandGet(CommandInterface):
     """

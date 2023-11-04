@@ -7,15 +7,15 @@ It is responsible for parsing and dispatching a command to
 its respective module for handling.
 """
 
-from src.command_get import CommandGet
-from src.command_var import CommandVar
-from src.command_clear import CommandClear
-from src.command_params import CommandParams
-from src.command_cookies import CommandCookies
-from src.command_headers import CommandHeaders
-from src.command_timeout import CommandTimeout
-from src.command_response import CommandResponse
-from src.command_interface import CommandInterface
+from src.command.command_get import CommandGet
+from src.command.command_var import CommandVar
+from src.command.command_clear import CommandClear
+from src.command.command_params import CommandParams
+from src.command.command_cookies import CommandCookies
+from src.command.command_headers import CommandHeaders
+from src.command.command_timeout import CommandTimeout
+from src.command.command_response import CommandResponse
+from src.command.command_interface import CommandInterface
 
 class CommandHelp(CommandInterface):
     """
