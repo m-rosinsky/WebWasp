@@ -99,7 +99,7 @@ class CommandCookies(CommandInterface):
         """
         This function lists all cookies currently stored.
         """
-        print("Current stored cookies:")
+        print("[🐝] Current stored cookies:")
         for name, value in console.cookies.items():
             print(f"   '{name}' : '{value}'")
 
@@ -108,7 +108,7 @@ class CommandCookies(CommandInterface):
         This function adds a new cookie.
         """
         console.cookies[args.name] = args.value
-        print("Added cookie:\n   ", end="")
+        print("[🐝] Added cookie:\n   ", end="")
         print(f"'{args.name}' : '{args.value}'")
 
     def _remove(self, args, console):
@@ -119,7 +119,7 @@ class CommandCookies(CommandInterface):
             print(f"Unknown cookie: '{args.name}'")
             return
         del console.cookies[args.name]
-        print("Removed cookie\n   ", end="")
+        print("[🐝] Removed cookie\n   ", end="")
         print(f"'{args.name}'")
 
     def _clear(self, args, console):
@@ -127,6 +127,6 @@ class CommandCookies(CommandInterface):
         This function clears the console cookies.
         """
         console.cookies = {}
-        print("Stored cookies cleared")
+        print("[🐝] Stored cookies cleared")
 
 ###   end of file   ###
