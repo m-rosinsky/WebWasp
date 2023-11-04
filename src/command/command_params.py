@@ -19,7 +19,7 @@ class CommandParams(CommandInterface):
         # Create argument parser and help.
         self.parser = argparse.ArgumentParser(
             prog=self.name,
-            description="Modify the url parameters for requests",
+            description='Modify the url parameters for requests',
             add_help=False
         )
         super().add_help(self.parser)
@@ -29,42 +29,42 @@ class CommandParams(CommandInterface):
 
         # Create the params add command subparser.
         self.parser_add = self.subparser.add_parser(
-            "add",
-            description="Add a parameter",
-            help="Add a parameter",
+            'add',
+            description='Add a parameter',
+            help='Add a parameter',
             add_help=False
         )
         self.parser_add.set_defaults(func=self._add)
         self.parser_add.add_argument(
-            "name",
+            'name',
             type=str,
-            help="The name of the new param"
+            help='The name of the new param'
         )
         self.parser_add.add_argument(
-            "value",
+            'value',
             type=str,
-            help="The value of the new param"
+            help='The value of the new param'
         )
 
         # Create the params remove command subparser.
         self.parser_remove = self.subparser.add_parser(
-            "remove",
-            description="Remove a parameter",
-            help="Remove a parameter",
+            'remove',
+            description='Remove a parameter',
+            help='Remove a parameter',
             add_help=False
         )
         self.parser_remove.set_defaults(func=self._remove)
         self.parser_remove.add_argument(
-            "name",
+            'name',
             type=str,
-            help="The name of the param to remove"
+            help='The name of the param to remove'
         )
 
         # Create the params clear command subparser.
         self.parser_clear = self.subparser.add_parser(
-            "clear",
-            description="Remove all parameters",
-            help="Remove all parameters",
+            'clear',
+            description='Remove all parameters',
+            help='Remove all parameters',
             add_help=False
         )
         self.parser_clear.set_defaults(func=self._clear)
@@ -85,7 +85,7 @@ class CommandParams(CommandInterface):
             return True
 
         # If no subcommand was specified, show list.
-        if not hasattr(args, "func"):
+        if not hasattr(args, 'func'):
             self._list(console)
             return True
 

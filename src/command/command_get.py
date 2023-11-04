@@ -22,26 +22,26 @@ class CommandGet(CommandInterface):
         # Create argument parser and help.
         self.parser = argparse.ArgumentParser(
             prog=self.name,
-            description="Send an HTTP 1.1 GET request to a server/url",
+            description='Send an HTTP 1.1 GET request to a server/url',
             add_help=False
         )
         super().add_help(self.parser)
 
         # Add argparse args.
         self.parser.add_argument(
-            "url",
+            'url',
             type=str,
-            help="The url to make a request to"
+            help='The url to make a request to'
         )
         self.parser.add_argument(
-            "--no-params",
-            action="store_true",
-            help="Perform request without stored parameters in url"
+            '--no-params',
+            action='store_true',
+            help='Perform request without stored parameters in url'
         )
         self.parser.add_argument(
-            "--no-cookies",
-            action="store_true",
-            help="Perform request without stored cookies"
+            '--no-cookies',
+            action='store_true',
+            help='Perform request without stored cookies'
         )
 
     def run(self, parse, console):
@@ -63,8 +63,8 @@ class CommandGet(CommandInterface):
         url = args.url
 
         # Add "http://" onto from of URL if no scheme is supplied.
-        if not url.startswith("http://") and not url.startswith("https://"):
-            url = "http://" + url
+        if not url.startswith('http://') and not url.startswith('https://'):
+            url = 'http://' + url
 
         # If the --no-params flag was specified, unset params.
         params = console.params
@@ -72,7 +72,7 @@ class CommandGet(CommandInterface):
             params = {}
 
         # Prepare the full URL.
-        prep = requests.Request("GET", url, params=params).prepare()
+        prep = requests.Request('GET', url, params=params).prepare()
 
         # If the --no-cookies flag was specified, unset cookies.
         cookies = console.cookies
@@ -91,8 +91,8 @@ class CommandGet(CommandInterface):
 
         # Construct the auth dictionary.
         auth = None
-        if console.headers.auth["auth-user"] is not None:
-            auth = (console.headers.auth["auth-user"], console.headers.auth["auth-pass"])
+        if console.headers.auth['auth-user'] is not None:
+            auth = (console.headers.auth['auth-user'], console.headers.auth['auth-pass'])
 
         # Perform get request from request lib.
         req = None
