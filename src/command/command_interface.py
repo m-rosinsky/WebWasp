@@ -23,11 +23,11 @@ class CommandInterface(ABC):
 
     def add_help(self, parser):
         parser.add_argument(
-            "-h",
-            "--help",
-            action="help",
+            '-h',
+            '--help',
+            action='help',
             default=argparse.SUPPRESS,
-            help="Show this help message"
+            help='Show this help message'
         )
 
     @abstractmethod

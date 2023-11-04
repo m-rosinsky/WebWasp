@@ -96,7 +96,7 @@ def dispatch(cmd, vars, console):
     # Resolve variable names.
     for i in range(len(parse)):
         token = parse[i]
-        if token[0] == "$":
+        if token[0] == '$':
             # Look up variable in console.
             name = token[1:]
             val = console.vars.get(name)
