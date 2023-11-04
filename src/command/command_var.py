@@ -20,7 +20,7 @@ class CommandVar(CommandInterface):
         # Create argument parser.
         self.parser = argparse.ArgumentParser(
             prog=self.name,
-            description="Set local variables for the console",
+            description='Set local variables for the console',
             epilog="""
             To use variables in commands, preface the variable name with a '$' sign.
             Run command with no arguments to list all variables
@@ -93,7 +93,7 @@ class CommandVar(CommandInterface):
             return True
 
         # If no subcommand was specified, show list.
-        if not hasattr(args, "func"):
+        if not hasattr(args, 'func'):
             self._list(console)
             return True
 
@@ -119,7 +119,7 @@ class CommandVar(CommandInterface):
         try:
             # Create file if doesn't exist.
             if not os.path.exists(console.export_file):
-                with open(console.export_file, "w", encoding="utf-8") as exp_f:
+                with open(console.export_file, 'w', encoding='utf-8') as exp_f:
                     pass
                 os.chmod(console.export_file, 0o666) # rw-rw-rw
 
@@ -129,9 +129,9 @@ class CommandVar(CommandInterface):
             # Read existing data and update or add the entry.
             updated_lines = []
             entry_found = False
-            with open(console.export_file, "r", encoding="utf-8") as exp_f:
+            with open(console.export_file, 'r', encoding='utf-8') as exp_f:
                 for line in exp_f:
-                    line_name, _ = line.strip().split(":", 1)
+                    line_name, _ = line.strip().split(':', 1)
                     if line_name == name:
                         updated_lines.append(entry_string)
                         entry_found = True
@@ -142,9 +142,9 @@ class CommandVar(CommandInterface):
                 updated_lines.append(entry_string)
 
             # Write updated data back to the file.
-            with open(console.export_file, "w", encoding="utf-8") as exp_f:
+            with open(console.export_file, 'w', encoding='utf-8') as exp_f:
                 for line in updated_lines:
-                    exp_f.write(line + "\n")
+                    exp_f.write(line + '\n')
 
             return True
         except OSError as open_err:

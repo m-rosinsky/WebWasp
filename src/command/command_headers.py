@@ -23,7 +23,7 @@ class CommandHeaders(CommandInterface):
         # Create argument parser and help.
         self.parser = argparse.ArgumentParser(
             prog=self.name,
-            description="Set and unset custom HTTP 1.1 headers",
+            description='Set and unset custom HTTP 1.1 headers',
             add_help=False
         )
         super().add_help(self.parser)
@@ -33,44 +33,44 @@ class CommandHeaders(CommandInterface):
 
         # Create the headers set command subparser.
         self.parser_set = self.subparser.add_parser(
-            "set",
-            description="Set the value for a header field",
-            help="Set the value for a header field",
+            'set',
+            description='Set the value for a header field',
+            help='Set the value for a header field',
             add_help=False
         )
         super().add_help(self.parser_set)
         self.parser_set.set_defaults(func=self._set)
         self.parser_set.add_argument(
-            "field",
+            'field',
             type=str,
-            help="The header field to set"
+            help='The header field to set'
         )
         self.parser_set.add_argument(
-            "value",
+            'value',
             type=str,
-            help="The header field value"
+            help='The header field value'
         )
 
         # Create the headers unset command subparser.
         self.parser_unset = self.subparser.add_parser(
-            "unset",
-            description="Unset the value for a header field",
-            help="Unset the value for a header field",
+            'unset',
+            description='Unset the value for a header field',
+            help='Unset the value for a header field',
             add_help=False
         )
         super().add_help(self.parser_unset)
         self.parser_unset.set_defaults(func=self._unset)
         self.parser_unset.add_argument(
-            "field",
+            'field',
             type=str,
-            help="The header field to unset"
+            help='The header field to unset'
         )
 
         # Create the headers clear command subparser.
         self.parser_clear = self.subparser.add_parser(
-            "clear",
-            description="Unset all header field values",
-            help="Unset all header field values",
+            'clear',
+            description='Unset all header field values',
+            help='Unset all header field values',
             add_help=False
         )
         super().add_help(self.parser_clear)
@@ -92,7 +92,7 @@ class CommandHeaders(CommandInterface):
             return True
 
         # If no subcommand was specified, show list.
-        if not hasattr(args, "func"):
+        if not hasattr(args, 'func'):
             self._list(console)
             return True
 
