@@ -27,7 +27,7 @@ class CommandInterface(ABC):
             "--help",
             action="help",
             default=argparse.SUPPRESS,
-            help="show this help message"
+            help="Show this help message"
         )
 
     @abstractmethod
