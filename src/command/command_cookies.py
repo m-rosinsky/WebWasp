@@ -6,6 +6,7 @@ This file contains the cookies command class.
 
 import argparse
 
+from src.logger import log
 from src.command.command_interface import CommandInterface
 
 class CommandCookies(CommandInterface):
@@ -99,7 +100,7 @@ class CommandCookies(CommandInterface):
         """
         This function lists all cookies currently stored.
         """
-        print("[🐝] Current stored cookies:")
+        log("Current stored cookies:", log_type='cookie')
         for name, value in console.cookies.items():
             print(f"   '{name}' : '{value}'")
 
@@ -108,25 +109,25 @@ class CommandCookies(CommandInterface):
         This function adds a new cookie.
         """
         console.cookies[args.name] = args.value
-        print("[🐝] Added cookie:\n   ", end="")
-        print(f"'{args.name}' : '{args.value}'")
+        log("Added cookie:", log_type='cookie')
+        log(f"'{args.name}' : '{args.value}'")
 
     def _remove(self, args, console):
         """
         This function removes a cookie.
         """
         if args.name not in console.cookies:
-            print(f"Unknown cookie: '{args.name}'")
+            log(f"Unknown cookie: '{args.name}'", log_type='error')
             return
         del console.cookies[args.name]
-        print("[🐝] Removed cookie\n   ", end="")
-        print(f"'{args.name}'")
+        log("Removed cookie", log_type='cookie')
+        log(f"'{args.name}'")
 
     def _clear(self, args, console):
         """
         This function clears the console cookies.
         """
         console.cookies = {}
-        print("[🐝] Stored cookies cleared")
+        log("Stored cookies cleared", log_type='cookie')
 
 ###   end of file   ###
