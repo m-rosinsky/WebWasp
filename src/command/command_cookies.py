@@ -6,7 +6,7 @@ This file contains the cookies command class.
 
 import argparse
 
-from src.command_interface import CommandInterface
+from src.command.command_interface import CommandInterface
 
 class CommandCookies(CommandInterface):
     """

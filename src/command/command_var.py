@@ -7,7 +7,7 @@ This file contains the var command class.
 import os
 import argparse
 
-from src.command_interface import CommandInterface
+from src.command.command_interface import CommandInterface
 
 class CommandVar(CommandInterface):
     """

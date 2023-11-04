@@ -114,7 +114,7 @@ def dispatch(cmd, vars, console):
 
     # Check if command exists.
     if parse[0] not in command_dict:
-        print(f"Unknown command: '{parse[0]}'")
+        print(f"[🛑] Error: Unknown command '{parse[0]}'")
         return True
 
     # Run command.
