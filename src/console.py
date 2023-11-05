@@ -112,24 +112,11 @@ class Console:
             if not status:
                 self.is_running = False
 
-    def add_data(self, data_type, key, value):
+    def update_data(self):
         """
         Brief:
-            This function adds data to the persistent data file.
-
-        Arguments:
-            data_type: str,
-                The type of data being added. This helps determine
-                the section to put the data into.
-
-            key: str,
-                The key for the data.
-
-            value: str,
-                The value for the data.
-
-        Returns:
-            None
+            This function updates the persistent data file with the
+            data stored in the console variables.
         """
         # Check if the persistent data file does not exist.
         if not os.path.exists(self.data_file):
@@ -140,6 +127,39 @@ class Console:
                 log("Unable to create persistent data file", log_type='error')
                 return
             
+        yaml_data = {
+            'var': {},
+        }
+
+        # Add the console variables.
+        for name, value in self.vars.items():
+            yaml_data['var'][name] = value
+
+        # Dump the contents back to the data file.
+        try:
+            with open(self.data_file, 'w', encoding='utf-8') as f:
+                yaml.dump(yaml_data, f, default_flow_style=False)
+        except (OSError, yaml.YAMLError, AttributeError):
+            log("Unable to write to persistent data file", log_type='error')
+            return
+
+    def remove_data(self, data_type, key):
+        """
+        Brief:
+            This function removes an entry from the persistent data file.
+
+        Arguments:
+            data_type: str
+                The type of data being added. This helps determine
+                the section to put the data into.
+
+            key: str
+                The key for the data.
+        """
+        # Check if the data file exists.
+        if not os.path.exists(self.data_file):
+            return
+        
         # Read the file data.
         file_data = ""
         try:
@@ -149,14 +169,19 @@ class Console:
         except OSError:
             log("Unable to read persistent data file", log_type='error')
             return
-        
+
         # Parse the file data as YAML.
         yaml_data = yaml.safe_load(file_data) or {}
-        if not data_type in yaml_data:
-            yaml_data[data_type] = {}
 
-        # Add the key-value pair to the data.
-        yaml_data[data_type][key] = value
+        # If the section does not exist, return.
+        if not data_type in yaml_data:
+            return
+        
+        # If the key does not exist, return.
+        if not key in yaml_data[data_type]:
+            return
+        
+        del yaml_data[data_type][key]
 
         # Dump the contents back to the data file.
         try:

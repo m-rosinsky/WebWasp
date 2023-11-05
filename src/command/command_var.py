@@ -98,6 +98,7 @@ class CommandVar(CommandInterface):
             return True
 
         args.func(args, console)
+        console.update_data()
 
         return True
 
@@ -124,25 +125,23 @@ class CommandVar(CommandInterface):
         log("Added variable:", log_type='info')
         log(f"   ${args.name} -> '{args.value}'")
 
-        # Add variable to wwdata.
-        console.add_data('var', args.name, args.value)
-
     def _remove(self, args, console):
         """
         This function removes a parameter.
         """
         if args.name not in console.vars:
-            print(f"[⚠] Variable '{args.name}' does not exist")
+            log(f"Variable '{args.name}' does not exist", log_type='error')
             return
+        
         del console.vars[args.name]
-        print("[🟢] Removed variable:")
-        print(f"   ${args.name}")
+        log("Removed variable:", log_type='info')
+        log(f"   ${args.name}")
 
     def _clear(self, args, console):
         """
         This function clears the console parameters.
         """
         console.vars = {}
-        print("[🟢] All variables cleared")
+        log("All variables cleared", log_type='info')
 
 ###   end of file   ###
