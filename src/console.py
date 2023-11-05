@@ -104,9 +104,9 @@ class Console:
 
             # Open file and read in data.
             raw_file_data = []
-            with open(self.export_file, 'r', encoding='utf-8') as ef:
+            with open(self.export_file, "r", encoding="utf-8") as ef:
                 for line in ef:
-                    raw_file_data.append(line.strip().split(':'))
+                    raw_file_data.append(line.strip().split(":"))
 
             # Parse each line.
             data_valid = True
@@ -121,7 +121,7 @@ class Console:
             # If the data was invalid, overwrite the export file.
             if not data_valid:
                 print("[🚧] Warning: Export file data was corrupted, blanking...")
-                with open(self.export_file, 'w', encoding='utf-8') as ef:
+                with open(self.export_file, "w", encoding="utf-8") as ef:
                     pass
         except OSError as imp_err:
             print("[🛑] Error: Could not import saved variables.")

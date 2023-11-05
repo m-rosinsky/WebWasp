@@ -6,7 +6,6 @@ This file contains the timeout command class.
 
 import argparse
 
-from src.logger import log
 from src.command.command_interface import CommandInterface
 
 class CommandTimeout(CommandInterface):
@@ -20,9 +19,9 @@ class CommandTimeout(CommandInterface):
         # Create argument parser.
         self.parser = argparse.ArgumentParser(
             prog=self.name,
-            description='Get/Set the timeout value for requests',
+            description="Get/Set the timeout value for requests",
             add_help=False,
-            epilog='Specify 0 for value to disable timeout'
+            epilog="Specify 0 for value to disable timeout"
         )
         super().add_help(self.parser)
 
@@ -31,7 +30,7 @@ class CommandTimeout(CommandInterface):
             'value',
             type=float,
             nargs='?',
-            help='The timeout value in seconds'
+            help="The timeout value in seconds"
         )
 
     def run(self, parse, console):
@@ -61,11 +60,11 @@ class CommandTimeout(CommandInterface):
                 console.timeout_s = value
 
         # Display the timeout value.
-        log(f"Timeout -> {console.timeout_s}", log_type='info', end="")
+        print(f"Timeout -> {console.timeout_s}", end="")
         
         if console.timeout_s is not None:
-            log(" seconds", end="")
-        log("")
+            print(" seconds", end="")
+        print("")
 
         return True
 
