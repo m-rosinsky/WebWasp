@@ -6,6 +6,7 @@ This file contains the timeout command class.
 
 import argparse
 
+from src.logger import log
 from src.command.command_interface import CommandInterface
 
 class CommandTimeout(CommandInterface):
@@ -60,11 +61,11 @@ class CommandTimeout(CommandInterface):
                 console.timeout_s = value
 
         # Display the timeout value.
-        print(f"Timeout -> {console.timeout_s}", end="")
+        log(f"Timeout -> {console.timeout_s}", log_type='info', end="")
         
         if console.timeout_s is not None:
-            print(" seconds", end="")
-        print("")
+            log(" seconds", end="")
+        log("")
 
         return True
 

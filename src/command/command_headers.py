@@ -6,6 +6,7 @@ This file contains the headers command class.
 
 import argparse
 
+from src.logger import log
 from src.command.command_interface import CommandInterface
 
 class CommandHeaders(CommandInterface):
@@ -106,7 +107,7 @@ class CommandHeaders(CommandInterface):
         """
         This function lists all headers currently stored.
         """
-        print("Current header fields:")
+        log("Current header fields:", log_type='info')
         console.headers.print_fields()
 
     def _set(self, args, console):
@@ -114,30 +115,33 @@ class CommandHeaders(CommandInterface):
         This function sets a header field to a specified value.
         """
         if not console.headers.field_valid(args.field):
-            print(f"Invalid header field: '{args.field}'")
-            print("Run 'headers' to see list of valid fields")
+            log(f"Invalid header field: '{args.field}'", log_type='error')
+            log("Run 'headers' to see list of valid fields")
             return
 
         console.headers.set_field(args.field, args.value)
-        print(f"Set header field:\n   {args.field} : '{args.value}'")
+        log(
+            f"Set header field:\n   {args.field} : '{args.value}'",
+            log_type='info',
+        )
 
     def _unset(self, args, console):
         """
         This function unsets a header field.
         """
         if not console.headers.field_valid(args.field):
-            print(f"Invalid header field: '{args.field}'")
-            print("Run 'headers' to see list of valid fields")
+            log(f"Invalid header field: '{args.field}'", log_type='error')
+            log("Run 'headers' to see list of valid fields")
             return
 
         console.headers.set_field(args.field, None)
-        print(f"Unset header field:\n   {args.field}")
+        log(f"Unset header field:\n   {args.field}", log_type='info')
 
     def _clear(self, args, console):
         """
         This function unsets all header fields.
         """
         console.headers.clear_fields()
-        print("Cleared all header fields")
+        log("Cleared all header fields", log_type='info')
 
 ###   end of file   ###
