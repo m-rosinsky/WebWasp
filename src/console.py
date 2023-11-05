@@ -5,9 +5,12 @@ This file contains the class definitions for the console suite.
 """
 
 import os
-import sys
 import getch
+import sys
+import yaml
+
 from src import dispatch
+from src.logger import log
 from src.response import Response
 from src.headers import Headers
 
@@ -42,10 +45,6 @@ class Console:
         self.cmd = ""
         self.saved_cmd = ""
 
-        # Attempt to load exported variables.
-        self.export_file = "/tmp/.wwvars"
-        self._load_vars()
-
         # This class holds the most recent response information.
         self.response = Response()
         self.has_response = False
@@ -61,6 +60,14 @@ class Console:
 
         # This holds the request headers.
         self.headers = Headers()
+
+        # Attempt to load exported variables.
+        self.data_file = os.path.expanduser("~/.wwdata")
+        self._load_data()
+
+        # Attempt to load history.
+        self.history_file = os.path.expanduser("~/.wwhistory")
+        self._load_history()
 
     def run(self):
         """
@@ -84,6 +91,20 @@ class Console:
             self.history.insert(0, cmd)
             if len(self.history) > self.max_history_len:
                 self.history.pop()
+            
+            # Add input to persistent file.
+            try:
+                if not os.path.exists(self.history_file):
+                    with open(self.history_file, 'w', encoding='utf-8') as f:
+                        f.write(cmd + "\n")
+                else:
+                    with open(self.history_file, 'a', encoding='utf-8') as f:
+                        f.write(cmd + "\n")
+            except OSError:
+                log(
+                    "Unable to store session command history",
+                    log_type='warning',
+                )
 
             # Handle command.
             status = dispatch.dispatch(cmd, self.vars, self)
@@ -91,43 +112,123 @@ class Console:
             if not status:
                 self.is_running = False
 
+        # Save all persistent data for session.
+        self.update_data()
+
+    def update_data(self):
+        """
+        Brief:
+            This function updates the persistent data file with the
+            data stored in the console variables.
+        """
+        # Check if the persistent data file does not exist.
+        if not os.path.exists(self.data_file):
+            try:
+                with open(self.data_file, 'w+', encoding='utf-8') as f:
+                    pass
+            except OSError:
+                log("Unable to create persistent data file", log_type='error')
+                return
+            
+        yaml_data = {
+            'cookies': {},
+            'headers': {
+                'auth': {},
+                'fields': {},
+            },
+            'params': {},
+            'var': {},
+            'timeout': self.timeout_s
+        }
+
+        # Add cookies.
+        for name, value in self.cookies.items():
+            yaml_data['cookies'][name] = value
+
+        # Add headers.
+        for name, value in self.headers.auth.items():
+            yaml_data['headers']['auth'][name] = value
+        for name, value in self.headers.fields.items():
+            yaml_data['headers']['fields'][name] = value
+
+        # Add parameters.
+        for name, value in self.params.items():
+            yaml_data['params'][name] = value
+
+        # Add variables.
+        for name, value in self.vars.items():
+            yaml_data['var'][name] = value
+
+        # Dump the contents back to the data file.
+        try:
+            with open(self.data_file, 'w', encoding='utf-8') as f:
+                yaml.dump(yaml_data, f, default_flow_style=False)
+        except (OSError, yaml.YAMLError, AttributeError):
+            log("Unable to write to persistent data file", log_type='error')
+            return
+
     # Private member functions.
-    def _load_vars(self):
+    def _load_data(self):
         """
         This function attempts to populate the vars member via
         the saved export file if it exists.
         """
-        # Test if the file exists.
+        # Check if the data file exists.
+        if not os.path.exists(self.data_file):
+            return
+        
+        # Read the file data.
+        file_data = ""
         try:
-            if not os.path.exists(self.export_file):
+            with open(self.data_file, 'r', encoding='utf-8') as f:
+                for line in f:
+                    file_data += line
+        except OSError:
+            log("Unable to read persistent data file", log_type='error')
+            return
+        
+        # Parse the file data as YAML.
+        yaml_data = yaml.safe_load(file_data) or {}
+        
+        # Load sections into console variables.
+        if 'cookies' in yaml_data:
+            self.cookies = yaml_data['cookies']
+        if 'headers' in yaml_data:
+            if 'auth' in yaml_data['headers']:
+                self.headers.auth = yaml_data['headers']['auth']
+            if 'fields' in yaml_data['headers']:
+                self.headers.fields = yaml_data['headers']['fields']
+        if 'params' in yaml_data:
+            self.params = yaml_data['params']
+        if 'var' in yaml_data:
+            self.vars = yaml_data['var']
+        if 'timeout' in yaml_data:
+            self.timeout_s = yaml_data['timeout']
+
+    def _load_history(self):
+        """
+        This function attempt to read the history command file
+        in order to restore history from previous sessions.
+        """
+        try:
+            if not os.path.exists(self.history_file):
                 return
 
             # Open file and read in data.
-            raw_file_data = []
-            with open(self.export_file, 'r', encoding='utf-8') as ef:
-                for line in ef:
-                    raw_file_data.append(line.strip().split(':'))
+            with open(self.history_file, 'r', encoding='utf-8') as f:
+                for line in f:
+                    self.history.insert(0, line.strip())
+                    if len(self.history) > self.max_history_len:
+                        self.history.pop()
 
-            # Parse each line.
-            data_valid = True
-            for entry in raw_file_data:
-                if len(entry) != 2:
-                    data_valid = False
-                    break
-                
-                # Populate variable table.
-                self.vars[entry[0]] = entry[1]
-
-            # If the data was invalid, overwrite the export file.
-            if not data_valid:
-                print("[🚧] Warning: Export file data was corrupted, blanking...")
-                with open(self.export_file, 'w', encoding='utf-8') as ef:
-                    pass
         except OSError as imp_err:
-            print("[🛑] Error: Could not import saved variables.")
-            print(imp_err)
+            log(
+                "Warning: Could not restore session history",
+                log_type='warning',
+            )
+            log(f"   {imp_err}")
 
-        return
+        log("Restored previous session history", log_type='success')
 
     def _prompt(self):
         """

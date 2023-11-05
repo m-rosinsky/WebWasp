@@ -4,9 +4,9 @@ file: src/command_var.py
 This file contains the var command class.
 """
 
-import os
 import argparse
 
+from src.logger import log
 from src.command.command_interface import CommandInterface
 
 class CommandVar(CommandInterface):
@@ -98,95 +98,50 @@ class CommandVar(CommandInterface):
             return True
 
         args.func(args, console)
-
-        # TODO: Write console variables to file for persistence.
+        console.update_data()
 
         return True
-
-    def _export_var(self, name, val, console):
-        """
-        This function writes a variable name/value pair to the export
-        file.
-
-        Args:
-        name - The variable name.
-        val  - The variable value.
-        console - The console context to pull the export file name.
-
-        Returns:
-        True on success, False on failure.
-        """
-        try:
-            # Create file if doesn't exist.
-            if not os.path.exists(console.export_file):
-                with open(console.export_file, 'w', encoding='utf-8') as exp_f:
-                    pass
-                os.chmod(console.export_file, 0o666) # rw-rw-rw
-
-            # Construct entry string.
-            entry_string = f"{name}:{val}"
-
-            # Read existing data and update or add the entry.
-            updated_lines = []
-            entry_found = False
-            with open(console.export_file, 'r', encoding='utf-8') as exp_f:
-                for line in exp_f:
-                    line_name, _ = line.strip().split(':', 1)
-                    if line_name == name:
-                        updated_lines.append(entry_string)
-                        entry_found = True
-                    else:
-                        updated_lines.append(line.strip())
-
-            if not entry_found:
-                updated_lines.append(entry_string)
-
-            # Write updated data back to the file.
-            with open(console.export_file, 'w', encoding='utf-8') as exp_f:
-                for line in updated_lines:
-                    exp_f.write(line + '\n')
-
-            return True
-        except OSError as open_err:
-            print(f"{open_err}")
-            return False
 
     def _list(self, console):
         """
         This function lists all variables currently stored.
         """
-        print("Current stored variables:")
+        log("Current stored variables:", log_type='info')
         for name, value in console.vars.items():
-            print(f"   ${name} -> '{value}'")
+            log(f"   ${name} -> '{value}'")
 
     def _add(self, args, console):
         """
         This function adds a new variable.
         """
         if ':' in args.name:
-            print("[🛑] Error: var names cannot contain the ':' character")
+            log(
+                "Variable names cannot contain the ':' character",
+                log_type='error',
+            )
             return
 
         console.vars[args.name] = args.value
-        print("[🟢] Added variable:")
-        print(f"   ${args.name} -> '{args.value}")
+        log("Added variable:", log_type='info')
+        log(f"   ${args.name} -> '{args.value}'")
 
     def _remove(self, args, console):
         """
         This function removes a parameter.
         """
         if args.name not in console.vars:
-            print(f"[⚠] Variable '{args.name}' does not exist")
+            log(f"Variable '{args.name}' does not exist", log_type='error')
             return
+        
         del console.vars[args.name]
-        print("[🟢] Removed variable:")
-        print(f"   ${args.name}")
+        log("Removed variable:", log_type='info')
+        log(f"   ${args.name}")
 
     def _clear(self, args, console):
         """
         This function clears the console parameters.
         """
         console.vars = {}
-        print("[🟢] All variables cleared")
+        log("All variables cleared", log_type='info')
 
 ###   end of file   ###

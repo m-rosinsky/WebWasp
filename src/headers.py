@@ -30,14 +30,14 @@ class Headers():
         for field, value in self.auth.items():
             print(f"   {field}\t: ", end="")
             if value is None:
-                value = "''"
-            print(f"{value}")
+                value = ''
+            print(f"'{value}'")
 
         for field, value in self.fields.items():
             print(f"   {field}\t: ", end="")
             if value is None:
-                value = "''"
-            print(f"{value}")
+                value = ''
+            print(f"'{value}'")
 
     def field_valid(self, field):
         """
