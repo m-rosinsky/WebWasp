@@ -138,6 +138,7 @@ class Console:
             },
             'params': {},
             'var': {},
+            'timeout': self.timeout_s
         }
 
         # Add cookies.
@@ -201,6 +202,8 @@ class Console:
             self.params = yaml_data['params']
         if 'var' in yaml_data:
             self.vars = yaml_data['var']
+        if 'timeout' in yaml_data:
+            self.timeout_s = yaml_data['timeout']
 
     def _load_history(self):
         """
