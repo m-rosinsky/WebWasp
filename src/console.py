@@ -132,6 +132,10 @@ class Console:
             
         yaml_data = {
             'cookies': {},
+            'headers': {
+                'auth': {},
+                'fields': {},
+            },
             'params': {},
             'var': {},
         }
@@ -139,6 +143,12 @@ class Console:
         # Add cookies.
         for name, value in self.cookies.items():
             yaml_data['cookies'][name] = value
+
+        # Add headers.
+        for name, value in self.headers.auth.items():
+            yaml_data['headers']['auth'][name] = value
+        for name, value in self.headers.fields.items():
+            yaml_data['headers']['fields'][name] = value
 
         # Add parameters.
         for name, value in self.params.items():
@@ -182,6 +192,11 @@ class Console:
         # Load sections into console variables.
         if 'cookies' in yaml_data:
             self.cookies = yaml_data['cookies']
+        if 'headers' in yaml_data:
+            if 'auth' in yaml_data['headers']:
+                self.headers.auth = yaml_data['headers']['auth']
+            if 'fields' in yaml_data['headers']:
+                self.headers.fields = yaml_data['headers']['fields']
         if 'params' in yaml_data:
             self.params = yaml_data['params']
         if 'var' in yaml_data:

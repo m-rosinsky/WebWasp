@@ -98,8 +98,7 @@ class CommandHeaders(CommandInterface):
             return True
 
         args.func(args, console)
-
-        # TODO: Write console headers to file for persistence.
+        console.update_data()
 
         return True
 
