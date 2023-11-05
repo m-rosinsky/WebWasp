@@ -76,6 +76,40 @@ command_dict = {
     "cookies"   : command_cookies,
 }
 
+def _get_cmd_match(cmd):
+    """
+    Brief:
+        This function attempts to match the entered command with
+        the closest fit in the command dict.
+
+        For example, if "timeout" is the only command in the dict that
+        starts with the letter "t", then the user should be able to
+        enter "t" and this function will resolve that.
+
+    Arguments:
+        cmd: str
+            The command entered by the user
+
+    Returns:
+        String with the command on success, None on error.
+    """
+    matches = [command for command in command_dict if command.startswith(cmd)]
+
+    # If the list contains a single entry, this is a success.
+    if len(matches) == 1:
+        return matches[0]
+
+    # If the list comprehension returned multiple values, then the command
+    # was ambiguous.
+    if len(matches) > 1:
+        log(f"Ambiguous command: '{cmd}'. Potential matches:", log_type='error')
+        for match in matches:
+            log(f"   {match}")
+        return None
+    
+    # No matches were returned, so the command was invalid.
+    log(f"Error: Unknown command '{cmd}'", log_type='error')
+
 def dispatch(cmd, vars, console):
     """
     This function parses and dispatches a given command.
@@ -113,13 +147,13 @@ def dispatch(cmd, vars, console):
     if parse[0] == "quit" or parse[0] == "exit" or parse[0] == "q":
         return False
 
-    # Check if command exists.
-    if parse[0] not in command_dict:
-        log(f"Error: Unknown command '{parse[0]}'", log_type='error')
+    # Get command best fit.
+    matched_cmd = _get_cmd_match(parse[0])
+    if matched_cmd is None:
         return True
 
     # Run command.
-    command_class = command_dict.get(parse[0])
+    command_class = command_dict.get(matched_cmd)
     return command_class.run(parse, console)
 
 ###   end of file   ###

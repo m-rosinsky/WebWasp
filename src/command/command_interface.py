@@ -8,6 +8,8 @@ interface that all command classes must follow.
 import argparse
 from abc import ABC, abstractmethod
 
+from src.logger import log
+
 class CommandInterface(ABC):
     """
     This class is the command interface for all other command classes.
@@ -42,5 +44,34 @@ class CommandInterface(ABC):
         execution of the command.
         """
         return True
+    
+    def _get_cmd_match(self, cmd, l):
+        """
+        Brief:
+            This function attempts to match the entered command with
+            the closest fit in the subparser.
+
+        Arguments:
+            cmd: str
+                The subcommand entered by the user.
+
+            l: list
+                The list of possible commands.
+        """
+        matches = [c for c in l if c.startswith(cmd)]
+
+        if len(matches) == 1:
+            return matches[0]
+        
+        # If the list comprehension returned multiple values, then the command
+        # was ambiguous.
+        if len(matches) > 1:
+            log(f"Ambiguous command: '{cmd}'. Potential matches:", log_type='error')
+            for match in matches:
+                log(f"   {match}")
+            return None
+        
+        # No matches were returned, so the command was invalid.
+        return None
 
 ###   end of file   ###

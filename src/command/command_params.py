@@ -76,6 +76,16 @@ class CommandParams(CommandInterface):
         # parse the arguments.
         parse_trunc = parse[1:]
 
+        # Match the subcommand.
+        if len(parse_trunc) > 0:
+            matched_subcmd = super()._get_cmd_match(
+                parse_trunc[0],
+                self.subparser.choices.keys(),
+            )
+
+            if matched_subcmd is not None:
+                parse_trunc[0] = matched_subcmd
+
         try:
             args = self.parser.parse_args(parse_trunc)
         except argparse.ArgumentError:
