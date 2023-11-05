@@ -172,7 +172,26 @@ class Console:
         This function attempts to populate the vars member via
         the saved export file if it exists.
         """
-        return
+        # Check if the data file exists.
+        if not os.path.exists(self.data_file):
+            return
+        
+        # Read the file data.
+        file_data = ""
+        try:
+            with open(self.data_file, 'r', encoding='utf-8') as f:
+                for line in f:
+                    file_data += line
+        except OSError:
+            log("Unable to read persistent data file", log_type='error')
+            return
+        
+        # Parse the file data as YAML.
+        yaml_data = yaml.safe_load(file_data) or {}
+        
+        # Load sections into console variables.
+        if 'var' in yaml_data:
+            self.vars = yaml_data['var']
 
     def _load_history(self):
         """
