@@ -112,6 +112,9 @@ class Console:
             if not status:
                 self.is_running = False
 
+        # Save all persistent data for session.
+        self.update_data()
+
     def update_data(self):
         """
         Brief:
@@ -129,14 +132,19 @@ class Console:
             
         yaml_data = {
             'cookies': {},
+            'params': {},
             'var': {},
         }
 
-        # Add the cookies.
+        # Add cookies.
         for name, value in self.cookies.items():
             yaml_data['cookies'][name] = value
 
-        # Add the console variables.
+        # Add parameters.
+        for name, value in self.params.items():
+            yaml_data['params'][name] = value
+
+        # Add variables.
         for name, value in self.vars.items():
             yaml_data['var'][name] = value
 
@@ -174,6 +182,8 @@ class Console:
         # Load sections into console variables.
         if 'cookies' in yaml_data:
             self.cookies = yaml_data['cookies']
+        if 'params' in yaml_data:
+            self.params = yaml_data['params']
         if 'var' in yaml_data:
             self.vars = yaml_data['var']
 

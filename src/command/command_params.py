@@ -91,8 +91,7 @@ class CommandParams(CommandInterface):
             return True
 
         args.func(args, console)
-
-        # TODO: Write console params to file for persistence.
+        console.update_data()
 
         return True
 
