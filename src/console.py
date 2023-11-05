@@ -45,14 +45,6 @@ class Console:
         self.cmd = ""
         self.saved_cmd = ""
 
-        # Attempt to load exported variables.
-        self.data_file = os.path.expanduser("~/.wwdata")
-        self._load_data()
-
-        # Attempt to load history.
-        self.history_file = os.path.expanduser("~/.wwhistory")
-        self._load_history()
-
         # This class holds the most recent response information.
         self.response = Response()
         self.has_response = False
@@ -68,6 +60,14 @@ class Console:
 
         # This holds the request headers.
         self.headers = Headers()
+
+        # Attempt to load exported variables.
+        self.data_file = os.path.expanduser("~/.wwdata")
+        self._load_data()
+
+        # Attempt to load history.
+        self.history_file = os.path.expanduser("~/.wwhistory")
+        self._load_history()
 
     def run(self):
         """
@@ -128,60 +128,17 @@ class Console:
                 return
             
         yaml_data = {
+            'cookies': {},
             'var': {},
         }
+
+        # Add the cookies.
+        for name, value in self.cookies.items():
+            yaml_data['cookies'][name] = value
 
         # Add the console variables.
         for name, value in self.vars.items():
             yaml_data['var'][name] = value
-
-        # Dump the contents back to the data file.
-        try:
-            with open(self.data_file, 'w', encoding='utf-8') as f:
-                yaml.dump(yaml_data, f, default_flow_style=False)
-        except (OSError, yaml.YAMLError, AttributeError):
-            log("Unable to write to persistent data file", log_type='error')
-            return
-
-    def remove_data(self, data_type, key):
-        """
-        Brief:
-            This function removes an entry from the persistent data file.
-
-        Arguments:
-            data_type: str
-                The type of data being added. This helps determine
-                the section to put the data into.
-
-            key: str
-                The key for the data.
-        """
-        # Check if the data file exists.
-        if not os.path.exists(self.data_file):
-            return
-        
-        # Read the file data.
-        file_data = ""
-        try:
-            with open(self.data_file, 'r', encoding='utf-8') as f:
-                for line in f:
-                    file_data += line
-        except OSError:
-            log("Unable to read persistent data file", log_type='error')
-            return
-
-        # Parse the file data as YAML.
-        yaml_data = yaml.safe_load(file_data) or {}
-
-        # If the section does not exist, return.
-        if not data_type in yaml_data:
-            return
-        
-        # If the key does not exist, return.
-        if not key in yaml_data[data_type]:
-            return
-        
-        del yaml_data[data_type][key]
 
         # Dump the contents back to the data file.
         try:
@@ -215,6 +172,8 @@ class Console:
         yaml_data = yaml.safe_load(file_data) or {}
         
         # Load sections into console variables.
+        if 'cookies' in yaml_data:
+            self.cookies = yaml_data['cookies']
         if 'var' in yaml_data:
             self.vars = yaml_data['var']
 

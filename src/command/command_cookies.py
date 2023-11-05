@@ -91,8 +91,7 @@ class CommandCookies(CommandInterface):
             return True
 
         args.func(args, console)
-
-        # TODO: Write console cookies to file for persistence.
+        console.update_data()
 
         return True
 
@@ -110,7 +109,7 @@ class CommandCookies(CommandInterface):
         """
         console.cookies[args.name] = args.value
         log("Added cookie:", log_type='cookie')
-        log(f"'{args.name}' : '{args.value}'")
+        log(f"   '{args.name}' : '{args.value}'")
 
     def _remove(self, args, console):
         """
@@ -120,8 +119,8 @@ class CommandCookies(CommandInterface):
             log(f"Unknown cookie: '{args.name}'", log_type='error')
             return
         del console.cookies[args.name]
-        log("Removed cookie", log_type='cookie')
-        log(f"'{args.name}'")
+        log("Removed cookie:", log_type='cookie')
+        log(f"   '{args.name}'")
 
     def _clear(self, args, console):
         """
