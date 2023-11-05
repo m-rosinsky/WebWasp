@@ -7,6 +7,7 @@ It is responsible for parsing and dispatching a command to
 its respective module for handling.
 """
 
+from src.logger import log
 from src.command.command_get import CommandGet
 from src.command.command_var import CommandVar
 from src.command.command_clear import CommandClear
@@ -33,23 +34,23 @@ class CommandHelp(CommandInterface):
         parse_len = len(parse)
         # Check usage.
         if parse_len != 1:
-            print("[🛑] Error: Invalid arguments")
-            print("Run any command with '-h' option for more specific help")
+            log("Error: Invalid arguments", log_type='error')
+            log("Run any command with '-h' option for more specific help")
             return True
 
         # Get generalized help.
         for _, obj in command_dict.items():
             if obj.parser is not None:
-                print(f"{obj.name}", end="")
+                log(f"{obj.name}", end="")
 
                 # Determine number of tabs so all indents are aligned.
                 num_tabs = 1 if len(obj.name) >= 8 else 2
                 for _ in range(num_tabs):
-                    print("\t", end="")
+                    log("\t", end="")
 
-                print(f"{obj.parser.description}")
+                log(f"{obj.parser.description}")
 
-        print("\nRun any command with '-h' option for more specific help")
+        log("\nRun any command with '-h' option for more specific help")
         return True
 
 # This defines the global mapping of command names to their respective classes.
@@ -101,7 +102,7 @@ def dispatch(cmd, vars, console):
             name = token[1:]
             val = console.vars.get(name)
             if not val:
-                print(f"[🛑] Error: Unknown variable: {name}")
+                log(f"Error: Unknown variable: {name}", log_type='error')
                 return True
             
             # Perform replacement.
@@ -114,7 +115,7 @@ def dispatch(cmd, vars, console):
 
     # Check if command exists.
     if parse[0] not in command_dict:
-        print(f"[🛑] Error: Unknown command '{parse[0]}'")
+        log(f"Error: Unknown command '{parse[0]}'", log_type='error')
         return True
 
     # Run command.

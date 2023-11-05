@@ -6,6 +6,7 @@ This file contains the params command class.
 
 import argparse
 
+from src.logger import log
 from src.command.command_interface import CommandInterface
 
 class CommandParams(CommandInterface):
@@ -99,34 +100,34 @@ class CommandParams(CommandInterface):
         """
         This function lists all parameters currently stored.
         """
-        print("Current stored parameters:")
+        log("Current stored parameters:", log_type='info')
         for name, value in console.params.items():
-            print(f"   '{name}' : '{value}'")
+            log(f"   '{name}' : '{value}'")
 
     def _add(self, args, console):
         """
         This function adds a new parameter.
         """
         console.params[args.name] = args.value
-        print("Added param:\n   ", end="")
-        print(f"'{args.name}' : '{args.value}'")
+        log("Added param:", log_type='info')
+        log(f"   '{args.name}' : '{args.value}'")
 
     def _remove(self, args, console):
         """
         This function removes a parameter.
         """
         if args.name not in console.params:
-            print(f"Unknown parameter: '{args.name}'")
+            log(f"Unknown parameter: '{args.name}'", log_type='error')
             return
         del console.params[args.name]
-        print("Removed param\n   ", end="")
-        print(f"'{args.name}'")
+        log("Removed param", log_type='info')
+        log(f"   '{args.name}'")
 
     def _clear(self, args, console):
         """
         This function clears the console parameters.
         """
         console.params = {}
-        print("Stored parameters cleared")
+        log("Stored parameters cleared", log_type='info')
 
 ###   end of file   ###

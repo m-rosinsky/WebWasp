@@ -9,6 +9,7 @@ import argparse
 import datetime
 import requests
 
+from src.logger import log
 from src.command.command_interface import CommandInterface
 
 class CommandGet(CommandInterface):
@@ -80,7 +81,10 @@ class CommandGet(CommandInterface):
             cookies = {}
 
         # Inform the user the full URL.
-        print(f"[🐝] Sending GET request to \033[36m{prep.url}\033[0m...")
+        log(
+            f"Sending GET request to \033[36m{prep.url}\033[0m...",
+            log_type='info',
+        )
 
         # Construct the headers dictionary with only fields are are not None
         # in the console's headers object.
@@ -114,7 +118,7 @@ class CommandGet(CommandInterface):
             return True
 
         # Print the status code.
-        print("[🐝] GET request completed. Status code: ", end="")
+        log("GET request completed. Status code: ", log_type='info', end='')
 
         if req.status_code >= 200 and req.status_code < 300:
             print("\033[32m", end="")
@@ -136,7 +140,10 @@ class CommandGet(CommandInterface):
         # Set the console flag to indicate a response has been captured,
         # and report.
         console.has_response = True
-        print("[🐝] Response captured! Type 'response show' for summary")
+        log(
+            "Response captured! Type 'response show' for summary",
+            log_type='info',
+        )
 
         return True
 

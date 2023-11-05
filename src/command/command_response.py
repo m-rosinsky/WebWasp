@@ -6,6 +6,7 @@ This file contains the response command class.
 
 import argparse
 
+from src.logger import log
 from src.command.command_interface import CommandInterface
 
 class CommandResponse(CommandInterface):
@@ -83,7 +84,7 @@ class CommandResponse(CommandInterface):
             return True
 
         if not console.has_response:
-            print("[🐝] No response captured")
+            log("No response captured", log_type='warning')
             return True
 
         args.func(args, console)
@@ -100,9 +101,9 @@ class CommandResponse(CommandInterface):
 
     def _show_summary(self, console):
         console.response.print_summary()
-        print("\nRe-run 'response show' with '-t' option to show response text")
+        log("\nRe-run 'response show' with '-t' option to show response text")
 
     def _report(self, args, console):
-        print("report")
+        log("report")
 
 ###   end of file   ###
