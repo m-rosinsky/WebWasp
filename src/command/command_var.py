@@ -83,6 +83,7 @@ class CommandVar(CommandInterface):
         # parse the arguments.
         parse_trunc = parse[1:]
 
+        # Match the subcommand.
         if len(parse_trunc) > 0:
             matched_subcmd = super()._get_cmd_match(
                 parse_trunc[0],
