@@ -6,6 +6,7 @@ This file contains the headers command class.
 
 import argparse
 
+from src.logger import log
 from src.command.command_interface import CommandInterface
 
 class CommandHeaders(CommandInterface):
@@ -23,7 +24,7 @@ class CommandHeaders(CommandInterface):
         # Create argument parser and help.
         self.parser = argparse.ArgumentParser(
             prog=self.name,
-            description="Set and unset custom HTTP 1.1 headers",
+            description='Set and unset custom HTTP 1.1 headers',
             add_help=False
         )
         super().add_help(self.parser)
@@ -33,44 +34,44 @@ class CommandHeaders(CommandInterface):
 
         # Create the headers set command subparser.
         self.parser_set = self.subparser.add_parser(
-            "set",
-            description="Set the value for a header field",
-            help="Set the value for a header field",
+            'set',
+            description='Set the value for a header field',
+            help='Set the value for a header field',
             add_help=False
         )
         super().add_help(self.parser_set)
         self.parser_set.set_defaults(func=self._set)
         self.parser_set.add_argument(
-            "field",
+            'field',
             type=str,
-            help="The header field to set"
+            help='The header field to set'
         )
         self.parser_set.add_argument(
-            "value",
+            'value',
             type=str,
-            help="The header field value"
+            help='The header field value'
         )
 
         # Create the headers unset command subparser.
         self.parser_unset = self.subparser.add_parser(
-            "unset",
-            description="Unset the value for a header field",
-            help="Unset the value for a header field",
+            'unset',
+            description='Unset the value for a header field',
+            help='Unset the value for a header field',
             add_help=False
         )
         super().add_help(self.parser_unset)
         self.parser_unset.set_defaults(func=self._unset)
         self.parser_unset.add_argument(
-            "field",
+            'field',
             type=str,
-            help="The header field to unset"
+            help='The header field to unset'
         )
 
         # Create the headers clear command subparser.
         self.parser_clear = self.subparser.add_parser(
-            "clear",
-            description="Unset all header field values",
-            help="Unset all header field values",
+            'clear',
+            description='Unset all header field values',
+            help='Unset all header field values',
             add_help=False
         )
         super().add_help(self.parser_clear)
@@ -92,7 +93,7 @@ class CommandHeaders(CommandInterface):
             return True
 
         # If no subcommand was specified, show list.
-        if not hasattr(args, "func"):
+        if not hasattr(args, 'func'):
             self._list(console)
             return True
 
@@ -106,7 +107,7 @@ class CommandHeaders(CommandInterface):
         """
         This function lists all headers currently stored.
         """
-        print("Current header fields:")
+        log("Current header fields:", log_type='info')
         console.headers.print_fields()
 
     def _set(self, args, console):
@@ -114,30 +115,33 @@ class CommandHeaders(CommandInterface):
         This function sets a header field to a specified value.
         """
         if not console.headers.field_valid(args.field):
-            print(f"Invalid header field: '{args.field}'")
-            print("Run 'headers' to see list of valid fields")
+            log(f"Invalid header field: '{args.field}'", log_type='error')
+            log("Run 'headers' to see list of valid fields")
             return
 
         console.headers.set_field(args.field, args.value)
-        print(f"Set header field:\n   {args.field} : '{args.value}'")
+        log(
+            f"Set header field:\n   {args.field} : '{args.value}'",
+            log_type='info',
+        )
 
     def _unset(self, args, console):
         """
         This function unsets a header field.
         """
         if not console.headers.field_valid(args.field):
-            print(f"Invalid header field: '{args.field}'")
-            print("Run 'headers' to see list of valid fields")
+            log(f"Invalid header field: '{args.field}'", log_type='error')
+            log("Run 'headers' to see list of valid fields")
             return
 
         console.headers.set_field(args.field, None)
-        print(f"Unset header field:\n   {args.field}")
+        log(f"Unset header field:\n   {args.field}", log_type='info')
 
     def _clear(self, args, console):
         """
         This function unsets all header fields.
         """
         console.headers.clear_fields()
-        print("Cleared all header fields")
+        log("Cleared all header fields", log_type='info')
 
 ###   end of file   ###

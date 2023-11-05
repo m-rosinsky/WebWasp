@@ -6,6 +6,7 @@ This file contains the cookies command class.
 
 import argparse
 
+from src.logger import log
 from src.command.command_interface import CommandInterface
 
 class CommandCookies(CommandInterface):
@@ -19,7 +20,7 @@ class CommandCookies(CommandInterface):
         # Create argument parser and help.
         self.parser = argparse.ArgumentParser(
             prog=self.name,
-            description="Modify the cookies for requests",
+            description='Modify the cookies for requests',
             add_help=False
         )
         super().add_help(self.parser)
@@ -29,42 +30,42 @@ class CommandCookies(CommandInterface):
 
         # Create the cookies add command subparser.
         self.parser_add = self.subparser.add_parser(
-            "add",
-            description="Add a cookie",
-            help="Add a cookie",
+            'add',
+            description='Add a cookie',
+            help='Add a cookie',
             add_help=False
         )
         self.parser_add.set_defaults(func=self._add)
         self.parser_add.add_argument(
-            "name",
+            'name',
             type=str,
-            help="The name of the new cookie"
+            help='The name of the new cookie'
         )
         self.parser_add.add_argument(
-            "value",
+            'value',
             type=str,
-            help="The value of the new cookie"
+            help='The value of the new cookie'
         )
 
         # Create the params remove command subparser.
         self.parser_remove = self.subparser.add_parser(
-            "remove",
-            description="Remove a cookie",
-            help="Remove a cookie",
+            'remove',
+            description='Remove a cookie',
+            help='Remove a cookie',
             add_help=False
         )
         self.parser_remove.set_defaults(func=self._remove)
         self.parser_remove.add_argument(
-            "name",
+            'name',
             type=str,
-            help="The name of the cookie to remove"
+            help='The name of the cookie to remove'
         )
 
         # Create the params clear command subparser.
         self.parser_clear = self.subparser.add_parser(
-            "clear",
-            description="Remove all cookies",
-            help="Remove all cookies",
+            'clear',
+            description='Remove all cookies',
+            help='Remove all cookies',
             add_help=False
         )
         self.parser_clear.set_defaults(func=self._clear)
@@ -85,7 +86,7 @@ class CommandCookies(CommandInterface):
             return True
 
         # If no subcommand was specified, show list.
-        if not hasattr(args, "func"):
+        if not hasattr(args, 'func'):
             self._list(console)
             return True
 
@@ -99,7 +100,7 @@ class CommandCookies(CommandInterface):
         """
         This function lists all cookies currently stored.
         """
-        print("Current stored cookies:")
+        log("Current stored cookies:", log_type='cookie')
         for name, value in console.cookies.items():
             print(f"   '{name}' : '{value}'")
 
@@ -108,25 +109,25 @@ class CommandCookies(CommandInterface):
         This function adds a new cookie.
         """
         console.cookies[args.name] = args.value
-        print("Added cookie:\n   ", end="")
-        print(f"'{args.name}' : '{args.value}'")
+        log("Added cookie:", log_type='cookie')
+        log(f"'{args.name}' : '{args.value}'")
 
     def _remove(self, args, console):
         """
         This function removes a cookie.
         """
         if args.name not in console.cookies:
-            print(f"Unknown cookie: '{args.name}'")
+            log(f"Unknown cookie: '{args.name}'", log_type='error')
             return
         del console.cookies[args.name]
-        print("Removed cookie\n   ", end="")
-        print(f"'{args.name}'")
+        log("Removed cookie", log_type='cookie')
+        log(f"'{args.name}'")
 
     def _clear(self, args, console):
         """
         This function clears the console cookies.
         """
         console.cookies = {}
-        print("Stored cookies cleared")
+        log("Stored cookies cleared", log_type='cookie')
 
 ###   end of file   ###
