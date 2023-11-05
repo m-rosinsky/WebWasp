@@ -7,7 +7,9 @@ This file contains the class definitions for the console suite.
 import os
 import sys
 import getch
+
 from src import dispatch
+from src.logger import log
 from src.response import Response
 from src.headers import Headers
 
@@ -45,6 +47,10 @@ class Console:
         # Attempt to load exported variables.
         self.export_file = "/tmp/.wwvars"
         self._load_vars()
+
+        # Attempt to load history.
+        self.history_file = os.path.expanduser("~/.wwhistory")
+        self._load_history()
 
         # This class holds the most recent response information.
         self.response = Response()
@@ -84,6 +90,20 @@ class Console:
             self.history.insert(0, cmd)
             if len(self.history) > self.max_history_len:
                 self.history.pop()
+            
+            # Add input to persistent file.
+            try:
+                if not os.path.exists(self.history_file):
+                    with open(self.history_file, 'w', encoding='utf-8') as f:
+                        f.write(cmd + "\n")
+                else:
+                    with open(self.history_file, 'a', encoding='utf-8') as f:
+                        f.write(cmd + "\n")
+            except OSError:
+                log(
+                    "Unable to store session command history",
+                    log_type='warning',
+                )
 
             # Handle command.
             status = dispatch.dispatch(cmd, self.vars, self)
@@ -127,7 +147,30 @@ class Console:
             print("[🛑] Error: Could not import saved variables.")
             print(imp_err)
 
-        return
+    def _load_history(self):
+        """
+        This function attempt to read the history command file
+        in order to restore history from previous sessions.
+        """
+        try:
+            if not os.path.exists(self.history_file):
+                return
+
+            # Open file and read in data.
+            with open(self.history_file, 'r', encoding='utf-8') as f:
+                for line in f:
+                    self.history.insert(0, line.strip())
+                    if len(self.history) > self.max_history_len:
+                        self.history.pop()
+
+        except OSError as imp_err:
+            log(
+                "Warning: Could not restore session history",
+                log_type='warning',
+            )
+            log(f"   {imp_err}")
+
+        log("Restored previous session history", log_type='success')
 
     def _prompt(self):
         """
