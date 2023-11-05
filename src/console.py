@@ -5,8 +5,9 @@ This file contains the class definitions for the console suite.
 """
 
 import os
-import sys
 import getch
+import sys
+import yaml
 
 from src import dispatch
 from src.logger import log
@@ -45,8 +46,8 @@ class Console:
         self.saved_cmd = ""
 
         # Attempt to load exported variables.
-        self.export_file = "/tmp/.wwvars"
-        self._load_vars()
+        self.data_file = os.path.expanduser("~/.wwdata")
+        self._load_data()
 
         # Attempt to load history.
         self.history_file = os.path.expanduser("~/.wwhistory")
@@ -111,41 +112,67 @@ class Console:
             if not status:
                 self.is_running = False
 
+    def add_data(self, data_type, key, value):
+        """
+        Brief:
+            This function adds data to the persistent data file.
+
+        Arguments:
+            data_type: str,
+                The type of data being added. This helps determine
+                the section to put the data into.
+
+            key: str,
+                The key for the data.
+
+            value: str,
+                The value for the data.
+
+        Returns:
+            None
+        """
+        # Check if the persistent data file does not exist.
+        if not os.path.exists(self.data_file):
+            try:
+                with open(self.data_file, 'w+', encoding='utf-8') as f:
+                    pass
+            except OSError:
+                log("Unable to create persistent data file", log_type='error')
+                return
+            
+        # Read the file data.
+        file_data = ""
+        try:
+            with open(self.data_file, 'r', encoding='utf-8') as f:
+                for line in f:
+                    file_data += line
+        except OSError:
+            log("Unable to read persistent data file", log_type='error')
+            return
+        
+        # Parse the file data as YAML.
+        yaml_data = yaml.safe_load(file_data) or {}
+        if not data_type in yaml_data:
+            yaml_data[data_type] = {}
+
+        # Add the key-value pair to the data.
+        yaml_data[data_type][key] = value
+
+        # Dump the contents back to the data file.
+        try:
+            with open(self.data_file, 'w', encoding='utf-8') as f:
+                yaml.dump(yaml_data, f, default_flow_style=False)
+        except (OSError, yaml.YAMLError, AttributeError):
+            log("Unable to write to persistent data file", log_type='error')
+            return
+
     # Private member functions.
-    def _load_vars(self):
+    def _load_data(self):
         """
         This function attempts to populate the vars member via
         the saved export file if it exists.
         """
-        # Test if the file exists.
-        try:
-            if not os.path.exists(self.export_file):
-                return
-
-            # Open file and read in data.
-            raw_file_data = []
-            with open(self.export_file, 'r', encoding='utf-8') as ef:
-                for line in ef:
-                    raw_file_data.append(line.strip().split(':'))
-
-            # Parse each line.
-            data_valid = True
-            for entry in raw_file_data:
-                if len(entry) != 2:
-                    data_valid = False
-                    break
-                
-                # Populate variable table.
-                self.vars[entry[0]] = entry[1]
-
-            # If the data was invalid, overwrite the export file.
-            if not data_valid:
-                print("[🚧] Warning: Export file data was corrupted, blanking...")
-                with open(self.export_file, 'w', encoding='utf-8') as ef:
-                    pass
-        except OSError as imp_err:
-            print("[🛑] Error: Could not import saved variables.")
-            print(imp_err)
+        return
 
     def _load_history(self):
         """

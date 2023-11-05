@@ -1,3 +1,4 @@
 getch
 requests
 emoji
+pyyaml
