@@ -9,7 +9,6 @@ import argparse
 import datetime
 import requests
 
-from src.logger import log
 from src.command.command_interface import CommandInterface
 
 class CommandGet(CommandInterface):
@@ -23,26 +22,26 @@ class CommandGet(CommandInterface):
         # Create argument parser and help.
         self.parser = argparse.ArgumentParser(
             prog=self.name,
-            description='Send an HTTP 1.1 GET request to a server/url',
+            description="Send an HTTP 1.1 GET request to a server/url",
             add_help=False
         )
         super().add_help(self.parser)
 
         # Add argparse args.
         self.parser.add_argument(
-            'url',
+            "url",
             type=str,
-            help='The url to make a request to'
+            help="The url to make a request to"
         )
         self.parser.add_argument(
-            '--no-params',
-            action='store_true',
-            help='Perform request without stored parameters in url'
+            "--no-params",
+            action="store_true",
+            help="Perform request without stored parameters in url"
         )
         self.parser.add_argument(
-            '--no-cookies',
-            action='store_true',
-            help='Perform request without stored cookies'
+            "--no-cookies",
+            action="store_true",
+            help="Perform request without stored cookies"
         )
 
     def run(self, parse, console):
@@ -64,8 +63,8 @@ class CommandGet(CommandInterface):
         url = args.url
 
         # Add "http://" onto from of URL if no scheme is supplied.
-        if not url.startswith('http://') and not url.startswith('https://'):
-            url = 'http://' + url
+        if not url.startswith("http://") and not url.startswith("https://"):
+            url = "http://" + url
 
         # If the --no-params flag was specified, unset params.
         params = console.params
@@ -73,7 +72,7 @@ class CommandGet(CommandInterface):
             params = {}
 
         # Prepare the full URL.
-        prep = requests.Request('GET', url, params=params).prepare()
+        prep = requests.Request("GET", url, params=params).prepare()
 
         # If the --no-cookies flag was specified, unset cookies.
         cookies = console.cookies
@@ -81,10 +80,7 @@ class CommandGet(CommandInterface):
             cookies = {}
 
         # Inform the user the full URL.
-        log(
-            f"Sending GET request to \033[36m{prep.url}\033[0m...",
-            log_type='info',
-        )
+        print(f"[🐝] Sending GET request to \033[36m{prep.url}\033[0m...")
 
         # Construct the headers dictionary with only fields are are not None
         # in the console's headers object.
@@ -95,8 +91,8 @@ class CommandGet(CommandInterface):
 
         # Construct the auth dictionary.
         auth = None
-        if console.headers.auth['auth-user'] is not None:
-            auth = (console.headers.auth['auth-user'], console.headers.auth['auth-pass'])
+        if console.headers.auth["auth-user"] is not None:
+            auth = (console.headers.auth["auth-user"], console.headers.auth["auth-pass"])
 
         # Perform get request from request lib.
         req = None
@@ -118,7 +114,7 @@ class CommandGet(CommandInterface):
             return True
 
         # Print the status code.
-        log("GET request completed. Status code: ", log_type='info', end='')
+        print("[🐝] GET request completed. Status code: ", end="")
 
         if req.status_code >= 200 and req.status_code < 300:
             print("\033[32m", end="")
@@ -140,10 +136,7 @@ class CommandGet(CommandInterface):
         # Set the console flag to indicate a response has been captured,
         # and report.
         console.has_response = True
-        log(
-            "Response captured! Type 'response show' for summary",
-            log_type='info',
-        )
+        print("[🐝] Response captured! Type 'response show' for summary")
 
         return True
 

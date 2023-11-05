@@ -8,8 +8,6 @@ to store the most recent response.
 import http
 import requests
 
-from src.logger import log
-
 class Response:
     """
     This class contains the information from the most recent response.
@@ -33,35 +31,35 @@ class Response:
         This function prints a summary of the latest response, if one
         exists.
         """
-        # Check if we are missing a response.
+        # If date_time is None, a response has not been generated.
         if not self.req:
-            log("No response captured", log_type='warning')
+            print("[🐝] No response captured")
             return
 
-        log("Summary of captured response:\n", log_type='error')
+        print("[🐝] Summary of captured response:\n")
 
         # Print the response url.
-        log("Response url:", end="\n   ")
-        log(f"\033[36m{self.req.url}\033[0m")
+        print("Response url:", end="\n   ")
+        print(f"\033[36m{self.req.url}\033[0m")
 
         # Print date_time in mm/dd/yyyy   hh/mm/ss format.
-        log("Response date/time:", end="\n   ")
-        log(self.date_time.strftime("%m/%d/%Y   %H:%M:%S"))
+        print("Response date/time:", end="\n   ")
+        print(self.date_time.strftime("%m/%d/%Y   %H:%M:%S"))
 
         # Print the status code with color formatting.
-        log("Status code:", end="\n   ")
+        print("Status code:", end="\n   ")
         if self.req.status_code >= 200 and self.req.status_code < 300:
-            log(f"\033[32m", end="")
+            print(f"\033[32m", end="")
         elif self.req.status_code >= 300 and self.req.status_code < 400:
-            log(f"\033[33m", end="")
+            print(f"\033[33m", end="")
         elif self.req.status_code >= 400 and self.req.status_code < 500:
-            log(f"\033[31m", end="")
+            print(f"\033[31m", end="")
         else:
-            log(f"\033[0m", end="")
-        log(f"{self.req.status_code} ", end="")
+            print(f"\033[0m", end="")
+        print(f"{self.req.status_code} ", end="")
 
         http_code = http.HTTPStatus(self.req.status_code)
-        log(f"\033[0m({http_code.phrase})")
+        print(f"\033[0m({http_code.phrase})")
     
     def print_cookies(self):
         """
@@ -69,12 +67,12 @@ class Response:
         to the console.
         """
         if not self.req:
-            log("No response captured", log_type='warning')
+            print("[🐝] No response captured")
             return
         
-        log("Response cookies:", log_type='info')
+        print("[🐝] Response cookies:")
 
         for cookie, value in self.req.cookies.items():
-            log(f"   {cookie}\t: {value}")
+            print(f"   {cookie}\t: {value}")
 
 ###   end of file   ###

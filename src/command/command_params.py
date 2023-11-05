@@ -6,7 +6,6 @@ This file contains the params command class.
 
 import argparse
 
-from src.logger import log
 from src.command.command_interface import CommandInterface
 
 class CommandParams(CommandInterface):
@@ -20,7 +19,7 @@ class CommandParams(CommandInterface):
         # Create argument parser and help.
         self.parser = argparse.ArgumentParser(
             prog=self.name,
-            description='Modify the url parameters for requests',
+            description="Modify the url parameters for requests",
             add_help=False
         )
         super().add_help(self.parser)
@@ -30,42 +29,42 @@ class CommandParams(CommandInterface):
 
         # Create the params add command subparser.
         self.parser_add = self.subparser.add_parser(
-            'add',
-            description='Add a parameter',
-            help='Add a parameter',
+            "add",
+            description="Add a parameter",
+            help="Add a parameter",
             add_help=False
         )
         self.parser_add.set_defaults(func=self._add)
         self.parser_add.add_argument(
-            'name',
+            "name",
             type=str,
-            help='The name of the new param'
+            help="The name of the new param"
         )
         self.parser_add.add_argument(
-            'value',
+            "value",
             type=str,
-            help='The value of the new param'
+            help="The value of the new param"
         )
 
         # Create the params remove command subparser.
         self.parser_remove = self.subparser.add_parser(
-            'remove',
-            description='Remove a parameter',
-            help='Remove a parameter',
+            "remove",
+            description="Remove a parameter",
+            help="Remove a parameter",
             add_help=False
         )
         self.parser_remove.set_defaults(func=self._remove)
         self.parser_remove.add_argument(
-            'name',
+            "name",
             type=str,
-            help='The name of the param to remove'
+            help="The name of the param to remove"
         )
 
         # Create the params clear command subparser.
         self.parser_clear = self.subparser.add_parser(
-            'clear',
-            description='Remove all parameters',
-            help='Remove all parameters',
+            "clear",
+            description="Remove all parameters",
+            help="Remove all parameters",
             add_help=False
         )
         self.parser_clear.set_defaults(func=self._clear)
@@ -86,7 +85,7 @@ class CommandParams(CommandInterface):
             return True
 
         # If no subcommand was specified, show list.
-        if not hasattr(args, 'func'):
+        if not hasattr(args, "func"):
             self._list(console)
             return True
 
@@ -100,34 +99,34 @@ class CommandParams(CommandInterface):
         """
         This function lists all parameters currently stored.
         """
-        log("Current stored parameters:", log_type='info')
+        print("Current stored parameters:")
         for name, value in console.params.items():
-            log(f"   '{name}' : '{value}'")
+            print(f"   '{name}' : '{value}'")
 
     def _add(self, args, console):
         """
         This function adds a new parameter.
         """
         console.params[args.name] = args.value
-        log("Added param:", log_type='info')
-        log(f"   '{args.name}' : '{args.value}'")
+        print("Added param:\n   ", end="")
+        print(f"'{args.name}' : '{args.value}'")
 
     def _remove(self, args, console):
         """
         This function removes a parameter.
         """
         if args.name not in console.params:
-            log(f"Unknown parameter: '{args.name}'", log_type='error')
+            print(f"Unknown parameter: '{args.name}'")
             return
         del console.params[args.name]
-        log("Removed param", log_type='info')
-        log(f"   '{args.name}'")
+        print("Removed param\n   ", end="")
+        print(f"'{args.name}'")
 
     def _clear(self, args, console):
         """
         This function clears the console parameters.
         """
         console.params = {}
-        log("Stored parameters cleared", log_type='info')
+        print("Stored parameters cleared")
 
 ###   end of file   ###

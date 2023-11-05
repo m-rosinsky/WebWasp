@@ -19,7 +19,7 @@ class CommandClear(CommandInterface):
         # Create argument parser.
         self.parser = argparse.ArgumentParser(
             prog=self.name,
-            description='Clear the screen',
+            description="Clear the screen",
             add_help=False
         )
         super().add_help(self.parser)

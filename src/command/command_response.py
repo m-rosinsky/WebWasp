@@ -6,7 +6,6 @@ This file contains the response command class.
 
 import argparse
 
-from src.logger import log
 from src.command.command_interface import CommandInterface
 
 class CommandResponse(CommandInterface):
@@ -20,7 +19,7 @@ class CommandResponse(CommandInterface):
         # Create argument parser and help.
         self.parser = argparse.ArgumentParser(
             prog=self.name,
-            description='Interact with the most recent response',
+            description="Interact with the most recent response",
             add_help=False
         )
         super().add_help(self.parser)
@@ -30,36 +29,36 @@ class CommandResponse(CommandInterface):
 
         # Create the response show command subparser.
         self.parser_show = self.subparser.add_parser(
-            'show',
-            description='Show the most recent response',
-            help='Show the most recent response',
+            "show",
+            description="Show the most recent response",
+            help="Show the most recent response",
             add_help=False
         )
         self.parser_show.set_defaults(func=self._show)
         self.parser_show.add_argument(
-            '-h',
-            '--help',
-            action='help',
+            "-h",
+            "--help",
+            action="help",
             default=argparse.SUPPRESS,
-            help='show this help message'
+            help="show this help message"
         )
         self.parser_show.add_argument(
-            '-t',
-            '--text',
-            action='store_true',
-            help='show the text of the response'
+            "-t",
+            "--text",
+            action="store_true",
+            help="show the text of the response"
         )
         self.parser_show.add_argument(
-            '-c',
-            '--cookies',
-            action='store_true',
-            help='show the cookies of the response'
+            "-c",
+            "--cookies",
+            action="store_true",
+            help="show the cookies of the response"
         )
 
         # Create the response report command subparser.
         self.parser_report = self.subparser.add_parser(
-            'report',
-            help='Generate a report of the last response'
+            "report",
+            help="Generate a report of the last response"
         )
         self.parser_report.set_defaults(func=self._report)
 
@@ -79,12 +78,12 @@ class CommandResponse(CommandInterface):
             return True
 
         # If no subcommand was specified, show help.
-        if not hasattr(args, 'func'):
+        if not hasattr(args, "func"):
             self.parser.print_help()
             return True
 
         if not console.has_response:
-            log("No response captured", log_type='warning')
+            print("[🐝] No response captured")
             return True
 
         args.func(args, console)
@@ -101,9 +100,9 @@ class CommandResponse(CommandInterface):
 
     def _show_summary(self, console):
         console.response.print_summary()
-        log("\nRe-run 'response show' with '-t' option to show response text")
+        print("\nRe-run 'response show' with '-t' option to show response text")
 
     def _report(self, args, console):
-        log("report")
+        print("report")
 
 ###   end of file   ###

@@ -1,3 +1,2 @@
 getch
 requests
-emoji

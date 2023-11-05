@@ -7,7 +7,6 @@ It is responsible for parsing and dispatching a command to
 its respective module for handling.
 """
 
-from src.logger import log
 from src.command.command_get import CommandGet
 from src.command.command_var import CommandVar
 from src.command.command_clear import CommandClear
@@ -34,23 +33,23 @@ class CommandHelp(CommandInterface):
         parse_len = len(parse)
         # Check usage.
         if parse_len != 1:
-            log("Error: Invalid arguments", log_type='error')
-            log("Run any command with '-h' option for more specific help")
+            print("[🛑] Error: Invalid arguments")
+            print("Run any command with '-h' option for more specific help")
             return True
 
         # Get generalized help.
         for _, obj in command_dict.items():
             if obj.parser is not None:
-                log(f"{obj.name}", end="")
+                print(f"{obj.name}", end="")
 
                 # Determine number of tabs so all indents are aligned.
                 num_tabs = 1 if len(obj.name) >= 8 else 2
                 for _ in range(num_tabs):
-                    log("\t", end="")
+                    print("\t", end="")
 
-                log(f"{obj.parser.description}")
+                print(f"{obj.parser.description}")
 
-        log("\nRun any command with '-h' option for more specific help")
+        print("\nRun any command with '-h' option for more specific help")
         return True
 
 # This defines the global mapping of command names to their respective classes.
@@ -97,12 +96,12 @@ def dispatch(cmd, vars, console):
     # Resolve variable names.
     for i in range(len(parse)):
         token = parse[i]
-        if token[0] == '$':
+        if token[0] == "$":
             # Look up variable in console.
             name = token[1:]
             val = console.vars.get(name)
             if not val:
-                log(f"Error: Unknown variable: {name}", log_type='error')
+                print(f"[🛑] Error: Unknown variable: {name}")
                 return True
             
             # Perform replacement.
@@ -115,7 +114,7 @@ def dispatch(cmd, vars, console):
 
     # Check if command exists.
     if parse[0] not in command_dict:
-        log(f"Error: Unknown command '{parse[0]}'", log_type='error')
+        print(f"[🛑] Error: Unknown command '{parse[0]}'")
         return True
 
     # Run command.
