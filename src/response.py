@@ -28,6 +28,9 @@ class Response:
         # The requests object response.
         self.req = None
 
+        # The POST data.
+        self.post_data = None
+
     def print_summary(self):
         """
         This function prints a summary of the latest response, if one
@@ -38,7 +41,7 @@ class Response:
             log("No response captured", log_type='warning')
             return
 
-        log("Summary of captured response:\n", log_type='error')
+        log("Summary of captured response:\n", log_type='info')
 
         # Print the response url.
         log("Response url:", end="\n   ")
@@ -62,6 +65,11 @@ class Response:
 
         http_code = http.HTTPStatus(self.req.status_code)
         log(f"\033[0m({http_code.phrase})")
+
+        if self.post_data is not None:
+            log(f"POST parameters:")
+            for name, value in self.post_data.items():
+                log(f"   '{name}' : '{value}'")
     
     def print_cookies(self):
         """
