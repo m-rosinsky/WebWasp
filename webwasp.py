@@ -7,6 +7,7 @@ This file contains the entry point of the console suite.
 import sys
 
 try:
+    import bs4
     import getch
     import requests
     import emoji

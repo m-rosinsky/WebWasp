@@ -27,6 +27,7 @@ class Response:
 
         # The requests object response.
         self.req = None
+        self.req_text = None
 
         # The POST data.
         self.post_data = None
