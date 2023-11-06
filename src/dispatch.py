@@ -12,6 +12,7 @@ from src.command.command_get import CommandGet
 from src.command.command_var import CommandVar
 from src.command.command_clear import CommandClear
 from src.command.command_params import CommandParams
+from src.command.command_post import CommandPost
 from src.command.command_cookies import CommandCookies
 from src.command.command_headers import CommandHeaders
 from src.command.command_timeout import CommandTimeout
@@ -54,26 +55,28 @@ class CommandHelp(CommandInterface):
         return True
 
 # This defines the global mapping of command names to their respective classes.
-command_var = CommandVar("var")
-command_get = CommandGet("get")
-command_help = CommandHelp("help")
 command_clear = CommandClear("clear")
-command_params = CommandParams("params")
 command_cookies = CommandCookies("cookies")
+command_get = CommandGet("get")
 command_headers = CommandHeaders("headers")
-command_timeout = CommandTimeout("timeout")
+command_help = CommandHelp("help")
+command_params = CommandParams("params")
+command_post = CommandPost("post")
 command_response = CommandResponse("response")
+command_timeout = CommandTimeout("timeout")
+command_var = CommandVar("var")
 
 command_dict = {
-    "help"      : command_help,
     "clear"     : command_clear,
-    "var"       : command_var,
+    "cookies"   : command_cookies,
     "get"       : command_get,
+    "headers"   : command_headers,
+    "help"      : command_help,
+    "params"    : command_params,
+    "post"      : command_post,
     "response"  : command_response,
     "timeout"   : command_timeout,
-    "params"    : command_params,
-    "headers"   : command_headers,
-    "cookies"   : command_cookies,
+    "var"       : command_var,
 }
 
 def _get_cmd_match(cmd):
