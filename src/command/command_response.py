@@ -42,13 +42,13 @@ class CommandResponse(CommandInterface):
             '-t',
             '--text',
             action='store_true',
-            help='show the text of the response'
+            help='show the text of the response',
         )
         self.parser_show.add_argument(
             '-c',
             '--cookies',
             action='store_true',
-            help='show the cookies of the response'
+            help='show the cookies of the response',
         )
 
         # Create the response report command subparser.
@@ -68,6 +68,58 @@ class CommandResponse(CommandInterface):
         )
         self.parser_beautify.set_defaults(func=self._beautify)
         super().add_help(self.parser_beautify)
+
+        # Create the response find command subparser.
+        self.parser_find = self.subparser.add_parser(
+            'find',
+            help='Find specific things within the response',
+            add_help=False
+        )
+        self.parser_find.set_defaults(func=self._find)
+        super().add_help(self.parser_find)
+        self.parser_find.add_argument(
+            '-p',
+            '--paragraphs',
+            action='store_true',
+            help='Find all <p> tagged items in response',
+        )
+        self.parser_find.add_argument(
+            '-t',
+            '--text',
+            action='store_true',
+            help='Find all text in response',
+        )
+        self.parser_find.add_argument(
+            '-l',
+            '--links',
+            action='store_true',
+            help='Find all links in response',
+        )
+        self.parser_find.add_argument(
+            '--title',
+            action='store_true',
+            help='Find the <title> of the HTML response',
+        )
+        self.parser_find.add_argument(
+            '-c',
+            '--class',
+            dest='find_class', # .class is reserved in python.
+            metavar='name',
+            type=str,
+            help='Find all HTML tags with a given class name',
+        )
+        self.parser_find.add_argument(
+            '-i',
+            '--id',
+            metavar='id',
+            type=str,
+            help='Find all HTML tags with a given id',
+        )
+        self.parser_find.add_argument(
+            '--strip',
+            action='store_true',
+            help='Don\'t show HTML tags in find results',
+        )
 
     def run(self, parse, console):
         super().run(parse)
@@ -155,6 +207,73 @@ class CommandResponse(CommandInterface):
 
         console.response.req_text = text
 
-        log(f"   Done! Made \033[36m{num_repls}\033[0m replacements.")
+        log(f"   Ran \033[36mprettify\033[0m.")
+        log(f"   Made \033[36m{num_repls}\033[0m entity decodes.")
+
+    def _find(self, args, console):
+        """
+        This function finds and prints specific items within
+        the stored response. This does not alter the stored
+        response.
+        """
+        # Generate soup.
+        soup = BeautifulSoup(console.response.req_text, 'html.parser')
+
+        has_query = False
+        matches = []
+
+        # Paragraphs.
+        if args.paragraphs:
+            has_query = True
+            for p in soup.find_all('p'):
+                if args.strip:
+                    p = p.string
+                matches.append(p)
+
+        # Text.
+        if args.text:
+            has_query = True
+            matches.append(soup.get_text())
+
+        # Links.
+        if args.links:
+            has_query = True
+            for link in soup.find_all('a'):
+                matches.append(link.get('href'))
+
+        # Title.
+        if args.title:
+            has_query = True
+            t = soup.title
+            if args.strip:
+                t = t.string
+            matches.append(t)
+
+        # Classes.
+        if args.find_class:
+            has_query = True
+            for c in soup.find_all(class_=args.find_class):
+                if args.strip:
+                    c = c.string
+                matches.append(c)
+
+        # Id.
+        if args.id:
+            has_query = True
+            for i in soup.find_all(id=args.id):
+                if args.strip:
+                    i = i.string
+                matches.append(i)
+
+        # Check if no query was specified.
+        if not has_query:
+            log('No query given to find command', log_type='warning')
+            return
+
+        # Print findings.
+        log("Find results:", log_type='info')
+
+        for m in matches:
+            log(m)
 
 ###   end of file   ###
