@@ -5,6 +5,7 @@ This file contains the response command class.
 """
 
 import argparse
+from bs4 import BeautifulSoup
 
 from src.logger import log
 from src.command.command_interface import CommandInterface
@@ -36,13 +37,7 @@ class CommandResponse(CommandInterface):
             add_help=False
         )
         self.parser_show.set_defaults(func=self._show)
-        self.parser_show.add_argument(
-            '-h',
-            '--help',
-            action='help',
-            default=argparse.SUPPRESS,
-            help='show this help message'
-        )
+        super().add_help(self.parser_show)
         self.parser_show.add_argument(
             '-t',
             '--text',
@@ -59,9 +54,20 @@ class CommandResponse(CommandInterface):
         # Create the response report command subparser.
         self.parser_report = self.subparser.add_parser(
             'report',
-            help='Generate a report of the last response'
+            help='Generate a report of the last response',
+            add_help=False,
         )
         self.parser_report.set_defaults(func=self._report)
+        super().add_help(self.parser_report)
+
+        # Create the response beautify command subparser.
+        self.parser_beautify = self.subparser.add_parser(
+            'beautify',
+            help='Clean up response text with HTML encoding',
+            add_help=False,
+        )
+        self.parser_beautify.set_defaults(func=self._beautify)
+        super().add_help(self.parser_beautify)
 
     def run(self, parse, console):
         super().run(parse)
@@ -103,7 +109,7 @@ class CommandResponse(CommandInterface):
 
     def _show(self, args, console):
         if args.text:
-            print(console.response.req.text)
+            print(console.response.req_text)
         elif args.cookies:
             console.response.print_cookies()
         else:
@@ -115,5 +121,40 @@ class CommandResponse(CommandInterface):
 
     def _report(self, args, console):
         log("report")
+
+    def _beautify(self, args, console):
+        """
+        This function decodes HTML entities.
+        """
+        entity_table = {
+            '&nbsp;' : ' ',
+            '&lt;' : '<',
+            '&gt;' : '>',
+            '&amp;' : '&',
+            '&quot;' : '\"',
+            '&apos;' : '\'',
+            '&cent;' : '¢',
+            '&pound;' : '£',
+            '&yen;' : '¥',
+            '&euro;' : '€',
+            '&copy;' : '©',
+            '&reg;' : '®',
+        }
+
+        text = str(console.response.req_text)
+
+        log("Beautifying response text...", log_type='info')
+
+        num_repls = 0
+        for entity, repl in entity_table.items():
+            num_repls += len(text.split(entity)) - 1
+            text = text.replace(entity, repl)
+
+        # Run bs4's prettify.
+        text = BeautifulSoup(text, 'html.parser').prettify()
+
+        console.response.req_text = text
+
+        log(f"   Done! Made \033[36m{num_repls}\033[0m replacements.")
 
 ###   end of file   ###

@@ -136,6 +136,7 @@ class CommandGet(CommandInterface):
         # Save the response fields to the console.
         console.response.date_time = datetime.datetime.now()
         console.response.req = req
+        console.response.req_text = req.text
         console.response.post_data = None
 
         # Set the console flag to indicate a response has been captured,
