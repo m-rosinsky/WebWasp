@@ -78,7 +78,7 @@ That should get us started, and will drop us into the WebWasp command line!
 
 ## 2. Quick Start Guide
 
-It's recommended to read the full documentation to get a feel for all WebWasp has to offer, but here's a few things to get you started!
+It's recommended to read the full [documentation](#3-documentation) to get a feel for all WebWasp has to offer, but here's a few things to get you started!
 
 ### 2.a. GET Requests
 
