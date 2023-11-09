@@ -101,7 +101,7 @@ You should see the following output:
 
 ### 2.b. Viewing the Response
 
-To view the response of the request we just made, we can use the ```response``` command:
+To view the response of the request we just made, we can use the ```response show``` command:
 
 ```
 > response show
