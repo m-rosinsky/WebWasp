@@ -5,6 +5,7 @@ This file contains the response command class.
 """
 
 import argparse
+import re
 from bs4 import BeautifulSoup
 
 from src.logger import log
@@ -114,6 +115,12 @@ class CommandResponse(CommandInterface):
             metavar='id',
             type=str,
             help='Find all HTML tags with a given id',
+        )
+        self.parser_find.add_argument(
+            '--pattern',
+            metavar='regex',
+            type=str,
+            help='Find a regex pattern within the response',
         )
         self.parser_find.add_argument(
             '--strip',
@@ -264,6 +271,20 @@ class CommandResponse(CommandInterface):
                 if args.strip:
                     i = i.string
                 matches.append(i)
+
+        # Regex Pattern
+        if args.pattern:
+            has_query = True
+            try:
+                print(f"Searching '{args.pattern}'...")
+                patterns = soup.find_all(string=re.compile(args.pattern))
+                for p in patterns:
+                    matches.append(p)
+            except re.error:
+                log(
+                    f"Invalid regex expression: '{args.pattern}'",
+                    log_type='error'
+                )
 
         # Check if no query was specified.
         if not has_query:
