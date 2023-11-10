@@ -107,7 +107,7 @@ class Console:
                 )
 
             # Handle command.
-            status = dispatch.dispatch(cmd, self.vars, self)
+            status = dispatch.dispatch(cmd, self)
 
             if not status:
                 self.is_running = False

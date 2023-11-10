@@ -7,6 +7,8 @@ It is responsible for parsing and dispatching a command to
 its respective module for handling.
 """
 
+import shlex
+
 from src.logger import log
 from src.command.command_get import CommandGet
 from src.command.command_var import CommandVar
@@ -113,19 +115,18 @@ def _get_cmd_match(cmd):
     # No matches were returned, so the command was invalid.
     log(f"Error: Unknown command '{cmd}'", log_type='error')
 
-def dispatch(cmd, vars, console):
+def dispatch(cmd, console):
     """
     This function parses and dispatches a given command.
 
     Args:
     cmd - The command to handle.
-    vars - The list of vars stored for the console.
 
     Returns:
     False if console should exit after command, True otherwise.
     """
     # Parse the command.
-    parse = cmd.split()
+    parse = shlex.split(cmd)
 
     # Test for blank command.
     if len(parse) == 0:
