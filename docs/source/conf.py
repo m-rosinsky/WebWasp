@@ -4,7 +4,7 @@ extensions = []
 
 templates_path = ['_templates']
 
-source_suffix = '.md'
+source_suffix = '.rst'
 
 master_doc = 'index'
 
