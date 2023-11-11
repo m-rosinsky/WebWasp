@@ -1,27 +1,27 @@
-# Configuration file for the Sphinx documentation builder.
+# -- General configuration -----------------------------------------------------
 
-# -- Project information
-
-project = 'WebWasp'
-author = 'Mike Rosinsky'
-
-release = '0.1'
-version = '0.1.a'
-
-# -- General configuration
-
-extensions = [
-    'sphinx.ext.duration',
-    'sphinx.ext.doctest',
-    'sphinx.ext.autodoc',
-    'sphinx.ext.autosummary',
-    'sphinx.ext.intersphinx',
-]
-
-intersphinx_mapping = {
-    'python': ('https://docs.python.org/3/', None),
-    'sphinx': ('https://www.sphinx-doc.org/en/master/', None),
-}
-intersphinx_disabled_domains = ['std']
+extensions = []
 
 templates_path = ['_templates']
+
+source_suffix = '.md'
+
+master_doc = 'index'
+
+# General info.
+project= u'WebWasp'
+copyright = u''
+
+# X,Y version.
+version = '0.1'
+# Full version with tags
+release = '0.1.0a'
+
+exclude_patterns = []
+
+pygments_style = 'sphinx'
+
+# -- Options for HTML output ---------------------------------------------------
+
+html_theme = 'default'
+html_static_path = ['_static']
