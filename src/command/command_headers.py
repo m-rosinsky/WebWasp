@@ -6,7 +6,9 @@ This file contains the headers command class.
 
 import argparse
 
+from src.node import CommandNode
 from src.logger import log
+from src.headers import Headers
 from src.command.command_interface import CommandInterface
 
 class CommandHeaders(CommandInterface):
@@ -76,6 +78,26 @@ class CommandHeaders(CommandInterface):
         )
         super().add_help(self.parser_clear)
         self.parser_clear.set_defaults(func=self._clear)
+
+    def create_cmd_tree(self) -> CommandNode:
+        root = super().create_cmd_tree()
+
+        # Special command additions here to add the
+        # header fields to the 'set' and 'unset' commands.
+        if root is None:
+            return root
+        
+        h = Headers()
+        for child in root.children:
+            if child.name in ["set", "unset"]:
+                for field in h.fields:
+                    node = CommandNode(field)
+                    child.children.append(node)
+                for auth in h.auth:
+                    node = CommandNode(auth)
+                    child.children.append(node)
+
+        return root
 
     def run(self, parse, console):
         super().run(parse)
