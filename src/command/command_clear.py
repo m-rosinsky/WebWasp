@@ -7,6 +7,7 @@ This file contains the clear command class.
 import os
 import argparse
 
+from src.node import CommandNode
 from src.command.command_interface import CommandInterface
 
 class CommandClear(CommandInterface):

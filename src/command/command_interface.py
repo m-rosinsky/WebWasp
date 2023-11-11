@@ -8,6 +8,9 @@ interface that all command classes must follow.
 import argparse
 from abc import ABC, abstractmethod
 
+from src.logger import log
+from src.node import CommandNode
+
 class CommandInterface(ABC):
     """
     This class is the command interface for all other command classes.
@@ -42,5 +45,73 @@ class CommandInterface(ABC):
         execution of the command.
         """
         return True
+    
+    def create_cmd_tree(self) -> CommandNode:
+        """
+        Brief:
+            This function creates the command syntax tree for the command.
+        
+        Return:
+            CommandNode
+                A node with the root being the top-level command.
+        """
+        return self._cmd_tree_recurse(self.name, self.parser)
+    
+    def _cmd_tree_recurse(self, name: str, parser: argparse.ArgumentParser) -> CommandNode:
+        """
+        Brief:
+            This is a helper function to recurse through parsers.
+        """
+        node = CommandNode(name)
+
+        if parser is None:
+            return node
+        
+        # These are private members that technically should not be accessed,
+        # which means they may be changed in future updates of argparse.
+        # SPECIAL ATTENTION SHOULD BE PAID in udpates, or argparse
+        # version should be enforced.
+        sp = parser._subparsers
+        if sp is None:
+            return node
+        
+        choices = sp._actions[1].choices
+        if choices is None:
+            return node
+        
+        for child_name, child_parser in choices.items():
+            child_node = self._cmd_tree_recurse(child_name, child_parser)
+            node.children.append(child_node)
+
+        return node
+
+    def _get_cmd_match(self, cmd, l):
+        """
+        Brief:
+            This function attempts to match the entered command with
+            the closest fit in the subparser.
+
+        Arguments:
+            cmd: str
+                The subcommand entered by the user.
+
+            l: list
+                The list of possible commands.
+        """
+        matches = [c for c in l if c.startswith(cmd)]
+
+        if len(matches) == 1:
+            return matches[0]
+        
+        # If the list comprehension returned multiple values, then the command
+        # was ambiguous.
+        if len(matches) > 1:
+            log(f"Ambiguous command: '{cmd}'. Potential matches:", log_type='error')
+            for match in matches:
+                log(f"   {match}")
+            return None
+        
+        # No matches were returned, so the command was invalid.
+        return None
 
 ###   end of file   ###

@@ -76,6 +76,16 @@ class CommandCookies(CommandInterface):
         # parse the arguments.
         parse_trunc = parse[1:]
 
+        # Match the subcommand.
+        if len(parse_trunc) > 0:
+            matched_subcmd = super()._get_cmd_match(
+                parse_trunc[0],
+                self.subparser.choices.keys(),
+            )
+
+            if matched_subcmd is not None:
+                parse_trunc[0] = matched_subcmd
+
         try:
             args = self.parser.parse_args(parse_trunc)
         except argparse.ArgumentError:
@@ -91,8 +101,7 @@ class CommandCookies(CommandInterface):
             return True
 
         args.func(args, console)
-
-        # TODO: Write console cookies to file for persistence.
+        console.update_data()
 
         return True
 
@@ -110,7 +119,7 @@ class CommandCookies(CommandInterface):
         """
         console.cookies[args.name] = args.value
         log("Added cookie:", log_type='cookie')
-        log(f"'{args.name}' : '{args.value}'")
+        log(f"   '{args.name}' : '{args.value}'")
 
     def _remove(self, args, console):
         """
@@ -120,8 +129,8 @@ class CommandCookies(CommandInterface):
             log(f"Unknown cookie: '{args.name}'", log_type='error')
             return
         del console.cookies[args.name]
-        log("Removed cookie", log_type='cookie')
-        log(f"'{args.name}'")
+        log("Removed cookie:", log_type='cookie')
+        log(f"   '{args.name}'")
 
     def _clear(self, args, console):
         """

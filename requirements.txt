@@ -1,3 +1,5 @@
+beautifulsoup4
 getch
 requests
 emoji
+pyyaml

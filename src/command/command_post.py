@@ -1,21 +1,21 @@
 """
-file: src/command_get.py
+file: src/command_post.py
 
-This file contains the get command class.
+This file contains the post command class.
 """
 
-import http
 import argparse
 import datetime
+import http
 import requests
 
 from src.logger import log
 from src.command.command_interface import CommandInterface
 
-class CommandGet(CommandInterface):
+class CommandPost(CommandInterface):
     """
-    This class handles the get command, which sends
-    HTTP 1.1 GET requests to a url/server.
+    This class handles the post command, which sends
+    HTTP POST requests to a url/server.
     """
     def __init__(self, name):
         super().__init__(name)
@@ -23,8 +23,8 @@ class CommandGet(CommandInterface):
         # Create argument parser and help.
         self.parser = argparse.ArgumentParser(
             prog=self.name,
-            description='Send an HTTP 1.1 GET request to a server/url',
-            add_help=False
+            description='Send an HTTP POST request to a server/url',
+            add_help=False,
         )
         super().add_help(self.parser)
 
@@ -32,17 +32,13 @@ class CommandGet(CommandInterface):
         self.parser.add_argument(
             'url',
             type=str,
-            help='The url to make a request to'
+            help='The url to make a request to',
         )
         self.parser.add_argument(
-            '--no-params',
-            action='store_true',
-            help='Perform request without stored parameters in url'
-        )
-        self.parser.add_argument(
-            '--no-cookies',
-            action='store_true',
-            help='Perform request without stored cookies'
+            'params',
+            nargs='*',
+            default=[],
+            help='Parameters from params to send with post request',
         )
 
     def run(self, parse, console):
@@ -67,24 +63,13 @@ class CommandGet(CommandInterface):
         if not url.startswith('http://') and not url.startswith('https://'):
             url = 'http://' + url
 
-        # If the --no-params flag was specified, unset params.
-        params = console.params
-        if args.no_params:
-            params = {}
-
-        # Prepare the full URL.
-        prep = requests.Request('GET', url, params=params).prepare()
-
-        # If the --no-cookies flag was specified, unset cookies.
-        cookies = console.cookies
-        if args.no_cookies:
-            cookies = {}
-
-        # Inform the user the full URL.
-        log(
-            f"Sending GET request to \033[36m{prep.url}\033[0m...",
-            log_type='info',
-        )
+        # Prepare the parameters.
+        data = {}
+        for param in args.params:
+            if not param in console.params:
+                log(f"Parameter {param} not in params list", log_type='error')
+                return True
+            data[param] = console.params[param]
 
         # Construct the headers dictionary with only fields are are not None
         # in the console's headers object.
@@ -98,15 +83,24 @@ class CommandGet(CommandInterface):
         if console.headers.auth['auth-user'] is not None:
             auth = (console.headers.auth['auth-user'], console.headers.auth['auth-pass'])
 
-        # Perform get request from request lib.
+        log(
+            f"Sending POST request to \033[36m{url}\033[0m...",
+            log_type='info',
+        )
+        log(f"POST request made with parameters:")
+        for name, value in data.items():
+            log(f"   '{name}' : '{value}'")
+
+        # Perform the POST request.
         req = None
         try:
-            req = requests.get(
-                prep.url,
+            req = requests.post(
+                url,
+                data=data,
                 timeout=console.timeout_s,
                 auth=auth,
                 headers=headers,
-                cookies=cookies,
+                cookies=console.cookies,
             )
         except requests.exceptions.RequestException as req_ex:
             print(f"{req_ex}")
@@ -116,9 +110,9 @@ class CommandGet(CommandInterface):
             if req:
                 req.close()
             return True
-
+        
         # Print the status code.
-        log("GET request completed. Status code: ", log_type='info', end='')
+        log("POST request completed. Status code: ", log_type='info', end='')
 
         if req.status_code >= 200 and req.status_code < 300:
             print("\033[32m", end="")
@@ -137,7 +131,7 @@ class CommandGet(CommandInterface):
         console.response.date_time = datetime.datetime.now()
         console.response.req = req
         console.response.req_text = req.text
-        console.response.post_data = None
+        console.response.post_data = data
 
         # Set the console flag to indicate a response has been captured,
         # and report.

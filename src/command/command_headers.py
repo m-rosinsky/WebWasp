@@ -6,7 +6,9 @@ This file contains the headers command class.
 
 import argparse
 
+from src.node import CommandNode
 from src.logger import log
+from src.headers import Headers
 from src.command.command_interface import CommandInterface
 
 class CommandHeaders(CommandInterface):
@@ -77,11 +79,41 @@ class CommandHeaders(CommandInterface):
         super().add_help(self.parser_clear)
         self.parser_clear.set_defaults(func=self._clear)
 
+    def create_cmd_tree(self) -> CommandNode:
+        root = super().create_cmd_tree()
+
+        # Special command additions here to add the
+        # header fields to the 'set' and 'unset' commands.
+        if root is None:
+            return root
+        
+        h = Headers()
+        for child in root.children:
+            if child.name in ["set", "unset"]:
+                for field in h.fields:
+                    node = CommandNode(field)
+                    child.children.append(node)
+                for auth in h.auth:
+                    node = CommandNode(auth)
+                    child.children.append(node)
+
+        return root
+
     def run(self, parse, console):
         super().run(parse)
         # Slice the command name off the parse so we only
         # parse the arguments.
         parse_trunc = parse[1:]
+
+        # Match the subcommand.
+        if len(parse_trunc) > 0:
+            matched_subcmd = super()._get_cmd_match(
+                parse_trunc[0],
+                self.subparser.choices.keys(),
+            )
+
+            if matched_subcmd is not None:
+                parse_trunc[0] = matched_subcmd
 
         try:
             args = self.parser.parse_args(parse_trunc)
@@ -98,8 +130,7 @@ class CommandHeaders(CommandInterface):
             return True
 
         args.func(args, console)
-
-        # TODO: Write console headers to file for persistence.
+        console.update_data()
 
         return True
 
