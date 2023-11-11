@@ -1,3 +1,5 @@
+[![Documentation Status](https://readthedocs.org/projects/webwasp/badge/?version=latest)](https://webwasp.readthedocs.io/en/latest/?badge=latest)
+
 ```
  __        __   _      __        __              
  \ \      / /__| |__   \ \      / /_ _ ___ _ __  
