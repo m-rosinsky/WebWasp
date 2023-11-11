@@ -6,16 +6,37 @@ This file contains the class definitions for the console suite.
 
 import os
 import getch
+import shlex
 import sys
 import yaml
 
 from src import dispatch
+from src.node import CommandNode
 from src.logger import log
 from src.response import Response
 from src.headers import Headers
 
+from src.command.command_interface import CommandInterface
+
 ESC_SEQUENCE = '\x1b'
 KEY_BACKSPACE = '\x7f'
+
+def lcp(l: list) -> str:
+    """
+    Brief:
+        This is a helper function to find the longest common prefix
+        of a list of strings.
+    """
+    if not l:
+        return ""
+    
+    min_l = min(len(s) for s in l)
+
+    for i in range(min_l):
+        if not all(s[i] == l[0][i] for s in l):
+            return l[0][:i]
+        
+    return l[0][:min_l]
 
 class Console:
     """
@@ -37,13 +58,15 @@ class Console:
         self.max_history_len = 20
         self.max_cmd_len = 1024
 
-        self.vars = {}
-
         # Private members for tracking command prompting.
         self.cmd_idx = 0
         self.hist_idx = 0
         self.cmd = ""
         self.saved_cmd = ""
+
+        # This holds the root node for the command tree, used in autocomp.
+        self.cmd_root = CommandNode("")
+        self._load_cmd_tree()
 
         # This class holds the most recent response information.
         self.response = Response()
@@ -51,6 +74,9 @@ class Console:
 
         # This holds the timeout value for requests (seconds).
         self.timeout_s = 2
+
+        # This holds the console variables.
+        self.vars = {}
 
         # This holds the request parameters.
         self.params = {}
@@ -168,6 +194,20 @@ class Console:
             return
 
     # Private member functions.
+    def _load_cmd_tree(self):
+        """
+        Brief:
+            This function loads the command syntax tree from the
+            base commands located in the dispatch module.
+        """
+        # Iterate through all base command classes in the command dict.
+        for name, command_class in dispatch.command_dict.items():
+            if not isinstance(command_class, CommandInterface):
+                node = CommandNode(name)
+            else:
+                node = command_class.create_cmd_tree()
+            self.cmd_root.children.append(node)
+
     def _load_data(self):
         """
         This function attempts to populate the vars member via
@@ -296,6 +336,57 @@ class Console:
                 # Slice string.
                 self.cmd = self.cmd[:self.cmd_idx] + self.cmd[self.cmd_idx+1:]
 
+                continue
+
+            # Tab. TODO: Tab completions.
+            if inp == "\t":
+                parse = shlex.split(self.cmd)
+                if len(self.cmd) > 0 and self.cmd[len(self.cmd) - 1] == " " and self.cmd_idx == len(self.cmd):
+                    parse.append("")
+                cur_node = self.cmd_root
+
+                # Check for empty command.
+                if parse is None or len(parse) == 0:
+                    continue
+
+                for token in parse:
+                    match_nodes = [c for c in cur_node.children if c.name.startswith(token)]
+
+                    # Check for no matches.
+                    if not match_nodes:
+                        break
+
+                    # Traverse the tree.
+                    cur_node = match_nodes[0]
+
+                # If there are no matches returned, do nothing.
+                if not match_nodes:
+                    continue
+
+                # If there is only one match returned, we can autofill.
+                if len(match_nodes) == 1:
+                    parse[len(parse) - 1] = match_nodes[0].name
+                    for _ in range(self.cmd_idx):
+                        print("\b", end="")
+                    self.cmd = shlex.join(parse) + " "
+                    self.cmd_idx = len(self.cmd)
+                    print(self.cmd, end="")
+                    continue
+
+                # If there are multiple matches, list them.
+                print("")
+                for node in match_nodes:
+                    print(node.name, end="\t")
+
+                # We can now find the longest common prefix and
+                # auto-fill that.
+                match_names = [node.name for node in match_nodes]
+                fill = lcp(match_names)
+                if len(fill) > 0:
+                    parse[len(parse) - 1] = lcp(match_names)
+                    self.cmd = shlex.join(parse)
+                self.cmd_idx = len(self.cmd)
+                print(f"\n> {self.cmd}", end="")
                 continue
 
             # Return.
