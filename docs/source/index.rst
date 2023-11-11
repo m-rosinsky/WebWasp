@@ -7,6 +7,11 @@ WebWasp Documentation
 
 This document intends to cover all features that WebWasp has to offer, as well as provide examples and walkthroughs for usage in the real world.
 
+Contributors
+------------
+
+WebWasp is always looking for contributors to the project. See the `github <https://github.com/m-rosinsky/WebWasp/>`_ for more details.
+
 Installation
 ============
 
