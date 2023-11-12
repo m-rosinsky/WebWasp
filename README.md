@@ -132,9 +132,7 @@ If we want to see the actual source code of the response, we can use the ```-t``
 
 The full WebWasp documentation along with some walkthroughs that demonstrate WebWasp's capabilities can be found here:
 
-```
-link
-```
+> [ReadTheDocs](https://webwasp.readthedocs.io/en/latest/)
 
 ## 4. Planned Features
 
