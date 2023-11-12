@@ -519,7 +519,7 @@ Save that password into `pass5` and we're onto the next one.
 
 ## Level 5
 
-Since we don't necessarily want to use the same `referer` tag from the previous level, let's go ahead and unset it before we make out get request to level 5:
+Since we don't necessarily want to use the same `referer` tag from the previous level, let's go ahead and unset it before we make our get request to level 5:
 
 ```
 > headers unset referer 
@@ -596,7 +596,7 @@ Access granted. The password for natas6 is fOIvE0MDtPTgRhqmmvvAOt2EfXR6uQgR</div
 </html>
 ```
 
-Boom! We've successfully passed our custom-baked cookie to satisfy the websites requirement.
+Boom! We've successfully passed our custom-baked cookie to satisfy the site's requirement.
 
 Save the password into `pass6` and we'll press on!
 
