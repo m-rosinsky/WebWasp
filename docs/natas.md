@@ -37,13 +37,13 @@ Let's do it the old fashioned way first, then show how we can complete it with W
 
 In a web browser, we can navigate to that link. Going there will instantly prompt us for those credentials:
 
-| ![alt text](./imgs/natas_1.PNG "natas0") |
+| ![alt text](/./imgs/natas_1.PNG "natas0") |
 |:--:|
 
 We'll enter `natas0` for both the username and password fields, which will
 get us to the site:
 
-| ![alt text](./imgs/natas_2.PNG "natas0") |
+| ![alt text](/./imgs/natas_2.PNG "natas0") |
 |:--:|
 
 From here, we can right-click and press `View Page Source` to see the source of the webpage.
@@ -137,7 +137,7 @@ Success! This time we got a `200` status code, indicating a successful request!
 
 Let's check out the page source:
 
-```
+```HTML
 > response show -t  
 <html>
 <head>
@@ -174,7 +174,7 @@ And we're all done with level 0!
 
 ## Level 1
 
-Let's take a look at level 1 in the browser first. We navigate to the same link as before, but replacing the `0` in the URL with a `1`.
+Let's take a look at level 1 in the browser first. We'll navigate to the same link as before, replacing the `0` in the URL with a `1`.
 
 We'll provide `natas1` as the username this time, and the password from the previous level.
 
@@ -208,7 +208,7 @@ and then make the request:
 
 Another success! Let's checkout out the source:
 
-```
+```HTML
 > response show -t
 <html>
 <head>
@@ -226,9 +226,9 @@ next level on this page, but rightclicking has been blocked!
 </html>
 ```
 
-And we've found the password again!
+And we've found the password again! We were able to bypass the right-click blocking by requesting the source directly.
 
-We'll make a habit of saving these as we find them:
+We'll make a habit of saving these passwords as we find them. Since variables are saved between our WebWasp sessions, we can exit the program and pick it back up again whenever without losing any progress!
 
 ```
 > var add pass2 h4ubbcXrWqsTo7GGnnUMLppXbOogfBZ7
@@ -262,7 +262,7 @@ We'll make our get request:
 
 and view the source:
 
-```
+```HTML
 > response show -t
 <html>
 <head>
@@ -277,7 +277,7 @@ There is nothing on this page
 </body></html>
 ```
 
-Unfortunately, this time there's no comment with the next level's password.
+Unfortunately this time, there's no comment with the next level's password directly in the source 🙁.
 
 However, we do see a link to an image in a directory called `files`.
 
@@ -290,7 +290,7 @@ Let's check out that directory. We'll add `/files` onto the end of our get reque
 [🐝] Response captured! Type 'response show' for summary
 ```
 
-```
+```HTML
 > response show -t
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
 <html>
@@ -311,15 +311,15 @@ Let's check out that directory. We'll add `/files` onto the end of our get reque
 </body></html>
 ```
 
-From the header, this looks like an index of files. This line certainly looks interesting:
+From the header, this looks like an index of files. Take a second to check out each entry. This line certainly looks interesting:
 
 ```
 <tr><td valign="top"><img src="/icons/text.gif" alt="[TXT]"></td><td><a href="users.txt">users.txt</a></td><td align="right">2023-10-05 06:15  </td><td align="right">145 </td><td>&nbsp;</td></tr>
 ```
 
-This is linking a file called `users.txt` in the `files` directory. Let's check it out!
+This is linking a file called `users.txt` within the `files` directory. Let's check it out!
 
-We can also search specifically for links within our response by using a `find` command:
+If we wanted to, we can also search specifically for links within our response by using a `find` command:
 
 ```
 > response find --links
