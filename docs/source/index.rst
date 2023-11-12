@@ -123,7 +123,7 @@ the bash command line to make users feel right at home, with some improvements
 to allow easy integration into WebWasp's functionality.
 
 Basic Features
-~~~~~~~~~~~~~~
+--------------
 
 The command line has most of the basic features that bash users are familiar with.
 
@@ -135,7 +135,7 @@ These include:
 * Session persistence
 
 Getting Help
-~~~~~~~~~~~~
+------------
 
 Getting suggestions for commands is fully integrated into WebWasp's command line.
 
@@ -172,9 +172,10 @@ can use do the following:
 The ``positional arguments`` are ones required for the command, while the ``optional arguments`` are of course optional.
 
 Command Shortnening
-~~~~~~~~~~~~~~~~~~~
+-------------------
 
-WebWasp's command line offers an optional technique for entering commands, known as _command shortening_.
+WebWasp's command line offers an optional technique for entering commands,
+known as *command shortening*.
 
 This means that when entering a command, we need only to provide enough
 characters so that it is unambiguous which command we are
@@ -218,7 +219,7 @@ If there is ambiguity between two commands, the console will let us know the opt
       headers
 
 Enhanced Tab Completions
-~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------
 
 Instead of using command shortening, we can use tab completions to autofill commands.
 
