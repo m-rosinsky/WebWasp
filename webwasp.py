@@ -11,6 +11,7 @@ try:
     import getch
     import requests
     import emoji
+    import pygments
 except ImportError:
     print("[🛑] Error: Missing Dependencies. ")
     print("[🛑] Run python3 -m pip install -r requirements.txt")
