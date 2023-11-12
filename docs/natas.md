@@ -313,7 +313,7 @@ Let's check out that directory. We'll add `/files` onto the end of our get reque
 
 From the header, this looks like an index of files. Take a second to check out each entry. This line certainly looks interesting:
 
-```
+```HTML
 <tr><td valign="top"><img src="/icons/text.gif" alt="[TXT]"></td><td><a href="users.txt">users.txt</a></td><td align="right">2023-10-05 06:15  </td><td align="right">145 </td><td>&nbsp;</td></tr>
 ```
 
@@ -363,3 +363,90 @@ natas3:G6ctbMJ5Nb4cbFwhpMPSvxGHhQ7I6W8Q
 ```
 
 ## Level 3
+
+After updating our headers like before, and making our get request to the next URL, we find this source:
+
+```HTML
+> response show -t
+<html>
+<head>
+-- truncated --
+</head>
+<body>
+<h1>natas3</h1>
+<div id="content">
+There is nothing on this page
+<!-- No more information leaks!! Not even Google will find it this time... -->
+</div>
+</body></html>
+```
+
+An interesting comment... Not even Google will find it. What could this be referencing?
+
+To tell search engines like google what they are allowed and disallowed to index during a search, a site can provide a standardized file called the `robots.txt` file.
+
+This file sets specific rules for the web crawlers that search engines use.
+
+Let's go ahead and see if this server is using one of these files:
+
+```
+> get http://natas3.natas.labs.overthewire.org/robots.txt
+```
+```
+> response show -t
+User-agent: *
+Disallow: /s3cr3t/
+```
+
+Awesome! We were able to pull that site's `robots.txt` file and see the contents.
+
+It looks like the site doesn't want web crawlers to see anything within a directory called `/s3cr3t`.
+
+While that might stop google, that certainly won't stop us! Let's send a get request to that directory:
+
+```
+> get http://natas3.natas.labs.overthewire.org/s3cr3t/
+```
+```HTML
+> response show -t
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+ <head>
+  <title>Index of /s3cr3t</title>
+ </head>
+ <body>
+<h1>Index of /s3cr3t</h1>
+  <table>
+   <tr><th valign="top"><img src="/icons/blank.gif" alt="[ICO]"></th><th><a href="?C=N;O=D">Name</a></th><th><a href="?C=M;O=A">Last modified</a></th><th><a href="?C=S;O=A">Size</a></th><th><a href="?C=D;O=A">Description</a></th></tr>
+   <tr><th colspan="5"><hr></th></tr>
+<tr><td valign="top"><img src="/icons/back.gif" alt="[PARENTDIR]"></td><td><a href="/">Parent Directory</a></td><td>&nbsp;</td><td align="right">  - </td><td>&nbsp;</td></tr>
+<tr><td valign="top"><img src="/icons/text.gif" alt="[TXT]"></td><td><a href="users.txt">users.txt</a></td><td align="right">2023-10-05 06:15  </td><td align="right"> 40 </td><td>&nbsp;</td></tr>
+   <tr><th colspan="5"><hr></th></tr>
+</table>
+<address>Apache/2.4.52 (Ubuntu) Server at natas3.natas.labs.overthewire.org Port 80</address>
+</body></html>
+```
+
+And run a find for links...
+
+```
+> response find --links
+[🐝] Find results:
+-- truncated --
+/
+users.txt
+```
+
+Another `users.txt` file within the `s3cr3t` directory! Ours for the taking:
+
+```
+> get http://natas3.natas.labs.overthewire.org/s3cr3t/users.txt
+```
+```
+> response show -t
+natas4:tKOcJIbzM4lTs8hbCmzn5Zr4434fGZQm
+```
+
+Save the password in a variable called `pass4` and we're done!
+
+## Level 4
