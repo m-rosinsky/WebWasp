@@ -1020,13 +1020,13 @@ Update the auth fields, and get the source for level 7:
 
 A couple of new things on this page of note. Firstly we have those two links that are using the `page` parameter.
 
-Secondly there's a comment telling us that the password for the next level is stored in the location `/etc/natas_webpass/natas8` on the server.
+Secondly, there's a comment telling us that the password for the next level is stored in the location `/etc/natas_webpass/natas8` on the server.
 
 So how do we get to it?
 
-The answer lies in a security vulnerability that the designer of this site has not considered. The `index.php` page takes a parameter called `page`. In the above links, the pages that are passed into this parameter are `home` and `about` respectively.
+The answer lies in a security vulnerability on this site. The `index.php` file takes a parameter called `page`. In the above links, the pages that are passed into this parameter are `home` and `about` respectively.
 
-But we can custom-curate a parameter to pass to `index.php` that may take advantage of some lackadaisical security practices.
+We can custom-curate a parameter to pass to `index.php` that may take advantage of some lackadaisical security practices.
 
 We want to pass the location of the password file as the `page` parameter to `index.php`, and maybe it will deliver us that page, even though the creator of the site probably didn't intend that.
 
@@ -1073,9 +1073,9 @@ a6bZCNYwdKqN5cGP11ZdtPg0iImQQhAB
 </html>
 ```
 
-And there we go! It dumped the contents of `/etc/natas_webpass/natas8` for us!
+There we go! It dumped the contents of `/etc/natas_webpass/natas8` for us!
 
-The vulnerability we just exploited was called _Local File Inclusion_, and is an extremely common exploit that many sites fall victim to.
+The vulnerability we just exploited is called _Local File Inclusion_, and is an extremely common exploit that many sites fall victim to.
 
 If you're curious, you can check out OWASP's entry pertaining to this exploit at
 
