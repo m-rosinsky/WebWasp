@@ -171,7 +171,7 @@ can use do the following:
 
 The ``positional arguments`` are ones required for the command, while the ``optional arguments`` are of course optional.
 
-Command Shortnening
+Command Shortening
 -------------------
 
 WebWasp's command line offers an optional technique for entering commands,
