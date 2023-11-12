@@ -13,7 +13,8 @@ The intent for this walkthrough is to demonstrate WebWasp's abilities in a "real
 - [Level 0](#level-0) (Basic authentication)
 - [Level 1](#level-1) (More authentication)
 - [Level 2](#level-2) (Finding links)
-- [Level 3](#level-3) 
+- [Level 3](#level-3) (robots.txt)
+- [Level 4](#level-4)
 
 ## Level 0
 
