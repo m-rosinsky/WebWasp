@@ -338,7 +338,7 @@ class Console:
 
                 continue
 
-            # Tab. TODO: Tab completions.
+            # Tab Completions.
             if inp == "\t":
                 parse = shlex.split(self.cmd)
                 if len(self.cmd) > 0 and self.cmd[len(self.cmd) - 1] == " " and self.cmd_idx == len(self.cmd):

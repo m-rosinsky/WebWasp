@@ -44,7 +44,7 @@ def main():
     ww_version_patch = "a"
     ww_version_string = f"{ww_version_major}.{ww_version_minor}{ww_version_patch}"
 
-    banner = """
+    banner = r"""
  __        __   _      __        __              
  \ \      / /__| |__   \ \      / /_ _ ___ _ __  
   \ \ /\ / / _ \ '_ \   \ \ /\ / / _` / __| '_ \ 
