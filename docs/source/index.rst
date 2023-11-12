@@ -14,7 +14,7 @@ Primary features include:
 * File downloading
 
 Getting Started
-***************
+===============
 
 Installation
 ------------
@@ -104,7 +104,7 @@ To view the response of the request we just made, we can use the ``response show
   
   Re-run 'response show' with '-t' option to show response text
 
-This gives us a quick summary about response we just received.
+This gives us a quick summary about the response we just received.
 
 If we want to see the actual source code of the response, we can use the ``-t`` or ``--text`` option:
 
@@ -115,41 +115,41 @@ If we want to see the actual source code of the response, we can use the ``-t`` 
   --truncated--
 
 Commands and the Console
-************************
+========================
 
 TODO
 
 Variables
-*********
+=========
 
 TODO
 
 Response Parsing
-****************
+================
 
 TODO
 
 Headers
-*******
+=======
 
 TODO
 
 Parameters and POST Requests
-****************************
+============================
 
 TODO
 
 Cookies
-*******
+=======
 
 TODO
 
 Planned Features
-****************
+================
 
 TODO
 
 Contributors
-************
+============
 
 TODO
