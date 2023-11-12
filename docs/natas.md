@@ -37,13 +37,13 @@ Let's do it the old fashioned way first, then show how we can complete it with W
 
 In a web browser, we can navigate to that link. Going there will instantly prompt us for those credentials:
 
-| ![alt text](/./imgs/natas_1.PNG "natas0") |
+| ![alt text](./imgs/natas_1.PNG "natas0") |
 |:--:|
 
 We'll enter `natas0` for both the username and password fields, which will
 get us to the site:
 
-| ![alt text](/./imgs/natas_2.PNG "natas0") |
+| ![alt text](./imgs/natas_2.PNG "natas0") |
 |:--:|
 
 From here, we can right-click and press `View Page Source` to see the source of the webpage.
