@@ -6,9 +6,43 @@ to store the most recent response.
 """
 
 import http
+import re
 import requests
 
+from bs4 import BeautifulSoup
+
+from pygments import highlight
+from pygments.lexers import get_lexer_by_name
+from pygments.formatters import Terminal256Formatter
+from pygments.styles import get_style_by_name, get_all_styles
+
 from src.logger import log
+
+def html_highlight(text: str, style: str='default') -> str:
+    """
+    Brief:
+        This function performs syntax highlighting for HTML responses.
+
+    Arguments:
+        text: str
+            The text to highlight on.
+
+        style: p
+
+    Returns:
+        The highlighted text.
+    """
+    lexer = get_lexer_by_name("html", stripall=True)
+
+    available_styles = list(get_all_styles())
+    if style not in available_styles:
+        style = 'default'
+
+    selected_style = get_style_by_name(style)
+    formatter = Terminal256Formatter(style=selected_style)
+
+    highlighted_text = highlight(text, lexer, formatter)
+    return highlighted_text
 
 class Response:
     """
@@ -28,9 +62,14 @@ class Response:
         # The requests object response.
         self.req = None
         self.req_text = None
+        self.soup = None
 
         # The POST data.
         self.post_data = None
+
+    def set_req(self, req: requests.Response):
+        self.req = req
+        self.req_text = req.text        
 
     def print_summary(self):
         """
@@ -72,6 +111,13 @@ class Response:
             for name, value in self.post_data.items():
                 log(f"   '{name}' : '{value}'")
     
+    def print_text(self):
+        """
+        This function prints the response text with syntax highlighting.
+        """
+        text = html_highlight(self.req_text, style='lovelace')
+        print(text)
+
     def print_cookies(self):
         """
         This function prints the cookies from the latest resposne
