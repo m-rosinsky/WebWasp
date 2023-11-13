@@ -3,3 +3,4 @@ getch
 requests
 emoji
 pyyaml
+pygments
