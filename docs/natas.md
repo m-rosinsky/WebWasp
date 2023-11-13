@@ -103,7 +103,7 @@ As we expect, we never provided any credentials to the page! So it returned a st
 
 This authorization is part of the HTTP Authorization header. The server will check the credentials we provide there, and decide whether we are authorized or not.
 
-We can provide those credentials in our GET request by first setting these header fields with our credentials.
+We can provide those credentials in our GET request by setting the appropriate header fields!
 
 First, let's take a look at the header fields by running the `headers` command:
 
