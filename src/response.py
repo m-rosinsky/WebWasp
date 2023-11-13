@@ -9,6 +9,8 @@ import http
 import re
 import requests
 
+from bs4 import BeautifulSoup
+
 from pygments import highlight
 from pygments.lexers import get_lexer_by_name
 from pygments.formatters import Terminal256Formatter
@@ -60,13 +62,14 @@ class Response:
         # The requests object response.
         self.req = None
         self.req_text = None
+        self.soup = None
 
         # The POST data.
         self.post_data = None
 
     def set_req(self, req: requests.Response):
         self.req = req
-        self.req_text = html_highlight(self.req.text, style='lovelace')
+        self.req_text = req.text        
 
     def print_summary(self):
         """
@@ -108,6 +111,13 @@ class Response:
             for name, value in self.post_data.items():
                 log(f"   '{name}' : '{value}'")
     
+    def print_text(self):
+        """
+        This function prints the response text with syntax highlighting.
+        """
+        text = html_highlight(self.req_text, style='lovelace')
+        print(text)
+
     def print_cookies(self):
         """
         This function prints the cookies from the latest resposne

@@ -9,6 +9,7 @@ import re
 from bs4 import BeautifulSoup
 
 from src.logger import log
+from src.response import html_highlight
 from src.command.command_interface import CommandInterface
 
 class CommandResponse(CommandInterface):
@@ -79,10 +80,10 @@ class CommandResponse(CommandInterface):
         self.parser_find.set_defaults(func=self._find)
         super().add_help(self.parser_find)
         self.parser_find.add_argument(
-            '-p',
-            '--paragraphs',
-            action='store_true',
-            help='Find all <p> tagged items in response',
+            '--tag',
+            metavar='tag',
+            type=str,
+            help='Find all items with a given HTML tag in response',
         )
         self.parser_find.add_argument(
             '-t',
@@ -115,12 +116,6 @@ class CommandResponse(CommandInterface):
             metavar='id',
             type=str,
             help='Find all HTML tags with a given id',
-        )
-        self.parser_find.add_argument(
-            '--pattern',
-            metavar='regex',
-            type=str,
-            help='Find a regex pattern within the response',
         )
         self.parser_find.add_argument(
             '--strip',
@@ -168,7 +163,7 @@ class CommandResponse(CommandInterface):
 
     def _show(self, args, console):
         if args.text:
-            print(console.response.req_text)
+            console.response.print_text()
         elif args.cookies:
             console.response.print_cookies()
         else:
@@ -200,17 +195,17 @@ class CommandResponse(CommandInterface):
             '&reg;' : '®',
         }
 
-        text = str(console.response.req_text)
+        text = str(console.response.req.text)
 
         log("Beautifying response text...", log_type='info')
+
+        # Run bs4's prettify.
+        text = BeautifulSoup(text, 'html.parser').prettify()
 
         num_repls = 0
         for entity, repl in entity_table.items():
             num_repls += len(text.split(entity)) - 1
             text = text.replace(entity, repl)
-
-        # Run bs4's prettify.
-        text = BeautifulSoup(text, 'html.parser').prettify()
 
         console.response.req_text = text
 
@@ -224,23 +219,28 @@ class CommandResponse(CommandInterface):
         response.
         """
         # Generate soup.
+        # text = BeautifulSoup(console.response.req_text, 'html.parser').prettify()
         soup = BeautifulSoup(console.response.req_text, 'html.parser')
 
         has_query = False
         matches = []
 
         # Paragraphs.
-        if args.paragraphs:
+        if args.tag:
             has_query = True
-            for p in soup.find_all('p'):
+            for t in soup.find_all(args.tag):
                 if args.strip:
-                    p = p.string
-                matches.append(p)
+                    t = t.string
+                matches.append(t)
 
         # Text.
         if args.text:
             has_query = True
-            matches.append(soup.get_text())
+            soup_text = soup.get_text()
+            for t in soup_text.split("\n"):
+                t = t.strip()
+                if len(t) > 0:
+                    matches.append(t)
 
         # Links.
         if args.links:
@@ -272,20 +272,6 @@ class CommandResponse(CommandInterface):
                     i = i.string
                 matches.append(i)
 
-        # Regex Pattern
-        if args.pattern:
-            has_query = True
-            try:
-                print(f"Searching '{args.pattern}'...")
-                patterns = soup.find_all(string=re.compile(args.pattern))
-                for p in patterns:
-                    matches.append(p)
-            except re.error:
-                log(
-                    f"Invalid regex expression: '{args.pattern}'",
-                    log_type='error'
-                )
-
         # Check if no query was specified.
         if not has_query:
             log('No query given to find command', log_type='warning')
@@ -295,6 +281,7 @@ class CommandResponse(CommandInterface):
         log("Find results:", log_type='info')
 
         for m in matches:
-            log(m)
+            line = html_highlight(str(m), style='lovelace').strip()
+            log(line)
 
 ###   end of file   ###
