@@ -656,7 +656,7 @@ Secondly, we see there's a link just below it:
 <div id="viewsource"><a href="index-source.html">View sourcecode</a></div>
 ```
 
-The form enables a user to fill out some input and submit is using an HTTP POST request.
+The form enables a user to fill out some input and submit it using an HTTP POST request.
 
 We can interact with this form by using a feature of WebWasp we haven't seen yet in this walkthrough: The `post` command!
 
