@@ -689,7 +689,7 @@ Input secret: <input name=secret><br>
 </form>
 ```
 
-For starters, we one input field:
+For starters, we see one input field:
 
 ```HTML
 Input secret: <input name=secret>
