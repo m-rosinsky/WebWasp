@@ -53,14 +53,20 @@ class CommandResponse(CommandInterface):
             help='show the cookies of the response',
         )
 
-        # Create the response report command subparser.
-        self.parser_report = self.subparser.add_parser(
-            'report',
-            help='Generate a report of the last response',
+        # Create the response export command subparser.
+        self.parser_export = self.subparser.add_parser(
+            'export',
+            help='Save the response to a file',
             add_help=False,
         )
-        self.parser_report.set_defaults(func=self._report)
-        super().add_help(self.parser_report)
+        self.parser_export.set_defaults(func=self._export)
+        super().add_help(self.parser_export)
+        self.parser_export.add_argument(
+            'path',
+            type=str,
+            nargs='?',
+            help='The filepath to write the response to',
+        )
 
         # Create the response beautify command subparser.
         self.parser_beautify = self.subparser.add_parser(
@@ -173,8 +179,21 @@ class CommandResponse(CommandInterface):
         console.response.print_summary()
         log("\nRe-run 'response show' with '-t' option to show response text")
 
-    def _report(self, args, console):
-        log("report")
+    def _export(self, args, console):
+        filename = args.path
+        if not filename:
+            # If no arg was supplied for path, use default filename.
+            dt = console.response.date_time
+            filename = f"webwasp{dt.strftime('%m_%d_%Y_%H_%M_%S')}"
+        try:
+            with open(filename, 'w', encoding='utf-8') as f:
+                f.write(console.response.req_text)
+        except OSError as e:
+            log("Unable to write to file", log_type='error')
+            log(f"   {e}")
+            return
+        
+        log(f"Exported response to file '{filename}'", log_type='info')
 
     def _beautify(self, args, console):
         """
