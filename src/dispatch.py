@@ -21,6 +21,7 @@ from src.node import CommandNode
 from src.command.command_clear import CommandClear
 from src.command.command_console import CommandConsole
 from src.command.command_cookies import CommandCookies
+from src.command.command_get import CommandGet
 
 # The name for file to write command history to.
 HISTORY_FILE = "~/.wwhistory"
@@ -50,6 +51,7 @@ class Dispatcher:
             'clear': CommandClear('clear'),
             'console': CommandConsole('console'),
             'cookies': CommandCookies('cookies'),
+            'get': CommandGet('get'),
         }
 
         # Build the command autocomp tree.
