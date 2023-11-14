@@ -20,6 +20,7 @@ from src.node import CommandNode
 
 from src.command.command_clear import CommandClear
 from src.command.command_console import CommandConsole
+from src.command.command_cookies import CommandCookies
 
 # The name for file to write command history to.
 HISTORY_FILE = "~/.wwhistory"
@@ -48,6 +49,7 @@ class Dispatcher:
         self.command_dict = {
             'clear': CommandClear('clear'),
             'console': CommandConsole('console'),
+            'cookies': CommandCookies('cookies'),
         }
 
         # Build the command autocomp tree.
@@ -91,7 +93,8 @@ class Dispatcher:
                 break
 
         # Perform cleanup.
-        print("Exiting...")
+        self.context.save_data()
+        log("Exiting...", log_type='info')
 
     def dispatch(self, cmd_parse: list) -> bool:
         """

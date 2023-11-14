@@ -5,8 +5,6 @@ This file contains the console command class.
 """
 
 import argparse
-import os
-import yaml
 
 from src.logger import log
 from src.context import Context
@@ -105,28 +103,28 @@ class CommandConsole(CommandInterface):
 
         return True
 
-    def _session_list(self, args: argparse.Namespace, context: Context) -> bool:
+    def _session_list(self, args: argparse.Namespace, context: Context):
         """
         Brief:
             This function lists all stored sessions.
         """
         log(f"Console session list:", log_type='info')
         if context is None:
-            return True
+            return
         
         context.print_session_list()
-        return True
+        return
 
-    def _session_reset(self, args: argparse.Namespace, context: Context) -> bool:
+    def _session_reset(self, args: argparse.Namespace, context: Context):
         """
         Brief:
             This function clears all session data for the current session.
         """
         log(f"Resetting data for session '{context.cur_session}'", log_type='info')
         context.reset_data()
-        return True
+        return
 
-    def _session_new(self, args: argparse.Namespace, context: Context) -> bool:
+    def _session_new(self, args: argparse.Namespace, context: Context):
         """
         Brief:
             This function creates a new session with blank data.
@@ -134,9 +132,9 @@ class CommandConsole(CommandInterface):
         # Add new session. If this returned False, the session already exists.
         if not context.new_session(args.name):
             log(f"Session with name '{args.name}' already exists", log_type='error')
-            return True
+            return
         
         log(f"Created and switched to new session: '{args.name}'", log_type='info')
-        return True
+        return
 
 ###   end of file   ###
