@@ -62,6 +62,21 @@ class CommandConsole(CommandInterface):
         self.parser_session_reset.set_defaults(func=self._session_reset)
         super().add_help(self.parser_session_reset)
 
+        # Create the console session new subparser.
+        self.parser_session_new = self.session_subparser.add_parser(
+            'new',
+            description='Create a new session with blank data',
+            help='Create a new session with blank data',
+            add_help=False,
+        )
+        self.parser_session_new.set_defaults(func=self._session_new)
+        super().add_help(self.parser_session_new)
+        self.parser_session_new.add_argument(
+            'name',
+            type=str,
+            help='The name for the new session',
+        )
+
     def run(self, parse, console):
         super().run(parse)
         # Slice the command name off the parse so we only
@@ -142,5 +157,22 @@ class CommandConsole(CommandInterface):
 
         # Update data.
         console.update_data()
+
+    def _session_new(self, args, console):
+        """
+        Brief:
+            This function creates a new session with blank data.
+        """
+        log(f"Creating new session '{args.name}'...", log_type='info')
+        # Update the console's data to save the current session.
+        console.update_data()
+
+        # Change the current session name.
+        console.cur_session = args.name
+
+        # Update data to save session.
+        console.update_data()
+
+        log(f"Switched to session '{console.cur_session}'", log_type='info')
 
 ###   end of file   ###
