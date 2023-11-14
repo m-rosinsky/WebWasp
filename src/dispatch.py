@@ -17,8 +17,9 @@ from src.command.command_params import CommandParams
 from src.command.command_post import CommandPost
 from src.command.command_cookies import CommandCookies
 from src.command.command_headers import CommandHeaders
-from src.command.command_timeout import CommandTimeout
 from src.command.command_response import CommandResponse
+from src.command.command_console import CommandConsole
+from src.command.command_timeout import CommandTimeout
 from src.command.command_interface import CommandInterface
 
 class CommandHelp(CommandInterface):
@@ -65,6 +66,7 @@ command_help = CommandHelp("help")
 command_params = CommandParams("params")
 command_post = CommandPost("post")
 command_response = CommandResponse("response")
+command_console = CommandConsole("console")
 command_timeout = CommandTimeout("timeout")
 command_var = CommandVar("var")
 
@@ -77,6 +79,7 @@ command_dict = {
     "params"    : command_params,
     "post"      : command_post,
     "response"  : command_response,
+    "console"   : command_console,
     "timeout"   : command_timeout,
     "var"       : command_var,
 }

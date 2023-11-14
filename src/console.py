@@ -21,6 +21,8 @@ from src.command.command_interface import CommandInterface
 ESC_SEQUENCE = '\x1b'
 KEY_BACKSPACE = '\x7f'
 
+DEFAULT_SESSION_NAME = 'default'
+
 def lcp(l: list) -> str:
     """
     Brief:
@@ -63,6 +65,9 @@ class Console:
         self.hist_idx = 0
         self.cmd = ""
         self.saved_cmd = ""
+
+        # This holds the current console session name.
+        self.cur_session = DEFAULT_SESSION_NAME
 
         # This holds the root node for the command tree, used in autocomp.
         self.cmd_root = CommandNode("")
@@ -157,33 +162,38 @@ class Console:
                 return
             
         yaml_data = {
-            'cookies': {},
-            'headers': {
-                'auth': {},
-                'fields': {},
+            self.cur_session: {
+                'cookies': {},
+                'headers': {
+                    'auth': {},
+                    'fields': {},
+                },
+                'params': {},
+                'var': {},
+                'timeout': self.timeout_s,
             },
-            'params': {},
-            'var': {},
-            'timeout': self.timeout_s
         }
+
+        # Add current session.
+        yaml_data['cur_session'] = self.cur_session
 
         # Add cookies.
         for name, value in self.cookies.items():
-            yaml_data['cookies'][name] = value
+            yaml_data[self.cur_session]['cookies'][name] = value
 
         # Add headers.
         for name, value in self.headers.auth.items():
-            yaml_data['headers']['auth'][name] = value
+            yaml_data[self.cur_session]['headers']['auth'][name] = value
         for name, value in self.headers.fields.items():
-            yaml_data['headers']['fields'][name] = value
+            yaml_data[self.cur_session]['headers']['fields'][name] = value
 
         # Add parameters.
         for name, value in self.params.items():
-            yaml_data['params'][name] = value
+            yaml_data[self.cur_session]['params'][name] = value
 
         # Add variables.
         for name, value in self.vars.items():
-            yaml_data['var'][name] = value
+            yaml_data[self.cur_session]['var'][name] = value
 
         # Dump the contents back to the data file.
         try:
@@ -230,20 +240,30 @@ class Console:
         # Parse the file data as YAML.
         yaml_data = yaml.safe_load(file_data) or {}
         
-        # Load sections into console variables.
-        if 'cookies' in yaml_data:
-            self.cookies = yaml_data['cookies']
-        if 'headers' in yaml_data:
-            if 'auth' in yaml_data['headers']:
-                self.headers.auth = yaml_data['headers']['auth']
-            if 'fields' in yaml_data['headers']:
-                self.headers.fields = yaml_data['headers']['fields']
-        if 'params' in yaml_data:
-            self.params = yaml_data['params']
-        if 'var' in yaml_data:
-            self.vars = yaml_data['var']
-        if 'timeout' in yaml_data:
-            self.timeout_s = yaml_data['timeout']
+        # Load current session tag.
+        if 'cur_session' in yaml_data:
+            self.cur_session = yaml_data['cur_session']
+
+        # Load sections into console variables from current session.
+        if self.cur_session not in yaml_data:
+            log(f"Unable to load data for session '{self.cur_session}'...", log_type='error')
+            log("Creating new session...")
+            return
+        
+        cur_session_data = yaml_data[self.cur_session]
+        if 'cookies' in cur_session_data:
+            self.cookies = cur_session_data['cookies']
+        if 'headers' in cur_session_data:
+            if 'auth' in cur_session_data['headers']:
+                self.headers.auth = cur_session_data['headers']['auth']
+            if 'fields' in cur_session_data['headers']:
+                self.headers.fields = cur_session_data['headers']['fields']
+        if 'params' in cur_session_data:
+            self.params = cur_session_data['params']
+        if 'var' in cur_session_data:
+            self.vars = cur_session_data['var']
+        if 'timeout' in cur_session_data:
+            self.timeout_s = cur_session_data['timeout']
 
     def _load_history(self):
         """
