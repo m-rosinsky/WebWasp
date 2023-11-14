@@ -22,6 +22,7 @@ ESC_SEQUENCE = '\x1b'
 KEY_BACKSPACE = '\x7f'
 
 DEFAULT_SESSION_NAME = 'default'
+DEFAULT_TIMEOUT = 2.0
 
 def lcp(l: list) -> str:
     """
@@ -78,7 +79,7 @@ class Console:
         self.has_response = False
 
         # This holds the timeout value for requests (seconds).
-        self.timeout_s = 2
+        self.timeout_s = DEFAULT_TIMEOUT
 
         # This holds the console variables.
         self.vars = {}
@@ -202,6 +203,17 @@ class Console:
         except (OSError, yaml.YAMLError, AttributeError):
             log("Unable to write to persistent data file", log_type='error')
             return
+
+    def reset_data(self):
+        """
+        Brief:
+            This function sets all console data back to defaults.
+        """
+        self.vars = {}
+        self.params = {}
+        self.cookies = {}
+        self.timeout_s = DEFAULT_TIMEOUT
+        self.headers = Headers()
 
     # Private member functions.
     def _load_cmd_tree(self):

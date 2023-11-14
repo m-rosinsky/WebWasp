@@ -135,6 +135,12 @@ class CommandConsole(CommandInterface):
         Brief:
             This function clears all session data for the current session.
         """
-        log("Resetting current session data...", log_type='info')
+        log(f"Resetting data for session '{console.cur_session}'", log_type='info')
+
+        # Clear data.
+        console.reset_data()
+
+        # Update data.
+        console.update_data()
 
 ###   end of file   ###
