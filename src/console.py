@@ -10,19 +10,20 @@ import shlex
 import sys
 import yaml
 
-from src import dispatch
 from src.node import CommandNode
 from src.logger import log
-from src.response import Response
-from src.headers import Headers
 
 from src.command.command_interface import CommandInterface
 
+# Key macros.
 ESC_SEQUENCE = '\x1b'
 KEY_BACKSPACE = '\x7f'
 
-DEFAULT_SESSION_NAME = 'default'
-DEFAULT_TIMEOUT = 2.0
+# The default length for the command history.
+DEFAULT_HISTORY_LEN = 20
+
+# The max length of a command.
+DEFAULT_MAX_CMD_LEN = 1024
 
 def lcp(l: list) -> str:
     """
@@ -43,23 +44,17 @@ def lcp(l: list) -> str:
 
 class Console:
     """
-    This class defines a console context.
+    Brief:
+        This class defines a console. It's job is to prompt the user
+        for commands as well as track and save history.
 
-    Members:
-    -------
-    is_running      - The console is running.
-    history         - An array of previous commands.
-    max_history_len - The maximum number of previous commands to store.
-    max_self.cmd_len     - The maximum size of a command being entered.
-
-    vars            - The vars held by the console.
+        It uses the cmd_tree to perform autocompletions and command
+        shortening.
     """
-
-    def __init__(self):
-        self.is_running = False
+    def __init__(self, history_file: str=None, cmd_tree: CommandNode=None):
         self.history = []
-        self.max_history_len = 20
-        self.max_cmd_len = 1024
+        self.max_history_len = DEFAULT_HISTORY_LEN
+        self.max_cmd_len = DEFAULT_MAX_CMD_LEN
 
         # Private members for tracking command prompting.
         self.cmd_idx = 0
@@ -67,247 +62,57 @@ class Console:
         self.cmd = ""
         self.saved_cmd = ""
 
-        # This holds the current console session name.
-        self.cur_session = DEFAULT_SESSION_NAME
-
         # This holds the root node for the command tree, used in autocomp.
-        self.cmd_root = CommandNode("")
-        self._load_cmd_tree()
-
-        # This class holds the most recent response information.
-        self.response = Response()
-        self.has_response = False
-
-        # This holds the timeout value for requests (seconds).
-        self.timeout_s = DEFAULT_TIMEOUT
-
-        # This holds the console variables.
-        self.vars = {}
-
-        # This holds the request parameters.
-        self.params = {}
-
-        # This holds the request cookies.
-        self.cookies = {}
-
-        # This holds the request headers.
-        self.headers = Headers()
-
-        # Attempt to load exported variables.
-        self.data_file = os.path.expanduser("~/.wwdata")
-        self._load_data()
+        self.cmd_tree = cmd_tree
 
         # Attempt to load history.
-        self.history_file = os.path.expanduser("~/.wwhistory")
+        self.history_file = history_file
         self._load_history()
 
-    def run(self):
-        """
-        This function runs the console suite.
-
-        The function accepts input, parses the command, and performs
-        the appropriate execution.
-        """
-        self.is_running = True
-
-        while self.is_running:
-            # Get input.
-            try:
-                cmd = self._prompt()
-            except KeyboardInterrupt:
-                print("^C")
-                self.is_running = False
-                break
-
-            # Add input to history.
-            self.history.insert(0, cmd)
-            if len(self.history) > self.max_history_len:
-                self.history.pop()
-            
-            # Add input to persistent file.
-            try:
-                if not os.path.exists(self.history_file):
-                    with open(self.history_file, 'w', encoding='utf-8') as f:
-                        f.write(cmd + "\n")
-                else:
-                    with open(self.history_file, 'a', encoding='utf-8') as f:
-                        f.write(cmd + "\n")
-            except OSError:
-                log(
-                    "Unable to store session command history",
-                    log_type='warning',
-                )
-
-            # Handle command.
-            status = dispatch.dispatch(cmd, self)
-
-            if not status:
-                self.is_running = False
-
-        # Save all persistent data for session.
-        self.update_data()
-
-    def update_data(self):
+    def prompt(self) -> str:
         """
         Brief:
-            This function updates the persistent data file with the
-            data stored in the console variables.
+            This function is the client-facing prompt, which uses the
+            private _prompt function to gather a command, updates both
+            local and persistent history, then returns the command.
+
+        Returns:
+            The user-issued command.
         """
-        # Check if the persistent data file does not exist.
-        if not os.path.exists(self.data_file):
-            try:
-                with open(self.data_file, 'w+', encoding='utf-8') as f:
-                    pass
-            except OSError:
-                log("Unable to create persistent data file", log_type='error')
-                return
-            
-        yaml_data = {
-            self.cur_session: {
-                'cookies': {},
-                'headers': {
-                    'auth': {},
-                    'fields': {},
-                },
-                'params': {},
-                'var': {},
-                'timeout': self.timeout_s,
-            },
-        }
-
-        # Add current session.
-        yaml_data['cur_session'] = self.cur_session
-
-        # Add cookies.
-        for name, value in self.cookies.items():
-            yaml_data[self.cur_session]['cookies'][name] = value
-
-        # Add headers.
-        for name, value in self.headers.auth.items():
-            yaml_data[self.cur_session]['headers']['auth'][name] = value
-        for name, value in self.headers.fields.items():
-            yaml_data[self.cur_session]['headers']['fields'][name] = value
-
-        # Add parameters.
-        for name, value in self.params.items():
-            yaml_data[self.cur_session]['params'][name] = value
-
-        # Add variables.
-        for name, value in self.vars.items():
-            yaml_data[self.cur_session]['var'][name] = value
-
-        # Dump the contents back to the data file.
+        # Prompt the user for a command.
         try:
-            with open(self.data_file, 'w', encoding='utf-8') as f:
-                yaml.dump(yaml_data, f, default_flow_style=False)
-        except (OSError, yaml.YAMLError, AttributeError):
-            log("Unable to write to persistent data file", log_type='error')
-            return
+            cmd = self._prompt()
+        except KeyboardInterrupt:
+            # Re-raise to propagate.
+            raise
 
-    def reset_data(self):
+        # If this command matches the last entered command, don't push
+        # to history.
+        if len(self.history) > 0 and self.history[0] == cmd:
+            return cmd
+        
+        # Add command to history.
+        self.history.insert(0, cmd)
+        if len(self.history) > self.max_history_len:
+            self.history.pop()
+
+        # Add command to persistent history file.
+        # This fails silently.
+        self._write_history(cmd)
+
+        return cmd
+
+    def _prompt(self) -> str:
         """
         Brief:
-            This function sets all console data back to defaults.
-        """
-        self.vars = {}
-        self.params = {}
-        self.cookies = {}
-        self.timeout_s = DEFAULT_TIMEOUT
-        self.headers = Headers()
+            This function prompts the user for a command and returns
+            when the user presses enter.
 
-    # Private member functions.
-    def _load_cmd_tree(self):
-        """
-        Brief:
-            This function loads the command syntax tree from the
-            base commands located in the dispatch module.
-        """
-        # Iterate through all base command classes in the command dict.
-        for name, command_class in dispatch.command_dict.items():
-            if not isinstance(command_class, CommandInterface):
-                node = CommandNode(name)
-            else:
-                node = command_class.create_cmd_tree()
-            self.cmd_root.children.append(node)
+            Up and down arrow presses for history seeking.
 
-    def _load_data(self):
-        """
-        This function attempts to populate the vars member via
-        the saved export file if it exists.
-        """
-        # Check if the data file exists.
-        if not os.path.exists(self.data_file):
-            return
-        
-        # Read the file data.
-        file_data = ""
-        try:
-            with open(self.data_file, 'r', encoding='utf-8') as f:
-                for line in f:
-                    file_data += line
-        except OSError:
-            log("Unable to read persistent data file", log_type='error')
-            return
-        
-        # Parse the file data as YAML.
-        yaml_data = yaml.safe_load(file_data) or {}
-        
-        # Load current session tag.
-        if 'cur_session' in yaml_data:
-            self.cur_session = yaml_data['cur_session']
+            Tab completions are performed with the command tree.
 
-        # Load sections into console variables from current session.
-        if self.cur_session not in yaml_data:
-            log(f"Unable to load data for session '{self.cur_session}'...", log_type='error')
-            log("Creating new session...")
-            return
-        
-        cur_session_data = yaml_data[self.cur_session]
-        if 'cookies' in cur_session_data:
-            self.cookies = cur_session_data['cookies']
-        if 'headers' in cur_session_data:
-            if 'auth' in cur_session_data['headers']:
-                self.headers.auth = cur_session_data['headers']['auth']
-            if 'fields' in cur_session_data['headers']:
-                self.headers.fields = cur_session_data['headers']['fields']
-        if 'params' in cur_session_data:
-            self.params = cur_session_data['params']
-        if 'var' in cur_session_data:
-            self.vars = cur_session_data['var']
-        if 'timeout' in cur_session_data:
-            self.timeout_s = cur_session_data['timeout']
-
-    def _load_history(self):
-        """
-        This function attempt to read the history command file
-        in order to restore history from previous sessions.
-        """
-        try:
-            if not os.path.exists(self.history_file):
-                return
-
-            # Open file and read in data.
-            with open(self.history_file, 'r', encoding='utf-8') as f:
-                for line in f:
-                    self.history.insert(0, line.strip())
-                    if len(self.history) > self.max_history_len:
-                        self.history.pop()
-
-        except OSError as imp_err:
-            log(
-                "Warning: Could not restore session history",
-                log_type='warning',
-            )
-            log(f"   {imp_err}")
-
-        log("Restored previous session history", log_type='success')
-
-    def _prompt(self):
-        """
-        This function prompts the user for input and returns
-        the command.
-
-        It handles arrow-key presses for history.
+            Command shortening also leverages the command tree.
         """
 
         # This stores the current command.
@@ -525,6 +330,79 @@ class Console:
             self.cmd_idx -= 1
 
         return
+
+    def _load_history(self):
+        """
+        Brief:
+            This function attempts to load the command history from
+            the persistent history file.
+
+            If the history file does not exist, it attempts to create an
+            empty one.
+        """
+        # Check if history file exists.
+        if not os.path.exists(self.history_file):
+            self._create_history_file()
+            return
+
+        # Open file and read in data.
+        try:
+            with open(self.history_file, 'r', encoding='utf-8') as f:
+                for line in f:
+                    self.history.insert(0, line.strip())
+                    if len(self.history) > self.max_history_len:
+                        self.history.pop()
+        except OSError as imp_err:
+            log(
+                "Warning: Could not restore session history",
+                log_type='warning',
+            )
+            log(f"   {imp_err}")
+            return
+
+        log("Restored previous session history", log_type='success')
+
+    def _create_history_file(self) -> bool:
+        """
+        Brief:
+            This function attempts to create a new history file.
+
+        Returns:
+            True on success, False on error.
+        """
+        try:
+            with open(self.history_file, 'w', encoding='utf-8') as f:
+                pass
+        except OSError:
+            log(
+                f"Unable to create history file at '{self.history_file}'",
+                log_type='error',
+            )
+            return False
+        return True
+
+    def _write_history(self, cmd: str):
+        """
+        Brief:
+            This function attempts to write a command to the history file.
+
+        Arguments:
+            cmd: str
+                The command to write.
+        """
+        # Check if the history file exists.
+        if not os.path.exists(self.history_file):
+            if not self._create_history_file():
+                # Fail silently.
+                return
+
+        # Append command to history file.
+        try:
+            with open(self.history_file, 'a', encoding='utf-8') as f:
+                f.write(cmd + '\n')
+        except OSError:
+            # Fail silently.
+            return
 
 ###   end of file   ###
         
