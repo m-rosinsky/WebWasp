@@ -7,6 +7,7 @@ This file contains the clear command class.
 import os
 import argparse
 
+from src.context import Context
 from src.node import CommandNode
 from src.command.command_interface import CommandInterface
 
@@ -25,16 +26,18 @@ class CommandClear(CommandInterface):
         )
         super().add_help(self.parser)
 
-    def run(self, parse, console=None):
-        super().run(parse)
-        # Slice the command name off the parse so we only
-        # parse the arguments.
-        parse_trunc = parse[1:]
+    def run(self, parse: list, context: Context, cmd_tree: CommandNode) -> bool:
+        # Resolve command shortening.
+        parse = super()._resolve_parse(self.name, parse, cmd_tree)
 
+        if parse is None:
+            return True
+
+        # Parse arguments.
         try:
-            args = self.parser.parse_args(parse_trunc)
+            _args = self.parser.parse_args(parse)
         except argparse.ArgumentError:
-            self.get_help()
+            self.parser.print_help()
             return True
         except SystemExit:
             # Don't let argparse exit the program.

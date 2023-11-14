@@ -86,6 +86,10 @@ class Console:
             # Re-raise to propagate.
             raise
 
+        # Strip the command.
+        if cmd is not None:
+            cmd = cmd.strip()
+
         # If this command matches the last entered command, don't push
         # to history.
         if len(self.history) > 0 and self.history[0] == cmd:
@@ -180,7 +184,7 @@ class Console:
                 parse = shlex.split(self.cmd)
                 if len(self.cmd) > 0 and self.cmd[len(self.cmd) - 1] == " " and self.cmd_idx == len(self.cmd):
                     parse.append("")
-                cur_node = self.cmd_root
+                cur_node = self.cmd_tree
 
                 # Check for empty command.
                 if parse is None or len(parse) == 0:

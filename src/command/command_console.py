@@ -9,6 +9,8 @@ import os
 import yaml
 
 from src.logger import log
+from src.context import Context
+from src.node import CommandNode
 from src.command.command_interface import CommandInterface
 
 class CommandConsole(CommandInterface):
@@ -77,24 +79,16 @@ class CommandConsole(CommandInterface):
             help='The name for the new session',
         )
 
-    def run(self, parse, console):
-        super().run(parse)
-        # Slice the command name off the parse so we only
-        # parse the arguments.
-        parse_trunc = parse[1:]
+    def run(self, parse: list, context: Context, cmd_tree: CommandNode) -> bool:
+        # Resolve command shortening.
+        parse = super()._resolve_parse(self.name, parse, cmd_tree)
 
-        # Match the subcommand.
-        if len(parse_trunc) > 0:
-            matched_subcmd = super()._get_cmd_match(
-                parse_trunc[0],
-                self.subparser.choices.keys(),
-            )
+        if parse is None:
+            return True
 
-            if matched_subcmd is not None:
-                parse_trunc[0] = matched_subcmd
-
+        # Parse arguments.
         try:
-            args = self.parser.parse_args(parse_trunc)
+            args = self.parser.parse_args(parse)
         except argparse.ArgumentError:
             self.parser.print_help()
             return True
@@ -107,72 +101,42 @@ class CommandConsole(CommandInterface):
             self.parser.print_help()
             return True
         
-        args.func(args, console)
+        args.func(args, context)
 
         return True
 
-    def _session_list(self, args, console):
+    def _session_list(self, args: argparse.Namespace, context: Context) -> bool:
         """
         Brief:
             This function lists all stored sessions.
         """
-        log("Listing saved console sessions...", log_type='info')
-
-        # Check that data file exists.
-        if not os.path.exists(console.data_file):
-            log("Persistent data file does not exist", log_type='error')
-            return
+        log(f"Console session list:", log_type='info')
+        if context is None:
+            return True
         
-        # Read the file data.
-        file_data = ""
-        try:
-            with open(console.data_file, 'r', encoding='utf-8') as f:
-                for line in f:
-                    file_data += line
-        except OSError:
-            log("Unable to read persistent data file", log_type='error')
-            return
-        
-        # Parse the file data as YAML.
-        yaml_data = yaml.safe_load(file_data) or {}
+        context.print_session_list()
+        return True
 
-        # Iterate through all top-level names.
-        for name in yaml_data.keys():
-            if name == 'cur_session':
-                continue
-            if name == console.cur_session:
-                log(f"   \033[32m{name} *\033[0m")
-            else:
-                log(f"   {name}")
-
-    def _session_reset(self, args, console):
+    def _session_reset(self, args: argparse.Namespace, context: Context) -> bool:
         """
         Brief:
             This function clears all session data for the current session.
         """
-        log(f"Resetting data for session '{console.cur_session}'", log_type='info')
+        log(f"Resetting data for session '{context.cur_session}'", log_type='info')
+        context.reset_data()
+        return True
 
-        # Clear data.
-        console.reset_data()
-
-        # Update data.
-        console.update_data()
-
-    def _session_new(self, args, console):
+    def _session_new(self, args: argparse.Namespace, context: Context) -> bool:
         """
         Brief:
             This function creates a new session with blank data.
         """
-        log(f"Creating new session '{args.name}'...", log_type='info')
-        # Update the console's data to save the current session.
-        console.update_data()
-
-        # Change the current session name.
-        console.cur_session = args.name
-
-        # Update data to save session.
-        console.update_data()
-
-        log(f"Switched to session '{console.cur_session}'", log_type='info')
+        # Add new session. If this returned False, the session already exists.
+        if not context.new_session(args.name):
+            log(f"Session with name '{args.name}' already exists", log_type='error')
+            return True
+        
+        log(f"Created and switched to new session: '{args.name}'", log_type='info')
+        return True
 
 ###   end of file   ###
