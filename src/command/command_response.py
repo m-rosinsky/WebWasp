@@ -5,10 +5,11 @@ This file contains the response command class.
 """
 
 import argparse
-import re
 from bs4 import BeautifulSoup
 
 from src.logger import log
+from src.context import Context
+from src.node import CommandNode
 from src.response import html_highlight
 from src.command.command_interface import CommandInterface
 
@@ -129,24 +130,16 @@ class CommandResponse(CommandInterface):
             help='Don\'t show HTML tags in find results',
         )
 
-    def run(self, parse, console):
-        super().run(parse)
-        # Slice the command name off the parse so we only
-        # parse the arguments.
-        parse_trunc = parse[1:]
+    def run(self, parse: list, context: Context, cmd_tree: CommandNode) -> bool:
+        # Resolve command shortening.
+        parse = super()._resolve_parse(self.name, parse, cmd_tree)
 
-        # Match the subcommand.
-        if len(parse_trunc) > 0:
-            matched_subcmd = super()._get_cmd_match(
-                parse_trunc[0],
-                self.subparser.choices.keys(),
-            )
+        if parse is None:
+            return True
 
-            if matched_subcmd is not None:
-                parse_trunc[0] = matched_subcmd
-
+        # Parse arguments.
         try:
-            args = self.parser.parse_args(parse_trunc)
+            args = self.parser.parse_args(parse)
         except argparse.ArgumentError:
             self.parser.print_help()
             return True
@@ -159,35 +152,35 @@ class CommandResponse(CommandInterface):
             self.parser.print_help()
             return True
 
-        if not console.has_response:
+        if not context.has_response:
             log("No response captured", log_type='warning')
             return True
 
-        args.func(args, console)
+        args.func(args, context)
 
         return True
 
-    def _show(self, args, console):
+    def _show(self, args: argparse.Namespace, context: Context):
         if args.text:
-            console.response.print_text()
+            context.response.print_text()
         elif args.cookies:
-            console.response.print_cookies()
+            context.response.print_cookies()
         else:
-            self._show_summary(console)
+            self._show_summary(context)
 
-    def _show_summary(self, console):
-        console.response.print_summary()
+    def _show_summary(self, context: Context):
+        context.response.print_summary()
         log("\nRe-run 'response show' with '-t' option to show response text")
 
-    def _export(self, args, console):
+    def _export(self, args: argparse.Namespace, context: Context):
         filename = args.path
         if not filename:
             # If no arg was supplied for path, use default filename.
-            dt = console.response.date_time
+            dt = context.response.date_time
             filename = f"webwasp{dt.strftime('%m_%d_%Y_%H_%M_%S')}"
         try:
             with open(filename, 'w', encoding='utf-8') as f:
-                f.write(console.response.req_text)
+                f.write(context.response.req_text)
         except OSError as e:
             log("Unable to write to file", log_type='error')
             log(f"   {e}")
@@ -195,7 +188,7 @@ class CommandResponse(CommandInterface):
         
         log(f"Exported response to file '{filename}'", log_type='info')
 
-    def _beautify(self, args, console):
+    def _beautify(self, args: argparse.Namespace, context: Context):
         """
         This function decodes HTML entities.
         """
@@ -214,7 +207,7 @@ class CommandResponse(CommandInterface):
             '&reg;' : '®',
         }
 
-        text = str(console.response.req.text)
+        text = str(context.response.req.text)
 
         log("Beautifying response text...", log_type='info')
 
@@ -226,12 +219,12 @@ class CommandResponse(CommandInterface):
             num_repls += len(text.split(entity)) - 1
             text = text.replace(entity, repl)
 
-        console.response.req_text = text
+        context.response.req_text = text
 
         log(f"   Ran \033[36mprettify\033[0m.")
         log(f"   Made \033[36m{num_repls}\033[0m entity decodes.")
 
-    def _find(self, args, console):
+    def _find(self, args: argparse.Namespace, context: Context):
         """
         This function finds and prints specific items within
         the stored response. This does not alter the stored
@@ -239,7 +232,7 @@ class CommandResponse(CommandInterface):
         """
         # Generate soup.
         # text = BeautifulSoup(console.response.req_text, 'html.parser').prettify()
-        soup = BeautifulSoup(console.response.req_text, 'html.parser')
+        soup = BeautifulSoup(context.response.req_text, 'html.parser')
 
         has_query = False
         matches = []
