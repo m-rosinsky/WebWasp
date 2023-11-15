@@ -23,6 +23,7 @@ from src.command.command_console import CommandConsole
 from src.command.command_cookies import CommandCookies
 from src.command.command_get import CommandGet
 from src.command.command_headers import CommandHeaders
+from src.command.command_params import CommandParams
 
 # The name for file to write command history to.
 HISTORY_FILE = "~/.wwhistory"
@@ -54,6 +55,7 @@ class Dispatcher:
             'cookies': CommandCookies('cookies'),
             'get': CommandGet('get'),
             'headers': CommandHeaders('headers'),
+            'params': CommandParams('params'),
         }
 
         # Build the command autocomp tree.
