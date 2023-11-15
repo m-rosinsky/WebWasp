@@ -127,6 +127,11 @@ class Dispatcher:
         Returns:
             False to exit the program, True otherwise.
         """
+        # Resolve variable names.
+        cmd_parse = self._resolve_var_names(cmd_parse)
+        if cmd_parse is None:
+            return True
+
         # Resolve command shortening within the base command.
         cmd = cmd_parse[0]
         cmd_matches = [c for c in self.command_dict if c.startswith(cmd)]
@@ -164,5 +169,30 @@ class Dispatcher:
             root.children.append(node)
 
         return root
+    
+    def _resolve_var_names(self, parse: list) -> list:
+        """
+        Brief:
+            This function resolves variable names within a command
+            with the variable's value.
+        """
+        res_parse = parse
+        for idx in range(len(parse)):
+            token = parse[idx]
+            if not token.startswith('$'):
+                continue
+
+            # Perform variable lookup.
+            var_name = token[1:]
+            var_val = self.context.vars.get(var_name)
+
+            if not var_val:
+                log(f"Unknown variable '{var_name}'", log_type='error')
+                return None
+            
+            # Replace.
+            res_parse[idx] = var_val
+
+        return res_parse
 
 ###   end of file   ###
