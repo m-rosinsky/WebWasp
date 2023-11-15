@@ -24,6 +24,7 @@ from src.command.command_cookies import CommandCookies
 from src.command.command_get import CommandGet
 from src.command.command_headers import CommandHeaders
 from src.command.command_params import CommandParams
+from src.command.command_post import CommandPost
 
 # The name for file to write command history to.
 HISTORY_FILE = "~/.wwhistory"
@@ -50,12 +51,13 @@ class Dispatcher:
         # The command dictionary, consisting of all command classes and
         # the associated command names.
         self.command_dict = {
-            'clear': CommandClear('clear'),
-            'console': CommandConsole('console'),
-            'cookies': CommandCookies('cookies'),
-            'get': CommandGet('get'),
-            'headers': CommandHeaders('headers'),
-            'params': CommandParams('params'),
+            'clear'     : CommandClear('clear'),
+            'console'   : CommandConsole('console'),
+            'cookies'   : CommandCookies('cookies'),
+            'get'       : CommandGet('get'),
+            'headers'   : CommandHeaders('headers'),
+            'params'    : CommandParams('params'),
+            'post'      : CommandPost('post'),
         }
 
         # Build the command autocomp tree.
