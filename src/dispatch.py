@@ -26,6 +26,7 @@ from src.command.command_headers import CommandHeaders
 from src.command.command_params import CommandParams
 from src.command.command_post import CommandPost
 from src.command.command_response import CommandResponse
+from src.command.command_timeout import CommandTimeout
 
 # The name for file to write command history to.
 HISTORY_FILE = "~/.wwhistory"
@@ -60,6 +61,7 @@ class Dispatcher:
             'params'    : CommandParams('params'),
             'post'      : CommandPost('post'),
             'response'  : CommandResponse('response'),
+            'timeout'   : CommandTimeout('timeout'),
         }
 
         # Build the command autocomp tree.
@@ -90,7 +92,11 @@ class Dispatcher:
                 break
 
             # Parse the command with shlex.
-            cmd_parse = shlex.split(cmd)
+            try:
+                cmd_parse = shlex.split(cmd)
+            except ValueError:
+                log("Command contained invalid characters", log_type='error')
+                cmd_parse = None
             if not cmd_parse:
                 continue
 
