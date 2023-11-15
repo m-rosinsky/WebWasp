@@ -130,7 +130,7 @@ class CommandInterface(ABC):
             if len(matches) > 1:
                 log(f"Ambiguous argument: '{token}'. Potential matches:", log_type='error')
                 for m in matches:
-                    log(f"   {m}")
+                    log(f"   {m.name}")
                 return None
             
             # Perform resolution with only match.

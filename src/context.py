@@ -19,6 +19,22 @@ DEFAULT_TIMEOUT = 2.0
 # The default name for a session.
 DEFAULT_SESSION_NAME = 'default'
 
+# The tag name for the current session.
+SESSION_TAG_NAME = 'cur_session'
+
+# This error is raised when there is an I/O error with the persistent
+# data file.
+class DataError(BaseException):
+    pass
+
+# This error is raised when a given session name does not exist.
+class SessionNotFoundError(BaseException):
+    pass
+
+# This error is raised when a duplicate session attempts to be created.
+class DupSessionError(BaseException):
+    pass
+
 class Context:
     """
     Brief:
@@ -55,12 +71,20 @@ class Context:
         """
         Brief:
             This function resets the context data to its defaults.
+
+        Raises:
+            DataError on I/O errors.
         """
         self.timeout = DEFAULT_TIMEOUT
         self.headers = Headers()
         self.vars = {}
         self.params = {}
         self.cookies = {}
+
+        try:
+            self.save_data()
+        except DataError:
+            raise
 
     def print_session_list(self):
         """
@@ -69,48 +93,41 @@ class Context:
             in the persistent file.
         """
         if not os.path.exists(self.data_file):
-            return
+            raise DataError
         
         yaml_data = self._read_data()
         if yaml_data is None:
-            log("Failed to read data file", log_type='error')
-            return
+            raise DataError
 
         for name in yaml_data.keys():
-            if name == 'cur_session':
+            if name == SESSION_TAG_NAME:
                 continue
             if name == self.cur_session:
                 log(f"   \033[32m{name} *\033[0m")
             else:
                 log(f"   {name}")
 
-    def new_session(self, name: str) -> bool:
+    def new_session(self, name: str):
         """
         Brief:
             This function adds a new session with a given name.
             
-        Returns: bool
-            If the session already exists, this returns False.
-
-            Otherwise returns True.
+        Raises:
+            DupSessionError on duplicate session.
+            DataError on I/O errors.
         """
         # Check if the session already exists.
         if self._find_session(name) is not None:
-            return False
+            raise DupSessionError
         
-        # Save the current session data.
-        self.save_data()
-
-        # Change the session name.
-        self.cur_session = name
-
-        # Reset the local variables.
-        self.reset_data()
-
-        # Save the session into the file.
-        self.save_data()
-
-        return True
+        # Save the current session data, reset, and save new session.
+        try:
+            self.save_data()
+            self.cur_session = name
+            self.reset_data()
+            self.save_data()
+        except DataError:
+            raise
 
     def save_data(self):
         """
@@ -120,8 +137,10 @@ class Context:
         """
         # If the data file does not exist, create a blank one.
         if not os.path.exists(self.data_file):
-            if not self._create_data_file():
-                return
+            try:
+                self._create_data_file()
+            except DataError:
+                raise
             
         # Create the session data.
         session_data = {
@@ -138,11 +157,10 @@ class Context:
         # Read the YAML data.
         yaml_data = self._read_data()
         if yaml_data is None:
-            log("Failed to save session data", log_type='error')
-            return
+            raise DataError
         
         # Save the data in the YAML.
-        yaml_data['cur_session'] = self.cur_session
+        yaml_data[SESSION_TAG_NAME] = self.cur_session
         yaml_data[self.cur_session] = session_data
 
         # Open the data file for writing.
@@ -151,8 +169,71 @@ class Context:
                 # Write the YAML back to the file.
                 yaml.dump(yaml_data, f, default_flow_style=False)
         except [OSError, yaml.YAMLError, AttributeError]:
-            log("Failed to save session data", log_type='error')
-            return
+            raise DataError
+
+    def load_session(self, name: str):
+        """
+        Brief:
+            This function loads an existing session.
+
+        Arguments:
+            name: str
+                The session name to load.
+
+        Raises:
+            SessionNotFoundError on name not existing as a session.
+            DataError on I/O error.
+        """
+        # Check if the session exists.
+        if self._find_session(name) is None:
+            raise SessionNotFoundError
+        
+        # Save the current session.
+        try:
+            self.save_data()
+            self._load_data(name)
+            self.save_data()
+        except DataError:
+            raise
+
+    def copy_session(self, name: str):
+        """
+        Brief:
+            This function copies the current session to a new or existing
+            session with a given name.
+
+        Arguments:
+            name: str
+                The name of the session to copy data to.
+
+        Raises:
+            DataError on I/O error.
+        """
+        orig_name = self.cur_session
+        # If the named session does not exist, create a new session.
+        if self._find_session(name) is None:
+            try:
+                self.new_session(name)
+            except [DataError, DupSessionError]:
+                raise
+
+        # Read the data.
+        try:
+            yaml_data = self._read_data()
+        except DataError:
+            raise
+
+        # Copy data from current session to target session.
+        yaml_data[name] = yaml_data[orig_name]
+
+        # Switch to target session.
+        self.cur_session = name
+
+        # Save the data.
+        try:
+            self.save_data()
+        except DataError:
+            raise
 
     def _read_data(self) -> dict:
         """
@@ -165,7 +246,7 @@ class Context:
             None on error.
         """
         if not os.path.exists(self.data_file):
-            return None
+            raise DataError
         
         try:
             with open(self.data_file, 'r', encoding='utf-8') as f:
@@ -176,11 +257,11 @@ class Context:
 
                 yaml_data = yaml.safe_load(file_data) or {}
         except [OSError, yaml.YAMLError, AttributeError]:
-            return None
+            raise DataError
 
         return yaml_data
 
-    def _load_data(self) -> bool:
+    def _load_data(self, name: str=None):
         """
         Brief:
             This function attempts to load the data associated with the
@@ -189,27 +270,42 @@ class Context:
             If the persistent file does not exist, it will create a blank one.
 
             If the cur_session does not exist, it will switch to default.
+
+        Arguments:
+            name: str
+                The name of the session to load. If None, it will attempt
+                to load the session stored in the SESSION_TAG_NAME of the
+                persistent file.
+
+        Raises:
+            DataError on I/O errors.
         """
         if not os.path.exists(self.data_file):
-            if not self._create_data_file():
-                log("Failed to create persistent data file", log_type='error')
-            self.save_data()
+            try:
+                self._create_data_file()
+                self.save_data()
+            except DataError:
+                raise
             return
         
         # Read the data file.
         yaml_data = self._read_data()
         if yaml_data is None:
-            return False
+            raise DataError
         
-        # Store the value in the cur session tag as the current session.
-        # If it does not exist, store the default session.
-        self.cur_session = yaml_data.get('cur_session', DEFAULT_SESSION_NAME)
+        # Get the name of the provided session, or the SESSION_TAG_NAME if
+        # None was provided.
+        if name is None:
+            self.cur_session = yaml_data.get(SESSION_TAG_NAME, DEFAULT_SESSION_NAME)
+        else:
+            self.cur_session = name
 
         # If the session does not exist, create it.
         if self.cur_session not in yaml_data:
-            if not self.save_data():
-                return False
-            return True
+            try:
+                self.save_data()
+            except DataError:
+                raise
         
         # If the session does exist, load its values into the context variables.
         if 'cookies' in yaml_data[self.cur_session]:
@@ -226,20 +322,19 @@ class Context:
             if 'fields' in yaml_data[self.cur_session]['headers']:
                 self.headers.fields = yaml_data[self.cur_session]['headers']['fields']
 
-    def _create_data_file(self) -> bool:
+    def _create_data_file(self):
         """
         Brief:
             This function attempts to create the persistent data file.
 
-        Returns: bool
-            True on success, False on error.
+        Raises:
+            DataError if there is an error creating the file.
         """
         try:
             with open(self.data_file, 'w', encoding='utf-8') as f:
                 pass
         except OSError:
-            return False
-        return True
+            raise DataError
 
     def _find_session(self, name: str) -> dict:
         """

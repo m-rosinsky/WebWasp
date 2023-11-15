@@ -7,7 +7,7 @@ This file contains the console command class.
 import argparse
 
 from src.logger import log
-from src.context import Context
+from src.context import *
 from src.node import CommandNode
 from src.command.command_interface import CommandInterface
 
@@ -77,6 +77,36 @@ class CommandConsole(CommandInterface):
             help='The name for the new session',
         )
 
+        # Create the console session load subparser.
+        self.parser_session_load = self.session_subparser.add_parser(
+            'load',
+            description='Load an existing session',
+            help='Load an existing session',
+            add_help=False,
+        )
+        self.parser_session_load.set_defaults(func=self._session_load)
+        super().add_help(self.parser_session_load)
+        self.parser_session_load.add_argument(
+            'name',
+            type=str,
+            help='The name of the session',
+        )
+
+        # Create the console session copy subparser.
+        self.parser_session_copy = self.session_subparser.add_parser(
+            'copy',
+            description='Copy data from the current session into [name] and switch to it',
+            help='Copy data from the current session into [name] and switch to it',
+            add_help=False,
+        )
+        self.parser_session_copy.set_defaults(func=self._session_copy)
+        super().add_help(self.parser_session_copy)
+        self.parser_session_copy.add_argument(
+            'name',
+            type=str,
+            help='The name of the session',
+        )
+
     def run(self, parse: list, context: Context, cmd_tree: CommandNode) -> bool:
         # Resolve command shortening.
         parse = super()._resolve_parse(self.name, parse, cmd_tree)
@@ -109,11 +139,11 @@ class CommandConsole(CommandInterface):
             This function lists all stored sessions.
         """
         log(f"Console session list:", log_type='info')
-        if context is None:
-            return
         
-        context.print_session_list()
-        return
+        try:
+            context.print_session_list()
+        except DataError:
+            log("Failed to retreive session list", log_type='error')
 
     def _session_reset(self, args: argparse.Namespace, context: Context):
         """
@@ -121,20 +151,57 @@ class CommandConsole(CommandInterface):
             This function clears all session data for the current session.
         """
         log(f"Resetting data for session '{context.cur_session}'", log_type='info')
-        context.reset_data()
-        return
+        try:
+            context.reset_data()
+        except DataError:
+            log("Failed to write to persistent file", log_type='error')
 
     def _session_new(self, args: argparse.Namespace, context: Context):
         """
         Brief:
             This function creates a new session with blank data.
         """
-        # Add new session. If this returned False, the session already exists.
-        if not context.new_session(args.name):
+        # Add new session.
+        try:
+            context.new_session(args.name)
+        except DupSessionError:
             log(f"Session with name '{args.name}' already exists", log_type='error')
+            return
+        except DataError:
+            log("Unable to write to persistent data file", log_type='error')
             return
         
         log(f"Created and switched to new session: '{args.name}'", log_type='info')
-        return
+    
+    def _session_load(self, args: argparse.Namespace, context: Context):
+        """
+        Brief:
+            This function loads an existing session.
+        """
+        try:
+            context.load_session(args.name)
+        except SessionNotFoundError:
+            log(f"Session '{args.name}' does not exist", log_type='error')
+            return
+        except DataError:
+            log("Unable to read from persistent data file", log_type='error')
+            return
+        
+        log(f"Switched to session '{args.name}'", log_type='info')
+
+    def _session_copy(self, args: argparse.Namespace, context: Context):
+        """
+        Brief:
+            This function copies an existing session.
+        """
+        orig_name = context.cur_session
+        try:
+            context.copy_session(args.name)
+        except DataError:
+            log("Unable to read from persistent data file", log_type='error')
+            return
+        
+        log(f"Copied data from session '{orig_name}' to '{args.name}'", log_type='info')
+        log(f"Switched to session '{args.name}'", log_type='info')
 
 ###   end of file   ###
