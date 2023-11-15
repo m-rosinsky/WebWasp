@@ -7,6 +7,8 @@ This file contains the var command class.
 import argparse
 
 from src.logger import log
+from src.context import Context
+from src.node import CommandNode
 from src.command.command_interface import CommandInterface
 
 class CommandVar(CommandInterface):
@@ -77,24 +79,16 @@ class CommandVar(CommandInterface):
         self.parser_clear.set_defaults(func=self._clear)
         super().add_help(self.parser_clear)
 
-    def run(self, parse, console):
-        super().run(parse)
-        # Slice the command name off the parse so we only
-        # parse the arguments.
-        parse_trunc = parse[1:]
+    def run(self, parse: list, context: Context, cmd_tree: CommandNode) -> bool:
+        # Resolve command shortening.
+        parse = super()._resolve_parse(self.name, parse, cmd_tree)
 
-        # Match the subcommand.
-        if len(parse_trunc) > 0:
-            matched_subcmd = super()._get_cmd_match(
-                parse_trunc[0],
-                self.subparser.choices.keys(),
-            )
+        if parse is None:
+            return True
 
-            if matched_subcmd is not None:
-                parse_trunc[0] = matched_subcmd
-
+        # Parse arguments.
         try:
-            args = self.parser.parse_args(parse_trunc)
+            args = self.parser.parse_args(parse)
         except argparse.ArgumentError:
             self.parser.print_help()
             return True
@@ -104,23 +98,23 @@ class CommandVar(CommandInterface):
 
         # If no subcommand was specified, show list.
         if not hasattr(args, 'func'):
-            self._list(console)
+            self._list(context)
             return True
 
-        args.func(args, console)
-        console.update_data()
+        args.func(args, context)
+        context.save_data()
 
         return True
 
-    def _list(self, console):
+    def _list(self, context: Context):
         """
         This function lists all variables currently stored.
         """
         log("Current stored variables:", log_type='info')
-        for name, value in console.vars.items():
+        for name, value in context.vars.items():
             log(f"   ${name} -> '{value}'")
 
-    def _add(self, args, console):
+    def _add(self, args: argparse.Namespace, context: Context):
         """
         This function adds a new variable.
         """
@@ -131,27 +125,27 @@ class CommandVar(CommandInterface):
             )
             return
 
-        console.vars[args.name] = args.value
+        context.vars[args.name] = args.value
         log("Added variable:", log_type='info')
         log(f"   ${args.name} -> '{args.value}'")
 
-    def _remove(self, args, console):
+    def _remove(self, args: argparse.Namespace, context: Context):
         """
         This function removes a parameter.
         """
-        if args.name not in console.vars:
+        if args.name not in context.vars:
             log(f"Variable '{args.name}' does not exist", log_type='error')
             return
         
-        del console.vars[args.name]
+        del context.vars[args.name]
         log("Removed variable:", log_type='info')
         log(f"   ${args.name}")
 
-    def _clear(self, args, console):
+    def _clear(self, args: argparse.Namespace, context: Context):
         """
-        This function clears the console parameters.
+        This function clears the context parameters.
         """
-        console.vars = {}
+        context.vars = {}
         log("All variables cleared", log_type='info')
 
 ###   end of file   ###

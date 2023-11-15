@@ -27,6 +27,7 @@ from src.command.command_params import CommandParams
 from src.command.command_post import CommandPost
 from src.command.command_response import CommandResponse
 from src.command.command_timeout import CommandTimeout
+from src.command.command_var import CommandVar
 
 # The name for file to write command history to.
 HISTORY_FILE = "~/.wwhistory"
@@ -62,6 +63,7 @@ class Dispatcher:
             'post'      : CommandPost('post'),
             'response'  : CommandResponse('response'),
             'timeout'   : CommandTimeout('timeout'),
+            'var'       : CommandVar('var'),
         }
 
         # Build the command autocomp tree.
