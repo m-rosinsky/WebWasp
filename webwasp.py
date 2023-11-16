@@ -17,7 +17,7 @@ except ImportError:
     print("[🛑] Run python3 -m pip install -r requirements.txt")
     sys.exit(1)
 
-from src import console
+from src.dispatch import Dispatcher
 
 def check_version():
     """
@@ -58,8 +58,8 @@ def main():
 
     print(f"[🐝] Running WebWasp version {ww_version_string}...")
 
-    con = console.Console()
-    con.run()
+    d = Dispatcher()
+    d.run()
 
 if __name__=='__main__':
     main()

@@ -10,6 +10,8 @@ import http
 import requests
 
 from src.logger import log
+from src.context import Context
+from src.node import CommandNode
 from src.command.command_interface import CommandInterface
 
 class CommandPost(CommandInterface):
@@ -41,16 +43,18 @@ class CommandPost(CommandInterface):
             help='Parameters from params to send with post request',
         )
 
-    def run(self, parse, console):
-        super().run(parse)
-        # Slice the command name off the parse so we only
-        # parse the arguments.
-        parse_trunc = parse[1:]
+    def run(self, parse: list, context: Context, cmd_tree: CommandNode) -> bool:
+        # Resolve command shortening.
+        parse = super()._resolve_parse(self.name, parse, cmd_tree)
 
+        if parse is None:
+            return True
+
+        # Parse arguments.
         try:
-            args = self.parser.parse_args(parse_trunc)
+            args = self.parser.parse_args(parse)
         except argparse.ArgumentError:
-            self.get_help()
+            self.parser.print_help()
             return True
         except SystemExit:
             # Don't let argparse exit the program.
@@ -66,22 +70,22 @@ class CommandPost(CommandInterface):
         # Prepare the parameters.
         data = {}
         for param in args.params:
-            if not param in console.params:
+            if not param in context.params:
                 log(f"Parameter {param} not in params list", log_type='error')
                 return True
-            data[param] = console.params[param]
+            data[param] = context.params[param]
 
         # Construct the headers dictionary with only fields are are not None
         # in the console's headers object.
         headers = {}
-        for field, value in console.headers.fields.items():
+        for field, value in context.headers.fields.items():
             if value is not None:
                 headers[field] = value
 
         # Construct the auth dictionary.
         auth = None
-        if console.headers.auth['auth-user'] is not None:
-            auth = (console.headers.auth['auth-user'], console.headers.auth['auth-pass'])
+        if context.headers.auth['auth-user'] is not None:
+            auth = (context.headers.auth['auth-user'], context.headers.auth['auth-pass'])
 
         log(
             f"Sending POST request to \033[36m{url}\033[0m...",
@@ -97,10 +101,10 @@ class CommandPost(CommandInterface):
             req = requests.post(
                 url,
                 data=data,
-                timeout=console.timeout_s,
+                timeout=context.timeout,
                 auth=auth,
                 headers=headers,
-                cookies=console.cookies,
+                cookies=context.cookies,
             )
         except requests.exceptions.RequestException as req_ex:
             print(f"{req_ex}")
@@ -128,13 +132,13 @@ class CommandPost(CommandInterface):
         print(f"\033[0m({http_code.phrase})")
 
         # Save the response fields to the console.
-        console.response.date_time = datetime.datetime.now()
-        console.response.set_req(req)
-        console.response.post_data = data
+        context.response.date_time = datetime.datetime.now()
+        context.response.set_req(req)
+        context.response.post_data = data
 
         # Set the console flag to indicate a response has been captured,
         # and report.
-        console.has_response = True
+        context.has_response = True
         log(
             "Response captured! Type 'response show' for summary",
             log_type='info',

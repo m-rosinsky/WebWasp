@@ -9,6 +9,7 @@ import argparse
 from abc import ABC, abstractmethod
 
 from src.logger import log
+from src.context import Context
 from src.node import CommandNode
 
 class CommandInterface(ABC):
@@ -34,14 +35,14 @@ class CommandInterface(ABC):
         )
 
     @abstractmethod
-    def run(self, parse, console=None):
+    def run(self, parse: list, context: Context, cmd_tree: CommandNode) -> bool:
         """
         This function runs the command given a parse of the arguments.
 
-        It is also supplied a reference to the console instance so it
+        It is also supplied a reference to the context instance so it
         can make edits.
 
-        This should return False if the console should exit after
+        This should return False if the program should exit after
         execution of the command.
         """
         return True
@@ -85,33 +86,61 @@ class CommandInterface(ABC):
 
         return node
 
-    def _get_cmd_match(self, cmd, l):
+    def _resolve_parse(self, name: str, parse: list, cmd_tree: CommandNode) -> list:
         """
         Brief:
-            This function attempts to match the entered command with
-            the closest fit in the subparser.
+            This function resolves command shortening by comparing the
+            class's command tree to the provided command parse.
 
         Arguments:
-            cmd: str
-                The subcommand entered by the user.
+            name: str
+                The name of the base command
 
-            l: list
-                The list of possible commands.
+            parse: list
+                The command parse, without the base command
+
+            cmd_tree: CommandNode
+                The root node of the command tree.
         """
-        matches = [c for c in l if c.startswith(cmd)]
+        res_parse = parse
 
-        if len(matches) == 1:
-            return matches[0]
+        # Find the root node of the base command provided in the name param.
+        base_node = None
+        for node in cmd_tree.children:
+            if node.name == name:
+                base_node = node
+                break
+
+        # If not found, return.
+        if base_node is None:
+            return res_parse
         
-        # If the list comprehension returned multiple values, then the command
-        # was ambiguous.
-        if len(matches) > 1:
-            log(f"Ambiguous command: '{cmd}'. Potential matches:", log_type='error')
-            for match in matches:
-                log(f"   {match}")
-            return None
-        
-        # No matches were returned, so the command was invalid.
-        return None
+        # Find matches for each token in the parse.
+        cur_node = base_node
+        parse_index = 0
+        for token in parse:
+            matches = [c for c in cur_node.children if c.name.startswith(token)]
+
+            # If no matches, return. When these arguments are parsed
+            # the help message will be displayed.
+            if not matches:
+                return res_parse
+            
+            # If ambiguous matches, print possibilities.
+            if len(matches) > 1:
+                log(f"Ambiguous argument: '{token}'. Potential matches:", log_type='error')
+                for m in matches:
+                    log(f"   {m.name}")
+                return None
+            
+            # Perform resolution with only match.
+            parse[parse_index] = matches[0].name
+
+            # Increment index and current node.
+            parse_index += 1
+            cur_node = matches[0]
+
+        # Return the resolved parse list.
+        return res_parse
 
 ###   end of file   ###

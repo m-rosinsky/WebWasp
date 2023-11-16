@@ -10,6 +10,8 @@ import datetime
 import requests
 
 from src.logger import log
+from src.context import Context
+from src.node import CommandNode
 from src.command.command_interface import CommandInterface
 
 class CommandGet(CommandInterface):
@@ -45,16 +47,18 @@ class CommandGet(CommandInterface):
             help='Perform request without stored cookies'
         )
 
-    def run(self, parse, console):
-        super().run(parse)
-        # Slice the command name off the parse so we only
-        # parse the arguments.
-        parse_trunc = parse[1:]
+    def run(self, parse: list, context: Context, cmd_tree: CommandNode) -> bool:
+        # Resolve command shortening.
+        parse = super()._resolve_parse(self.name, parse, cmd_tree)
 
+        if parse is None:
+            return True
+
+        # Parse arguments.
         try:
-            args = self.parser.parse_args(parse_trunc)
+            args = self.parser.parse_args(parse)
         except argparse.ArgumentError:
-            self.get_help()
+            self.parser.print_help()
             return True
         except SystemExit:
             # Don't let argparse exit the program.
@@ -68,7 +72,7 @@ class CommandGet(CommandInterface):
             url = 'http://' + url
 
         # If the --no-params flag was specified, unset params.
-        params = console.params
+        params = context.params
         if args.no_params:
             params = {}
 
@@ -76,7 +80,7 @@ class CommandGet(CommandInterface):
         prep = requests.Request('GET', url, params=params).prepare()
 
         # If the --no-cookies flag was specified, unset cookies.
-        cookies = console.cookies
+        cookies = context.cookies
         if args.no_cookies:
             cookies = {}
 
@@ -89,21 +93,21 @@ class CommandGet(CommandInterface):
         # Construct the headers dictionary with only fields are are not None
         # in the console's headers object.
         headers = {}
-        for field, value in console.headers.fields.items():
+        for field, value in context.headers.fields.items():
             if value is not None:
                 headers[field] = value
 
         # Construct the auth dictionary.
         auth = None
-        if console.headers.auth['auth-user'] is not None:
-            auth = (console.headers.auth['auth-user'], console.headers.auth['auth-pass'])
+        if context.headers.auth['auth-user'] is not None:
+            auth = (context.headers.auth['auth-user'], context.headers.auth['auth-pass'])
 
         # Perform get request from request lib.
         req = None
         try:
             req = requests.get(
                 prep.url,
-                timeout=console.timeout_s,
+                timeout=context.timeout,
                 auth=auth,
                 headers=headers,
                 cookies=cookies,
@@ -134,13 +138,13 @@ class CommandGet(CommandInterface):
         print(f"\033[0m({http_code.phrase})")
 
         # Save the response fields to the console.
-        console.response.date_time = datetime.datetime.now()
-        console.response.set_req(req)
-        console.response.post_data = None
+        context.response.date_time = datetime.datetime.now()
+        context.response.set_req(req)
+        context.response.post_data = None
 
         # Set the console flag to indicate a response has been captured,
         # and report.
-        console.has_response = True
+        context.has_response = True
         log(
             "Response captured! Type 'response show' for summary",
             log_type='info',
