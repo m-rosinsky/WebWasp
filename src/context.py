@@ -228,6 +228,65 @@ class Context:
         except DataError:
             raise
 
+    def delete_session(self, name: str):
+        """
+        Brief:
+            This function deletes a named session. If the current session has
+            been deleted, the current session switches back to default.
+
+            If default is deleted, it resets default instead of deleting.
+
+        Arguments:
+            name: str
+                The name of the session to delete.
+
+        Raises:
+            SessionNotFoundError on name not existing as a session.
+            DataError on I/O error.
+        """
+        # Check if named session exists.
+        if self._find_session(name) is None:
+            raise SessionNotFoundError
+        
+        # If we delete the active session, switch to default.
+        if self.cur_session == name:
+            self.load_session(DEFAULT_SESSION_NAME)
+
+        # If the named session is the default, reset instead of delete.
+        if name == DEFAULT_SESSION_NAME:
+            try:
+                self.reset_data()
+                self.save_data()
+            except DataError:
+                raise
+            return
+        
+        # Get data.
+        try:
+            yaml_data = self._read_data()
+        except DataError:
+            raise
+
+        if yaml_data is None:
+            raise DataError
+                
+        # Delete entry for named session.
+        del yaml_data[name]
+
+        # Dump yaml back.
+        try:
+            with open(self.data_file, 'w', encoding='utf-8') as f:
+                # Write the YAML back to the file.
+                yaml.dump(yaml_data, f, default_flow_style=False)
+        except [OSError, yaml.YAMLError, AttributeError]:
+            raise DataError
+        
+        # Load data from current session.
+        try:
+            self._load_data()
+        except DataError:
+            raise
+
     def _read_data(self) -> dict:
         """
         Brief:

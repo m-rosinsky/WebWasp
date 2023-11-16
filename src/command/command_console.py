@@ -107,6 +107,22 @@ class CommandConsole(CommandInterface):
             help='The name of the session',
         )
 
+        # Create the console session delete subparser.
+        self.parser_session_delete = self.session_subparser.add_parser(
+            'delete',
+            description='Delete session data',
+            help='Delete session data',
+            epilog='If current session is deleted, will switch to default session',
+            add_help=False,
+        )
+        self.parser_session_delete.set_defaults(func=self._session_delete)
+        super().add_help(self.parser_session_delete)
+        self.parser_session_delete.add_argument(
+            'name',
+            type=str,
+            help='The name of the session',
+        )
+
     def run(self, parse: list, context: Context, cmd_tree: CommandNode) -> bool:
         # Resolve command shortening.
         parse = super()._resolve_parse(self.name, parse, cmd_tree)
@@ -203,5 +219,24 @@ class CommandConsole(CommandInterface):
         
         log(f"Copied data from session '{orig_name}' to '{args.name}'", log_type='info')
         log(f"Switched to session '{args.name}'", log_type='info')
+
+    def _session_delete(self, args: argparse.Namespace, context: Context):
+        """
+        Brief:
+            This function deletes an existing session.
+        """
+        orig_name = context.cur_session
+        try:
+            context.delete_session(args.name)
+        except SessionNotFoundError:
+            log(f"Session '{args.name}' does not exist", log_type='error')
+            return
+        except DataError:
+            log("Unable to write to persistent data file", log_type='error')
+            return
+        
+        log(f"Deleted session '{args.name}'", log_type='info')
+        if context.cur_session != orig_name:
+            log(f"Switched to session '{context.cur_session}'", log_type='info')
 
 ###   end of file   ###
