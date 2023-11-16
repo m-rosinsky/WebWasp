@@ -209,22 +209,15 @@ class Context:
         Raises:
             DataError on I/O error.
         """
-        orig_name = self.cur_session
         # If the named session does not exist, create a new session.
         if self._find_session(name) is None:
             try:
-                self.new_session(name)
+                self.save_data()
+                self.cur_session = name
+                self.save_data()
             except [DataError, DupSessionError]:
                 raise
-
-        # Read the data.
-        try:
-            yaml_data = self._read_data()
-        except DataError:
-            raise
-
-        # Copy data from current session to target session.
-        yaml_data[name] = yaml_data[orig_name]
+            return
 
         # Switch to target session.
         self.cur_session = name
