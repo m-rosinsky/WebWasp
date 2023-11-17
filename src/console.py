@@ -7,41 +7,35 @@ This file contains the class definitions for the console suite.
 import os
 import shlex
 import sys
+import readchar
 import platform
-
-from src.logger import log
-
-_PLATFORM = platform.system()
-
-# Attempt platform specific getch imports.
-if _PLATFORM == 'Windows':
-    try:
-        import msvcrt
-    except ImportError:
-        log("Missing dependencies: 'msvcrt'", log_type='error')
-        sys.exit(1)
-else:
-    try:
-        import getch
-    except ImportError:
-        log("Missing dependencies: 'getch'", log_type='error')
-        log("Run python3 -m pip install getch")
-        sys.exit(1)
 
 from src.node import CommandNode
 from src.logger import log
 
 from src.command.command_interface import CommandInterface
 
-# Key macros.
-ESC_SEQUENCE = '\x1b'
-KEY_BACKSPACE = '\x7f'
+_PLATFORM = 'Windows' if 'Windows' in platform.platform() else 'Unix'
 
 # The default length for the command history.
 DEFAULT_HISTORY_LEN = 20
 
 # The max length of a command.
 DEFAULT_MAX_CMD_LEN = 1024
+
+_WIN_ESC_LOOKUP = {
+    0x48: 'UP',
+    0x50: 'DOWN',
+    0x4d: 'RIGHT',
+    0x4b: 'LEFT',
+}
+
+_UNIX_ESC_LOOKUP = {
+    '[A': 'UP',
+    '[B': 'DOWN',
+    '[C': 'RIGHT',
+    '[D': 'LEFT',
+}
 
 def lcp(l: list) -> str:
     """
@@ -157,23 +151,24 @@ class Console:
         while True:
             sys.stdout.flush()
 
-            try:
-                if _PLATFORM == 'Windows':
-                    inp = msvcrt.getch()
-                else:
-                    inp = getch.getch()
-            except OverflowError: # Catch non-ascii characters.
-                continue
-            except KeyboardInterrupt:
-                self.is_running = False
-                break
+            inp = readchar.readchar()
 
-            if inp == ESC_SEQUENCE:
-                self._prompt_esc_seq()
-                continue
+            # Escape sequences.
+            if _PLATFORM == 'Unix':
+                if inp == readchar.key.ESC:
+                    self._prompt_esc_seq()
+                    continue
+            else:
+                if ord(inp) == 0xe0:
+                    self._prompt_esc_seq()
+                    continue
+
+            if inp == readchar.key.CTRL_C:
+                self.is_running = False
+                raise KeyboardInterrupt
 
             # Backspace.
-            if inp == KEY_BACKSPACE:
+            if inp == readchar.key.BACKSPACE:
                 # Bounds check.
                 if self.cmd_idx == 0:
                     continue
@@ -201,7 +196,7 @@ class Console:
                 continue
 
             # Tab Completions.
-            if inp == "\t":
+            if inp == readchar.key.TAB:
                 parse = shlex.split(self.cmd)
                 if len(self.cmd) > 0 and self.cmd[len(self.cmd) - 1] == " " and self.cmd_idx == len(self.cmd):
                     parse.append("")
@@ -252,7 +247,7 @@ class Console:
                 continue
 
             # Return.
-            if inp == "\n":
+            if inp == readchar.key.ENTER:
                 print("")
                 break
 
@@ -278,9 +273,17 @@ class Console:
         return self.cmd
 
     def _prompt_esc_seq(self):
-        esc_seq = getch.getch() + getch.getch()
+        if _PLATFORM == 'Windows':
+            c = readchar.readchar()
+            esc_seq = _WIN_ESC_LOOKUP.get(ord(c), None)
+        else:
+            c = readchar.readchar() + readchar.readchar()
+            esc_seq = _UNIX_ESC_LOOKUP.get(c, None)
 
-        if esc_seq == '[A': # UP ARROW
+        if esc_seq is None:
+            return
+
+        if esc_seq == 'UP': # UP ARROW
             # Upper bound check.
             if self.hist_idx + 1 >= len(self.history):
                 return
@@ -309,7 +312,7 @@ class Console:
             # Print command
             print(self.cmd, end="")
 
-        elif esc_seq == '[B': # DOWN ARROW
+        elif esc_seq == 'DOWN': # DOWN ARROW
             # Lower bound check.
             if self.hist_idx == -1:
                 return
@@ -337,7 +340,7 @@ class Console:
             # Print command.
             print(self.cmd, end="")
 
-        elif esc_seq == '[C': # RIGHT ARROW
+        elif esc_seq == 'RIGHT': # RIGHT ARROW
             # Upper bounds check.
             if self.cmd_idx >= len(self.cmd):
                 return
@@ -346,7 +349,7 @@ class Console:
             sys.stdout.flush()
             self.cmd_idx += 1
 
-        elif esc_seq == '[D': # LEFT ARROW
+        elif esc_seq == 'LEFT': # LEFT ARROW
             # Lower bounds check.
             if self.cmd_idx == 0:
                 return
