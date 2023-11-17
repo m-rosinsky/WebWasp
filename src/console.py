@@ -5,10 +5,28 @@ This file contains the class definitions for the console suite.
 """
 
 import os
-import getch
 import shlex
 import sys
-import yaml
+import platform
+
+from src.logger import log
+
+_PLATFORM = platform.system()
+
+# Attempt platform specific getch imports.
+if _PLATFORM == 'Windows':
+    try:
+        import msvcrt
+    except ImportError:
+        log("Missing dependencies: 'msvcrt'", log_type='error')
+        sys.exit(1)
+else:
+    try:
+        import getch
+    except ImportError:
+        log("Missing dependencies: 'getch'", log_type='error')
+        log("Run python3 -m pip install getch")
+        sys.exit(1)
 
 from src.node import CommandNode
 from src.logger import log
@@ -140,7 +158,10 @@ class Console:
             sys.stdout.flush()
 
             try:
-                inp = getch.getch()
+                if _PLATFORM == 'Windows':
+                    inp = msvcrt.getch()
+                else:
+                    inp = getch.getch()
             except OverflowError: # Catch non-ascii characters.
                 continue
             except KeyboardInterrupt:
