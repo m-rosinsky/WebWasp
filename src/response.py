@@ -12,13 +12,16 @@ import requests
 from bs4 import BeautifulSoup
 
 from pygments import highlight
+from pygments.util import ClassNotFound
 from pygments.lexers import get_lexer_by_name
 from pygments.formatters import Terminal256Formatter
 from pygments.styles import get_style_by_name, get_all_styles
 
 from src.logger import log
 
-def html_highlight(text: str, style: str='default') -> str:
+_DEFAULT_STYLE = 'lovelace'
+
+def text_highlight(text: str, style: str='default', syntax: str='html') -> str:
     """
     Brief:
         This function performs syntax highlighting for HTML responses.
@@ -32,7 +35,10 @@ def html_highlight(text: str, style: str='default') -> str:
     Returns:
         The highlighted text.
     """
-    lexer = get_lexer_by_name("html", stripall=True)
+    try:
+        lexer = get_lexer_by_name(syntax, stripall=True)
+    except ClassNotFound:
+        lexer = get_lexer_by_name('html', stripall=True)
 
     available_styles = list(get_all_styles())
     if style not in available_styles:
@@ -111,11 +117,11 @@ class Response:
             for name, value in self.post_data.items():
                 log(f"   '{name}' : '{value}'")
     
-    def print_text(self):
+    def print_text(self, syntax: str='html'):
         """
         This function prints the response text with syntax highlighting.
         """
-        text = html_highlight(self.req_text, style='lovelace')
+        text = text_highlight(self.req_text, style=_DEFAULT_STYLE, syntax=syntax)
         print(text)
 
     def print_cookies(self):

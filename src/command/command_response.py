@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 from src.logger import log
 from src.context import Context
 from src.node import CommandNode
-from src.response import html_highlight
+from src.response import text_highlight
 from src.command.command_interface import CommandInterface
 
 class CommandResponse(CommandInterface):
@@ -21,40 +21,54 @@ class CommandResponse(CommandInterface):
     def __init__(self, name):
         super().__init__(name)
 
-        # Create argument parser and help.
+        # response
         self.parser = argparse.ArgumentParser(
             prog=self.name,
             description='Interact with the most recent response',
             add_help=False
         )
         super().add_help(self.parser)
-
-        # Create the subparser object.
         self.subparser = self.parser.add_subparsers()
 
-        # Create the response show command subparser.
+        # response show.
         self.parser_show = self.subparser.add_parser(
             'show',
             description='Show the most recent response',
             help='Show the most recent response',
             add_help=False
         )
-        self.parser_show.set_defaults(func=self._show)
+        self.parser_show.set_defaults(func=self._show_summary)
         super().add_help(self.parser_show)
-        self.parser_show.add_argument(
-            '-t',
-            '--text',
-            action='store_true',
-            help='show the text of the response',
+        self.parser_show_subparser = self.parser_show.add_subparsers()
+
+        # response show text.
+        self.parser_show_text = self.parser_show_subparser.add_parser(
+            'text',
+            description='Show the text of the response',
+            help='Show the text of the response',
+            add_help=False
         )
-        self.parser_show.add_argument(
-            '-c',
-            '--cookies',
-            action='store_true',
-            help='show the cookies of the response',
+        self.parser_show_text.set_defaults(func=self._show_text)
+        super().add_help(self.parser_show_text)
+        self.parser_show_text.add_argument(
+            '-s',
+            '--syntax',
+            choices=['php', 'js', 'html'],
+            default='html',
+            help='Set the syntax highlighting the response (default: html)',
         )
 
-        # Create the response export command subparser.
+        # resonse show cookies.
+        self.parser_show_cookies = self.parser_show_subparser.add_parser(
+            'cookies',
+            description='Show the cookies of the response',
+            help='Show the cookies of the response',
+            add_help=False,
+        )
+        self.parser_show_cookies.set_defaults(func=self._show_cookies)
+        super().add_help(self.parser_show_cookies)
+
+        # response export.
         self.parser_export = self.subparser.add_parser(
             'export',
             help='Save the response to a file',
@@ -69,7 +83,7 @@ class CommandResponse(CommandInterface):
             help='The filepath to write the response to',
         )
 
-        # Create the response beautify command subparser.
+        # response beautify.
         self.parser_beautify = self.subparser.add_parser(
             'beautify',
             help='Clean up response text with HTML encoding',
@@ -78,7 +92,7 @@ class CommandResponse(CommandInterface):
         self.parser_beautify.set_defaults(func=self._beautify)
         super().add_help(self.parser_beautify)
 
-        # Create the response find command subparser.
+        # response find.
         self.parser_find = self.subparser.add_parser(
             'find',
             help='Find specific things within the response',
@@ -160,17 +174,15 @@ class CommandResponse(CommandInterface):
 
         return True
 
-    def _show(self, args: argparse.Namespace, context: Context):
-        if args.text:
-            context.response.print_text()
-        elif args.cookies:
-            context.response.print_cookies()
-        else:
-            self._show_summary(context)
-
-    def _show_summary(self, context: Context):
+    def _show_summary(self, args: argparse.Namespace, context: Context):
         context.response.print_summary()
-        log("\nRe-run 'response show' with '-t' option to show response text")
+        log("\nRe-run 'response show text' to show response text")
+
+    def _show_text(self, args: argparse.Namespace, context: Context):
+        context.response.print_text(args.syntax)
+
+    def _show_cookies(self, args: argparse.Namespace, context: Context):
+        context.response.print_cookies()
 
     def _export(self, args: argparse.Namespace, context: Context):
         filename = args.path
@@ -293,7 +305,7 @@ class CommandResponse(CommandInterface):
         log("Find results:", log_type='info')
 
         for m in matches:
-            line = html_highlight(str(m), style='lovelace').strip()
+            line = text_highlight(str(m), style='lovelace').strip()
             log(line)
 
 ###   end of file   ###
