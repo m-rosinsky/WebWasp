@@ -8,7 +8,7 @@ import sys
 
 try:
     import bs4
-    import getch
+    import readchar
     import requests
     import emoji
     import pygments
