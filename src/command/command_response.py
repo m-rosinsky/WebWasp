@@ -5,6 +5,7 @@ This file contains the response command class.
 """
 
 import argparse
+import re
 from bs4 import BeautifulSoup
 
 from src.logger import log
@@ -142,6 +143,21 @@ class CommandResponse(CommandInterface):
             '--strip',
             action='store_true',
             help='Don\'t show HTML tags in find results',
+        )
+
+        # response grep.
+        self.parser_grep = self.subparser.add_parser(
+            'grep',
+            help='Perform grep-like search on raw response text',
+            epilog='Compatible with regex strings',
+            add_help=False,
+        )
+        self.parser_grep.set_defaults(func=self._grep)
+        super().add_help(self.parser_grep)
+        self.parser_grep.add_argument(
+            'pattern',
+            type=str,
+            help='The pattern to search for (regex compat.)',
         )
 
     def run(self, parse: list, context: Context, cmd_tree: CommandNode) -> bool:
@@ -307,5 +323,28 @@ class CommandResponse(CommandInterface):
         for m in matches:
             line = text_highlight(str(m), style='lovelace').strip()
             log(line)
+
+    def _grep(self, args: argparse.Namespace, context: Context):
+        """
+        Brief:
+            This function performs a grep-like search against the
+            raw response text.
+        """
+        regex_string = re.compile(args.pattern)
+        lines = context.response.req_text.split("\n")
+        match_lines = [line for line in lines if re.search(regex_string, line)]
+
+        log(f"Search results for pattern '{args.pattern}':", log_type='info')
+        for line in match_lines:
+            # Perform highlighting on actual match within line.
+            pattern_match = list(re.finditer(regex_string, line))
+
+            if pattern_match:
+                cl = line
+                for m in reversed(pattern_match):
+                    start_idx, end_idx = m.span()
+                    cl = f"{cl[:start_idx]}\033[32m{cl[start_idx:end_idx]}\033[0m{cl[end_idx:]}"
+            
+                log(f"   {cl}")
 
 ###   end of file   ###
