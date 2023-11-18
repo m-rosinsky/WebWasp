@@ -1,5 +1,5 @@
 beautifulsoup4
-getch
+readchar
 requests
 emoji
 pyyaml

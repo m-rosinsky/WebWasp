@@ -8,7 +8,7 @@ import sys
 
 try:
     import bs4
-    import getch
+    import readchar
     import requests
     import emoji
     import pygments
@@ -18,6 +18,7 @@ except ImportError:
     sys.exit(1)
 
 from src.dispatch import Dispatcher
+from src.get_key import get_key, Key
 
 def check_version():
     """

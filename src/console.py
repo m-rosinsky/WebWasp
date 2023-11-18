@@ -5,13 +5,12 @@ This file contains the class definitions for the console suite.
 """
 
 import os
-import getch
 import shlex
 import sys
-import yaml
 
 from src.node import CommandNode
 from src.logger import log
+from src.get_key import get_key, Key
 
 from src.command.command_interface import CommandInterface
 
@@ -139,20 +138,23 @@ class Console:
         while True:
             sys.stdout.flush()
 
-            try:
-                inp = getch.getch()
-            except OverflowError: # Catch non-ascii characters.
+            inp = get_key()
+
+            # Unrecognized characters are ignored.
+            if inp == None:
                 continue
-            except KeyboardInterrupt:
-                self.is_running = False
+
+            # Keyboard Interrupt.
+            if inp == Key.CTRL_C:
+                raise KeyboardInterrupt
+            
+            # Return.
+            if inp == Key.RETURN:
+                print("")
                 break
 
-            if inp == ESC_SEQUENCE:
-                self._prompt_esc_seq()
-                continue
-
             # Backspace.
-            if inp == KEY_BACKSPACE:
+            if inp == Key.BACKSPACE:
                 # Bounds check.
                 if self.cmd_idx == 0:
                     continue
@@ -180,7 +182,7 @@ class Console:
                 continue
 
             # Tab Completions.
-            if inp == "\t":
+            if inp == Key.TAB:
                 parse = shlex.split(self.cmd)
                 if len(self.cmd) > 0 and self.cmd[len(self.cmd) - 1] == " " and self.cmd_idx == len(self.cmd):
                     parse.append("")
@@ -230,10 +232,83 @@ class Console:
                 print(f"\n> {self.cmd}", end="")
                 continue
 
-            # Return.
-            if inp == "\n":
-                print("")
-                break
+            if inp == Key.UP:
+                # Upper bound check.
+                if self.hist_idx + 1 >= len(self.history):
+                    continue
+
+                self.hist_idx += 1
+
+                # Create a save of current command buffer if this
+                # is the first up arrow press.
+                if self.hist_idx == 0:
+                    self.saved_cmd = self.cmd
+
+                # Put cursor at end of line.
+                for _ in range(self.cmd_idx, len(self.cmd)):
+                    print(" ", end="")
+
+                # Blank line and return cursor to beginning.
+                for _ in range(len(self.cmd)):
+                    print("\b", end="")
+                    print(" ", end="")
+                    print("\b", end="")
+
+                # Retreive historical command.
+                self.cmd = self.history[self.hist_idx]
+                self.cmd_idx = len(self.cmd)
+
+                # Print command
+                print(self.cmd, end="")
+                continue
+
+            if inp == Key.DOWN: # DOWN ARROW
+                # Lower bound check.
+                if self.hist_idx == -1:
+                    continue
+
+                self.hist_idx -= 1
+
+                # Put cursor at end of line.
+                for _ in range(self.cmd_idx, len(self.cmd)):
+                    print(" ", end="")
+
+                # Blank line and return cursor.
+                for _ in range(len(self.cmd)):
+                    print("\b", end="")
+                    print(" ", end="")
+                    print("\b", end="")
+
+                # Get either saved command or historical command.
+                if self.hist_idx == -1:
+                    self.cmd = self.saved_cmd
+                else:
+                    self.cmd = self.history[self.hist_idx]
+
+                self.cmd_idx = len(self.cmd)
+
+                # Print command.
+                print(self.cmd, end="")
+                continue
+
+            if inp == Key.RIGHT: # RIGHT ARROW
+                # Upper bounds check.
+                if self.cmd_idx >= len(self.cmd):
+                    continue
+
+                print(self.cmd[self.cmd_idx], end="")
+                sys.stdout.flush()
+                self.cmd_idx += 1
+                continue
+
+            if inp == Key.LEFT: # LEFT ARROW
+                # Lower bounds check.
+                if self.cmd_idx == 0:
+                    continue
+
+                print("\b", end="")
+                self.cmd_idx -= 1
+                continue
 
             # Bound check.
             if len(self.cmd) >= self.max_cmd_len:
@@ -255,85 +330,6 @@ class Console:
                 print("\b", end="")
 
         return self.cmd
-
-    def _prompt_esc_seq(self):
-        esc_seq = getch.getch() + getch.getch()
-
-        if esc_seq == '[A': # UP ARROW
-            # Upper bound check.
-            if self.hist_idx + 1 >= len(self.history):
-                return
-
-            self.hist_idx += 1
-
-            # Create a save of current command buffer if this
-            # is the first up arrow press.
-            if self.hist_idx == 0:
-                self.saved_cmd = self.cmd
-
-            # Put cursor at end of line.
-            for _ in range(self.cmd_idx, len(self.cmd)):
-                print(" ", end="")
-
-            # Blank line and return cursor to beginning.
-            for _ in range(len(self.cmd)):
-                print("\b", end="")
-                print(" ", end="")
-                print("\b", end="")
-
-            # Retreive historical command.
-            self.cmd = self.history[self.hist_idx]
-            self.cmd_idx = len(self.cmd)
-
-            # Print command
-            print(self.cmd, end="")
-
-        elif esc_seq == '[B': # DOWN ARROW
-            # Lower bound check.
-            if self.hist_idx == -1:
-                return
-
-            self.hist_idx -= 1
-
-            # Put cursor at end of line.
-            for _ in range(self.cmd_idx, len(self.cmd)):
-                print(" ", end="")
-
-            # Blank line and return cursor.
-            for _ in range(len(self.cmd)):
-                print("\b", end="")
-                print(" ", end="")
-                print("\b", end="")
-
-            # Get either saved command or historical command.
-            if self.hist_idx == -1:
-                self.cmd = self.saved_cmd
-            else:
-                self.cmd = self.history[self.hist_idx]
-
-            self.cmd_idx = len(self.cmd)
-
-            # Print command.
-            print(self.cmd, end="")
-
-        elif esc_seq == '[C': # RIGHT ARROW
-            # Upper bounds check.
-            if self.cmd_idx >= len(self.cmd):
-                return
-
-            print(self.cmd[self.cmd_idx], end="")
-            sys.stdout.flush()
-            self.cmd_idx += 1
-
-        elif esc_seq == '[D': # LEFT ARROW
-            # Lower bounds check.
-            if self.cmd_idx == 0:
-                return
-
-            print("\b", end="")
-            self.cmd_idx -= 1
-
-        return
 
     def _load_history(self):
         """
