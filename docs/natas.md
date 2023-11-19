@@ -1,6 +1,6 @@
 # OverTheWire Natas Walkthrough
 
-This guide provides a walkthrough of the OverTheWire Natas challenges.
+This guide provides a walkthrough of the first 10 levels of the OverTheWire Natas challenges.
 
 You can check out OverTheWire's [website](https://overthewire.org/wargames/natas/) to try it for yourself!
 
@@ -27,7 +27,7 @@ Level 0 is the only level that gives us a username and password right off the ba
 
 We'll have to find the passwords for future levels within the challenges.
 
-On the website for level 0, it reads:
+On the challenge description page for level 0, it reads:
 
 ```
 Start here:
@@ -71,13 +71,24 @@ python3 webwasp.py
 Let's create a new session to work in. Sessions are a feature of WebWasp
 that allow us to switch between different work contexts on the fly.
 
-We'll create a new session to work in called _natas_. That way, if we want to work on something else, we can switch back out of this session and come back to it when we're ready to pick it up again.
+You can see more about console sessions in the documentation.
 
+We'll name our new session _natas_:
 ```
 > console session new "natas"
+[🐝] Created and switched to new session: 'natas'
 ```
 
-Just to track our progress, let's save that level 0 password in a variable:
+We can see our active session by using the `list` subcommand:
+
+```
+> console session list
+[🐝] Console session list:
+   default
+   natas *
+```
+
+Now that we're in our new session, we'll want to track our progress with the level passwords. Let's save that level 0 password in a variable:
 
 ```
 > var add pass0 natas0
@@ -147,7 +158,7 @@ Success! This time we got a `200` status code, indicating a successful request!
 Let's check out the page source:
 
 ```HTML
-> response show -t  
+> response show text
 <html>
 <head>
 <!-- This stuff in the header has nothing to do with the level -->
@@ -218,7 +229,7 @@ and then make the request:
 Another success! Let's checkout out the source:
 
 ```HTML
-> response show -t
+> response show text
 <html>
 <head>
 -- truncated head section --
@@ -272,7 +283,7 @@ We'll make our get request:
 and view the source:
 
 ```HTML
-> response show -t
+> response show text
 <html>
 <head>
 -- truncated head section --
@@ -300,7 +311,7 @@ Let's check out that directory. We'll add `/files` onto the end of our get reque
 ```
 
 ```HTML
-> response show -t
+> response show text
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
 <html>
  <head>
@@ -349,7 +360,7 @@ So let's checkout out that `txt` file by making another get request:
 ```
 
 ```
-> response show -t
+> response show text
 # username:password
 alice:BYNdCesZqW
 bob:jw2ueICLvT
@@ -376,7 +387,7 @@ natas3:G6ctbMJ5Nb4cbFwhpMPSvxGHhQ7I6W8Q
 After updating our headers like before, and making our get request to the next URL, we find this source:
 
 ```HTML
-> response show -t
+> response show text
 <html>
 <head>
 -- truncated --
@@ -402,7 +413,7 @@ Let's go ahead and see if this server is using one of these files:
 > get http://natas3.natas.labs.overthewire.org/robots.txt
 ```
 ```
-> response show -t
+> response show text
 User-agent: *
 Disallow: /s3cr3t/
 ```
@@ -417,7 +428,7 @@ While that might stop google, that certainly won't stop us! Let's send a get req
 > get http://natas3.natas.labs.overthewire.org/s3cr3t/
 ```
 ```HTML
-> response show -t
+> response show text
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
 <html>
  <head>
@@ -452,7 +463,7 @@ Another `users.txt` file within the `s3cr3t` directory! Ours for the taking:
 > get http://natas3.natas.labs.overthewire.org/s3cr3t/users.txt
 ```
 ```
-> response show -t
+> response show text
 natas4:tKOcJIbzM4lTs8hbCmzn5Zr4434fGZQm
 ```
 
@@ -502,7 +513,7 @@ and try again:
 [🐝] Response captured! Type 'response show' for summary
 ```
 ```HTML
-> response show -t
+> response show text
 <html>
 <head>
 -- truncated --
@@ -539,7 +550,7 @@ Now once we update our auth headers, we're good to go and make our get request a
 > get http://natas5.natas.labs.overthewire.org/ 
 ```
 ```HTML
-> response show -t
+> response show text
 <html>
 <head>
 -- truncated --
@@ -565,7 +576,7 @@ Your browser will pass these cookies to sites to help remember things like your 
 We can inspect the cookies we received from the get request by using the response command with a new option:
 
 ```
-> response show -c
+> response show cookies
 [🐝] Response cookies:
    loggedin     : 0
 ```
@@ -589,7 +600,7 @@ Now when we make our get request again, this cookie will be passed along with it
 [🐝] Response captured! Type 'response show' for summary
 ```
 ```HTML
-> response show -t
+> response show text
 <html>
 <head>
 -- truncated --
@@ -795,7 +806,7 @@ Not to worry! We can use WebWasp's `beautify` feature to make this look a little
 Let's take a look now:
 
 ```HTML
-> response show -t
+> response show text
 <code>
  <span style="color: #000000">
   <html>
@@ -1002,7 +1013,7 @@ Let's clean up a bit from last level:
 Update the auth fields, and get the source for level 7:
 
 ```HTML
-> response show -t
+> response show text
 <html>
 <head>
 -- truncated --
@@ -1434,7 +1445,7 @@ POST request made with parameters:
 [🐝] Response captured! Type 'response show' for summary
 ```
 ```HTML
-> response show -t
+> response show text
 <html>
 <head>
 -- truncated --
