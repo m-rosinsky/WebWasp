@@ -301,7 +301,7 @@ To create a new blank session, we can use the ``new`` subcommand:
   > console session new "my_session"
   [🐝] Created and switched to new session: 'my_session'
 
-Running ``list`` again, we can see our session has been creative, and is now active:
+Running ``list`` again, we can see our session has been created, and is now active:
 
 .. code-block::
 
@@ -377,7 +377,7 @@ Response Parsing
 
 WebWasp offers a wide variety of tools for viewing, searching, and parsing response data.
 
-All of these features fall under the ``response command``.
+All of these features fall under the ``response`` command.
 
 For this example, we'll use this sample html doc:
 
@@ -428,7 +428,7 @@ Success! Let's take a look at a summary of the response:
   Encoding:
     ISO-8859-1
 
-This shows us some basic information about the request. If we want to take a look at the headers, a technique commonly referred to as *banner grabbing*:
+This shows us some basic information about the request. If we want to take a look at the headers, a technique commonly referred to as *banner grabbing*, we can specify the ``headers`` argument:
 
 .. code-block::
 
@@ -440,7 +440,7 @@ This shows us some basic information about the request. If we want to take a loo
     Content-Length: 229
     Last-Modified:  Sun, 19 Nov 2023 21:17:42 GMT
 
-If we want to see the actual source:
+If we want to see the actual source, we can use ``text`` instead:
 
 .. code-block:: html
 
