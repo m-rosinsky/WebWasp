@@ -110,9 +110,8 @@ If we want to see the actual source code of the response, we can use the ``-t`` 
 
 .. code-block::
 
-  > response show -t
-  <!doctype html>
-  --truncated--
+  > response show text
+  <!doctype html><html itemscope="" itemtype="http://schema.org/WebPage" lang="en"><head>...
 
 Commands and the Console
 ========================
@@ -133,6 +132,7 @@ These include:
 * Enhanced tab completions
 * Command shortening
 * Session persistence
+* Session context management
 
 Getting Help
 ------------
@@ -199,13 +199,13 @@ Command shortening can be used at any stage of the command as well:
 
 .. code-block::
 
-  > response show -t
+  > response show text
 
 is equivalent to:
 
 .. code-block::
 
-  > r s -t
+  > r s t
 
 Easy right?
 
@@ -241,12 +241,274 @@ option for completion given the partial command ``r``.
 Variables
 =========
 
-TODO
+Variables allow us to store pieces of text so we don't have to worry about remembering them, or copy-pasting them all the time.
+
+We can add a variable with the ``var add`` command, for example, an address to our local server:
+
+.. code-block::
+
+  > var add "local" "http://localhost:8000"
+  [🐝] Added variable:
+    $local -> 'http://localhost:8000'
+
+The quotes are optional unless there is a space in the name.
+
+To use the variable later, we just prefix the name with a ``$``:
+
+.. code-block::
+
+  > get $local
+  [🐝] Sending GET request to http://localhost:8000/...
+
+We can remove variables with the ``remove`` subcommand:
+
+.. code-block::
+
+  > var remove local
+  [🐝] Removed variable:
+    $local
+
+And we can remove all variables with the ``clear`` subcommand:
+
+.. code-block::
+
+  > var clear
+  [🐝] All variables cleared
+
+Variables are saved to whatever session they were created in. See the next section for more on sessions.
+
+Console Sessions
+================
+
+By default, WebWasp will create a session for us called ``default`` to work in.
+
+We can list the existing sessions by using the ``list`` subcommand:
+
+.. code-block::
+
+  > console session list        
+  [🐝] Console session list:
+    default *
+
+Our active session will be highlighted green and have an ``*`` next to it.
+
+All things we create will be saved under the active session.
+
+To create a new blank session, we can use the ``new`` subcommand:
+
+.. code-block::
+
+  > console session new "my_session"
+  [🐝] Created and switched to new session: 'my_session'
+
+Running ``list`` again, we can see our session has been creative, and is now active:
+
+.. code-block::
+
+  > console session list
+  [🐝] Console session list:
+    default
+    my_session *
+
+Any variables, headers, parameters, etc. will be saved within the ``default`` session, and not transferred to our new session.
+
+This is useful if we want to start an unrelated task to what we were working on before, without deleting our data.
+
+We can always switch back to a different session by using the ``load`` subcommand:
+
+.. code-block::
+
+  > console session load default
+  [🐝] Switched to session 'default'
+
+If we want to copy our active session into another session, we can use the ``copy`` subcommand:
+
+.. code-block::
+
+  > console session copy my_session
+  [🐝] Copied data from session 'default' to 'my_session'
+  [🐝] Switched to session 'my_session'
+
+In this example, we were in session ``default``, and copied our session data to the existing session named ``my_session``.
+
+If the target session already exists, as in this example, the data currently in that session will be overwritten, so use with caution.
+
+If the target session does not exist, it will be created and the data will be copied into it, as shown here:
+
+.. code-block::
+
+  > console session copy default2  
+  [🐝] Copied data from session 'default' to 'default2'
+  [🐝] Switched to session 'default2'
+  > console session list
+  [🐝] Console session list:
+    default
+    default2 *
+    my_session
+
+We can reset our session data by using the ``reset`` subcommand. This effectively erases any session data we currently have:
+
+.. code-block::
+
+  > console session reset
+  [🐝] Resetting data for session 'default'
+
+We can also delete sessions using the ``delete`` subcommand:
+
+.. code-block::
+
+  > console session delete my_session
+  [🐝] Deleted session 'my_session'
+
+If we delete our current session, it will switch us back to ``default``:
+
+.. code-block::
+
+  > console session delete default2
+  [🐝] Deleted session 'default2'
+  [🐝] Switched to session 'default'
+
+If we delete the ``default`` session, it will be recreated with blank data.
+
+When starting a new task within WebWasp, it's a good practice to create a new session for it.
 
 Response Parsing
 ================
 
-TODO
+WebWasp offers a wide variety of tools for viewing, searching, and parsing response data.
+
+All of these features fall under the ``response command``.
+
+For this example, we'll use this sample html doc:
+
+.. code-block:: html
+
+  <!DOCTYPE html>
+  <html>
+  <head>
+      <title>My Sample Page</title>
+  </head>
+  <body>
+      <h1>Welcome to my page!</h1>
+      <a href="file1.txt">File1</a>
+      <a href="file2.txt">File2</a>
+      <a href="file3.txt">File3</a>
+  </body>
+  </html>
+
+Let's stand up a local server using python's built-in http server:
+
+.. code-block::
+
+  $ python3 -m http.server
+
+
+Now let's fire up WebWasp and make a request to it:
+
+.. code-block:: 
+
+  > get localhost:8000/sample.html
+  [🐝] Sending GET request to http://localhost:8000/sample.html...
+  [🐝] GET request completed. Status code: 200 (OK)
+  [🐝] Response captured! Type 'response show' for summary
+
+Success! Let's take a look at a summary of the response:
+
+.. code-block:: 
+
+  > response show
+  [🐝] Summary of captured response:
+
+  Response url:
+    http://localhost:8000/sample.html
+  Response date/time:
+    11/19/2023   21:19:49
+  Status code:
+    200 (OK)
+  Encoding:
+    ISO-8859-1
+
+This shows us some basic information about the request. If we want to take a look at the headers, a technique commonly referred to as *banner grabbing*:
+
+.. code-block::
+
+  > response show headers
+  [🐝] Response headers:
+    Server:         SimpleHTTP/0.6 Python/3.8.10
+    Date:           Sun, 19 Nov 2023 21:19:49 GMT
+    Content-type:   text/html
+    Content-Length: 229
+    Last-Modified:  Sun, 19 Nov 2023 21:17:42 GMT
+
+If we want to see the actual source:
+
+.. code-block:: html
+
+  > response show text
+  <!DOCTYPE html>
+  <html>
+  <head>
+      <title>My Sample Page</title>
+  </head>
+  <body>
+      <h1>Welcome to my page!</h1>
+      <a href="file1.txt">File1</a>
+      <a href="file2.txt">File2</a>
+      <a href="file3.txt">File3</a>
+  </body>
+  </html>
+
+And there's our sample source that WebWasp retrieved for us!
+
+Response Grep
+-------------
+
+We can perform grep-like searches on our response text using the ``response grep`` command!
+
+In the above example, if we wanted to find all lines with the word ``file`` in it:
+
+.. code-block:: html
+
+  > response grep file
+  [🐝] Search results for pattern 'file':
+        <a href="file1.txt">File1</a>
+        <a href="file2.txt">File2</a>
+        <a href="file3.txt">File3</a>
+
+``response grep`` also supports regular expressions. It's good practice to always wrap regex in quotes:
+
+.. code-block:: html
+
+  > response grep 'href="([^"]*)"'
+  [🐝] Search results for pattern 'href="([^"]*)"':
+        <a href="file1.txt">File1</a>
+        <a href="file2.txt">File2</a>
+        <a href="file3.txt">File3</a>
+
+Response Find
+-------------
+
+The ``response`` find command performs actual html parsing behind the scenes, rather than just acting on raw text like ``grep`` does.
+
+For example, if we wanted to find all ``a`` tags within the response, we can use:
+
+.. code-block:: html
+
+  > response find --tag a
+  [🐝] Find results:
+  <a href="file1.txt">File1</a>
+  <a href="file2.txt">File2</a>
+  <a href="file3.txt">File3</a>
+
+We can also specify the ``--strip`` option to only see *inside* the tags:
+
+.. code-block::
+
+  > response find --tag a --strip
+  [🐝] Find results:
+  File1
+  File2
+  File3
 
 Headers
 =======
