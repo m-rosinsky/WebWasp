@@ -203,7 +203,7 @@ class CommandResponse(CommandInterface):
             return True
 
         if not context.has_response:
-            log("No response captured", log_type='warning')
+            log("No response captured", log_type='error')
             return True
 
         args.func(args, context)
