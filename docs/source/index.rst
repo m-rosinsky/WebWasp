@@ -375,7 +375,140 @@ When starting a new task within WebWasp, it's a good practice to create a new se
 Response Parsing
 ================
 
-TODO
+WebWasp offers a wide variety of tools for viewing, searching, and parsing response data.
+
+All of these features fall under the ``response command``.
+
+For this example, we'll use this sample html doc:
+
+.. code-block:: html
+
+  <!DOCTYPE html>
+  <html>
+  <head>
+      <title>My Sample Page</title>
+  </head>
+  <body>
+      <h1>Welcome to my page!</h1>
+      <a href="file1.txt">File1</a>
+      <a href="file2.txt">File2</a>
+      <a href="file3.txt">File3</a>
+  </body>
+  </html>
+
+Let's stand up a local server using python's built-in http server:
+
+.. code-block::
+
+  $ python3 -m http.server
+
+
+Now let's fire up WebWasp and make a request to it:
+
+.. code-block:: 
+
+  > get localhost:8000/sample.html
+  [🐝] Sending GET request to http://localhost:8000/sample.html...
+  [🐝] GET request completed. Status code: 200 (OK)
+  [🐝] Response captured! Type 'response show' for summary
+
+Success! Let's take a look at a summary of the response:
+
+.. code-block:: 
+
+  > response show
+  [🐝] Summary of captured response:
+
+  Response url:
+    http://localhost:8000/sample.html
+  Response date/time:
+    11/19/2023   21:19:49
+  Status code:
+    200 (OK)
+  Encoding:
+    ISO-8859-1
+
+This shows us some basic information about the request. If we want to take a look at the headers, a technique commonly referred to as *banner grabbing*:
+
+.. code-block::
+
+  > response show headers
+  [🐝] Response headers:
+    Server:         SimpleHTTP/0.6 Python/3.8.10
+    Date:           Sun, 19 Nov 2023 21:19:49 GMT
+    Content-type:   text/html
+    Content-Length: 229
+    Last-Modified:  Sun, 19 Nov 2023 21:17:42 GMT
+
+If we want to see the actual source:
+
+.. code-block:: html
+
+  > response show text
+  <!DOCTYPE html>
+  <html>
+  <head>
+      <title>My Sample Page</title>
+  </head>
+  <body>
+      <h1>Welcome to my page!</h1>
+      <a href="file1.txt">File1</a>
+      <a href="file2.txt">File2</a>
+      <a href="file3.txt">File3</a>
+  </body>
+  </html>
+
+And there's our sample source that WebWasp retrieved for us!
+
+Response Grep
+-------------
+
+We can perform grep-like searches on our response text using the ``response grep`` command!
+
+In the above example, if we wanted to find all lines with the word ``file`` in it:
+
+.. code-block:: html
+
+  > response grep file
+  [🐝] Search results for pattern 'file':
+        <a href="file1.txt">File1</a>
+        <a href="file2.txt">File2</a>
+        <a href="file3.txt">File3</a>
+
+``response grep`` also supports regular expressions. It's good practice to always wrap regex in quotes:
+
+.. code-block:: html
+
+  > response grep 'href="([^"]*)"'
+  [🐝] Search results for pattern 'href="([^"]*)"':
+        <a href="file1.txt">File1</a>
+        <a href="file2.txt">File2</a>
+        <a href="file3.txt">File3</a>
+
+Response Find
+-------------
+
+The ``response`` find command performs actual html parsing behind the scenes, rather than just acting on raw text like ``grep`` does.
+
+For example, if we wanted to find all ``a`` tags within the response, we can use:
+
+.. code-block:: html
+
+  > response find --tag a
+  [🐝] Find results:
+  <a href="file1.txt">File1</a>
+  <a href="file2.txt">File2</a>
+  <a href="file3.txt">File3</a>
+
+We can also specify the ``--strip`` option to only see *inside* the tags:
+
+.. code-block::
+
+  > response find --tag a --strip
+  [🐝] Find results:
+  File1
+  File2
+  File3
 
 Headers
 =======
