@@ -43,13 +43,13 @@ Let's do it the old fashioned way first, then show how we can complete it with W
 
 In a web browser, we can navigate to that link. Going there will instantly prompt us for those credentials:
 
-| ![alt text](/./imgs/natas_1.PNG "natas0") |
+| ![alt text](./imgs/natas_1.PNG "natas0") |
 |:--:|
 
 We'll enter `natas0` for both the username and password fields, which will
 get us to the site:
 
-| ![alt text](/./imgs/natas_2.PNG "natas0") |
+| ![alt text](./imgs/natas_2.PNG "natas0") |
 |:--:|
 
 From here, we can right-click and press `View Page Source` to see the source of the webpage.
@@ -68,10 +68,13 @@ Now let's try this in WebWasp! Fire up the WebWasp console by typing:
 python3 webwasp.py
 ```
 
-If we have any saved session data, let's go ahead and clear that with:
+Let's create a new session to work in. Sessions are a feature of WebWasp
+that allow us to switch between different work contexts on the fly.
+
+We'll create a new session to work in called _natas_. That way, if we want to work on something else, we can switch back out of this session and come back to it when we're ready to pick it up again.
 
 ```
-> reset
+> console session new "natas"
 ```
 
 Just to track our progress, let's save that level 0 password in a variable:
@@ -1544,8 +1547,6 @@ D44EcsFkLxPIkAAKLosx8z3hxX1Z4MCE
 And there we go! In place of the `grep` command's output, we injected a `bash` command to instead `cat` the file we wanted.
 
 Copy that into `pass10`!
-
-## Level 10
 
 ---
 
