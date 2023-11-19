@@ -6,8 +6,9 @@ This file contains the headers command class.
 
 import argparse
 
-from src.node import CommandNode
 from src.logger import log
+from src.context import Context
+from src.node import CommandNode
 from src.headers import Headers
 from src.command.command_interface import CommandInterface
 
@@ -99,24 +100,16 @@ class CommandHeaders(CommandInterface):
 
         return root
 
-    def run(self, parse, console):
-        super().run(parse)
-        # Slice the command name off the parse so we only
-        # parse the arguments.
-        parse_trunc = parse[1:]
+    def run(self, parse: list, context: Context, cmd_tree: CommandNode) -> bool:
+        # Resolve command shortening.
+        parse = super()._resolve_parse(self.name, parse, cmd_tree)
 
-        # Match the subcommand.
-        if len(parse_trunc) > 0:
-            matched_subcmd = super()._get_cmd_match(
-                parse_trunc[0],
-                self.subparser.choices.keys(),
-            )
+        if parse is None:
+            return True
 
-            if matched_subcmd is not None:
-                parse_trunc[0] = matched_subcmd
-
+        # Parse arguments.
         try:
-            args = self.parser.parse_args(parse_trunc)
+            args = self.parser.parse_args(parse)
         except argparse.ArgumentError:
             self.parser.print_help()
             return True
@@ -126,53 +119,53 @@ class CommandHeaders(CommandInterface):
 
         # If no subcommand was specified, show list.
         if not hasattr(args, 'func'):
-            self._list(console)
+            self._list(context)
             return True
 
-        args.func(args, console)
-        console.update_data()
+        args.func(args, context)
+        context.save_data()
 
         return True
 
-    def _list(self, console):
+    def _list(self, context: Context):
         """
         This function lists all headers currently stored.
         """
         log("Current header fields:", log_type='info')
-        console.headers.print_fields()
+        context.headers.print_fields()
 
-    def _set(self, args, console):
+    def _set(self, args: argparse.Namespace, context: Context):
         """
         This function sets a header field to a specified value.
         """
-        if not console.headers.field_valid(args.field):
+        if not context.headers.field_valid(args.field):
             log(f"Invalid header field: '{args.field}'", log_type='error')
             log("Run 'headers' to see list of valid fields")
             return
 
-        console.headers.set_field(args.field, args.value)
+        context.headers.set_field(args.field, args.value)
         log(
             f"Set header field:\n   {args.field} : '{args.value}'",
             log_type='info',
         )
 
-    def _unset(self, args, console):
+    def _unset(self, args: argparse.Namespace, context: Context):
         """
         This function unsets a header field.
         """
-        if not console.headers.field_valid(args.field):
+        if not context.headers.field_valid(args.field):
             log(f"Invalid header field: '{args.field}'", log_type='error')
             log("Run 'headers' to see list of valid fields")
             return
 
-        console.headers.set_field(args.field, None)
+        context.headers.set_field(args.field, None)
         log(f"Unset header field:\n   {args.field}", log_type='info')
 
-    def _clear(self, args, console):
+    def _clear(self, args: argparse.Namespace, context: Context):
         """
         This function unsets all header fields.
         """
-        console.headers.clear_fields()
+        context.headers.clear_fields()
         log("Cleared all header fields", log_type='info')
 
 ###   end of file   ###

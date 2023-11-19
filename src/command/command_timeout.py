@@ -7,6 +7,8 @@ This file contains the timeout command class.
 import argparse
 
 from src.logger import log
+from src.context import Context
+from src.node import CommandNode
 from src.command.command_interface import CommandInterface
 
 class CommandTimeout(CommandInterface):
@@ -34,16 +36,18 @@ class CommandTimeout(CommandInterface):
             help='The timeout value in seconds'
         )
 
-    def run(self, parse, console):
-        super().run(parse)
-        # Slice the command name off the parse so we only
-        # parse the arguments.
-        parse_trunc = parse[1:]
+    def run(self, parse: list, context: Context, cmd_tree: CommandNode) -> bool:
+        # Resolve command shortening.
+        parse = super()._resolve_parse(self.name, parse, cmd_tree)
 
+        if parse is None:
+            return True
+
+        # Parse arguments.
         try:
-            args = self.parser.parse_args(parse_trunc)
+            args = self.parser.parse_args(parse)
         except argparse.ArgumentError:
-            self.get_help()
+            self.parser.print_help()
             return True
         except SystemExit:
             # Don't let argparse exit the program.
@@ -56,14 +60,14 @@ class CommandTimeout(CommandInterface):
             value = round(value, 2)
             # If the value was provided, ensure it is positive
             if value <= 0:
-                console.timeout_s = None
+                context.timeout = None
             else:
-                console.timeout_s = value
+                context.timeout = value
 
         # Display the timeout value.
-        log(f"Timeout -> {console.timeout_s}", log_type='info', end="")
+        log(f"Timeout -> {context.timeout}", log_type='info', end="")
         
-        if console.timeout_s is not None:
+        if context.timeout is not None:
             log(" seconds", end="")
         log("")
 

@@ -8,15 +8,15 @@ import sys
 
 try:
     import bs4
-    import getch
+    import readchar
     import requests
-    import emoji
+    import pygments
 except ImportError:
     print("[🛑] Error: Missing Dependencies. ")
     print("[🛑] Run python3 -m pip install -r requirements.txt")
     sys.exit(1)
 
-from src import console
+from src.dispatch import Dispatcher
 
 def check_version():
     """
@@ -44,7 +44,7 @@ def main():
     ww_version_patch = "a"
     ww_version_string = f"{ww_version_major}.{ww_version_minor}{ww_version_patch}"
 
-    banner = """
+    banner = r"""
  __        __   _      __        __              
  \ \      / /__| |__   \ \      / /_ _ ___ _ __  
   \ \ /\ / / _ \ '_ \   \ \ /\ / / _` / __| '_ \ 
@@ -57,8 +57,8 @@ def main():
 
     print(f"[🐝] Running WebWasp version {ww_version_string}...")
 
-    con = console.Console()
-    con.run()
+    d = Dispatcher()
+    d.run()
 
 if __name__=='__main__':
     main()
