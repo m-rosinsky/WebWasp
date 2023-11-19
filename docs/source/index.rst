@@ -241,7 +241,41 @@ option for completion given the partial command ``r``.
 Variables
 =========
 
-TODO
+Variables allow us to store pieces of text so we don't have to worry about remembering them, or copy-pasting them all the time.
+
+We can add a variable with the ``var add`` command, for example, an address to our local server:
+
+.. code-block::
+
+  > var add "local" "http://localhost:8000"
+  [🐝] Added variable:
+    $local -> 'http://localhost:8000'
+
+The quotes are optional unless there is a space in the name.
+
+To use the variable later, we just prefix the name with a ``$``:
+
+.. code-block::
+
+  > get $local
+  [🐝] Sending GET request to http://localhost:8000/...
+
+We can remove variables with the ``remove`` subcommand:
+
+.. code-block::
+
+  > var remove local
+  [🐝] Removed variable:
+    $local
+
+And we can remove all variables with the ``clear`` subcommand:
+
+.. code-block::
+
+  > var clear
+  [🐝] All variables cleared
+
+Variables are saved to whatever session they were created in. See the next section for more on sessions.
 
 Console Sessions
 ================
@@ -335,6 +369,8 @@ If we delete our current session, it will switch us back to ``default``:
   [🐝] Switched to session 'default'
 
 If we delete the ``default`` session, it will be recreated with blank data.
+
+When starting a new task within WebWasp, it's a good practice to create a new session for it.
 
 Response Parsing
 ================
