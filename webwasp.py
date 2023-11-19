@@ -10,7 +10,6 @@ try:
     import bs4
     import readchar
     import requests
-    import emoji
     import pygments
 except ImportError:
     print("[🛑] Error: Missing Dependencies. ")

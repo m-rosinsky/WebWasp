@@ -145,6 +145,11 @@ class Dispatcher:
                 log(f"   {m}")
             return True
 
+        # Special case for help.
+        if cmd.upper() == "HELP":
+            self._print_help()
+            return True
+
         # Get the associated command class.
         command_class = self.command_dict.get(cmd)
         if command_class is None:
@@ -194,5 +199,21 @@ class Dispatcher:
             res_parse[idx] = var_val
 
         return res_parse
+    
+    def _print_help(self):
+        """
+        Brief:
+            This function prints the help using the command dict.
+        """
+        log("Help menu:", log_type='info')
+        longest_len = 0
+        for command in self.command_dict.keys():
+            l = len(command)
+            if l > longest_len:
+                longest_len = l
+
+        for name, cc in self.command_dict.items():
+            name += " " * (longest_len - len(name))
+            log(f"   \033[36m{name}\033[0m\t{cc.parser.description}")
 
 ###   end of file   ###
