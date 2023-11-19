@@ -1,6 +1,6 @@
 # OverTheWire Natas Walkthrough
 
-This guide provides a walkthrough of the OverTheWire Natas challenges.
+This guide provides a walkthrough of the first 10 levels of the OverTheWire Natas challenges.
 
 You can check out OverTheWire's [website](https://overthewire.org/wargames/natas/) to try it for yourself!
 
@@ -27,7 +27,7 @@ Level 0 is the only level that gives us a username and password right off the ba
 
 We'll have to find the passwords for future levels within the challenges.
 
-On the website for level 0, it reads:
+On the challenge description page for level 0, it reads:
 
 ```
 Start here:
@@ -71,10 +71,11 @@ python3 webwasp.py
 Let's create a new session to work in. Sessions are a feature of WebWasp
 that allow us to switch between different work contexts on the fly.
 
-We'll create a new session to work in called _natas_. That way, if we want to work on something else, we can switch back out of this session and come back to it when we're ready to pick it up again.
+You can see more about console sessions in the documentation.
 
+We'll name our new session _natas_:
 ```
-> console session new natas
+> console session new "natas"
 [🐝] Created and switched to new session: 'natas'
 ```
 
