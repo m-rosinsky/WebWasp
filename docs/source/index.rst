@@ -110,9 +110,8 @@ If we want to see the actual source code of the response, we can use the ``-t`` 
 
 .. code-block::
 
-  > response show -t
-  <!doctype html>
-  --truncated--
+  > response show text
+  <!doctype html><html itemscope="" itemtype="http://schema.org/WebPage" lang="en"><head>...
 
 Commands and the Console
 ========================
@@ -133,6 +132,7 @@ These include:
 * Enhanced tab completions
 * Command shortening
 * Session persistence
+* Session context management
 
 Getting Help
 ------------
@@ -199,13 +199,13 @@ Command shortening can be used at any stage of the command as well:
 
 .. code-block::
 
-  > response show -t
+  > response show text
 
 is equivalent to:
 
 .. code-block::
 
-  > r s -t
+  > r s t
 
 Easy right?
 
@@ -242,6 +242,99 @@ Variables
 =========
 
 TODO
+
+Console Sessions
+================
+
+By default, WebWasp will create a session for us called ``default`` to work in.
+
+We can list the existing sessions by using the ``list`` subcommand:
+
+.. code-block::
+
+  > console session list        
+  [🐝] Console session list:
+    default *
+
+Our active session will be highlighted green and have an ``*`` next to it.
+
+All things we create will be saved under the active session.
+
+To create a new blank session, we can use the ``new`` subcommand:
+
+.. code-block::
+
+  > console session new "my_session"
+  [🐝] Created and switched to new session: 'my_session'
+
+Running ``list`` again, we can see our session has been creative, and is now active:
+
+.. code-block::
+
+  > console session list
+  [🐝] Console session list:
+    default
+    my_session *
+
+Any variables, headers, parameters, etc. will be saved within the ``default`` session, and not transferred to our new session.
+
+This is useful if we want to start an unrelated task to what we were working on before, without deleting our data.
+
+We can always switch back to a different session by using the ``load`` subcommand:
+
+.. code-block::
+
+  > console session load default
+  [🐝] Switched to session 'default'
+
+If we want to copy our active session into another session, we can use the ``copy`` subcommand:
+
+.. code-block::
+
+  > console session copy my_session
+  [🐝] Copied data from session 'default' to 'my_session'
+  [🐝] Switched to session 'my_session'
+
+In this example, we were in session ``default``, and copied our session data to the existing session named ``my_session``.
+
+If the target session already exists, as in this example, the data currently in that session will be overwritten, so use with caution.
+
+If the target session does not exist, it will be created and the data will be copied into it, as shown here:
+
+.. code-block::
+
+  > console session copy default2  
+  [🐝] Copied data from session 'default' to 'default2'
+  [🐝] Switched to session 'default2'
+  > console session list
+  [🐝] Console session list:
+    default
+    default2 *
+    my_session
+
+We can reset our session data by using the ``reset`` subcommand. This effectively erases any session data we currently have:
+
+.. code-block::
+
+  > console session reset
+  [🐝] Resetting data for session 'default'
+
+We can also delete sessions using the ``delete`` subcommand:
+
+.. code-block::
+
+  > console session delete my_session
+  [🐝] Deleted session 'my_session'
+
+If we delete our current session, it will switch us back to ``default``:
+
+.. code-block::
+
+  > console session delete default2
+  [🐝] Deleted session 'default2'
+  [🐝] Switched to session 'default'
+
+If we delete the ``default`` session, it will be recreated with blank data.
 
 Response Parsing
 ================
