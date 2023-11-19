@@ -112,6 +112,11 @@ class Response:
         http_code = http.HTTPStatus(self.req.status_code)
         log(f"\033[0m({http_code.phrase})")
 
+        # Print encoding scheme.
+        log("Encoding:", end="\n   ")
+        log(self.req.encoding)
+
+        # Print POST parameters.
         if self.post_data is not None:
             log(f"POST parameters:")
             for name, value in self.post_data.items():
@@ -136,6 +141,34 @@ class Response:
         log("Response cookies:", log_type='info')
 
         for cookie, value in self.req.cookies.items():
-            log(f"   {cookie}\t: {value}")
+            log(f"   \033[36m{cookie}\033[0m: {value}")
+
+    def print_headers(self):
+        """
+        Brief:
+            This function prints the headers from the last response
+            to the console.
+        """
+        if not self.req:
+            log("No response captured", log_type='warning')
+            return
+        
+        log("Response headers:", log_type='info')
+
+        for name, value in self.req.headers.items():
+            log(f"   \033[36m{name}\033[0m: {value}")
+
+    def print_redirects(self):
+        """
+        Brief:
+            This functions shows the redirect history of the response.
+        """
+        if not self.req:
+            log("No response captured", log_type='warning')
+            return
+        
+        log("Response redirect history:", log_type='info')
+        for redir in self.req.history:
+            log(f"   \033[36m{redir}\033[0m")
 
 ###   end of file   ###

@@ -59,7 +59,7 @@ class CommandResponse(CommandInterface):
             help='Set the syntax highlighting the response (default: html)',
         )
 
-        # resonse show cookies.
+        # response show cookies.
         self.parser_show_cookies = self.parser_show_subparser.add_parser(
             'cookies',
             description='Show the cookies of the response',
@@ -68,6 +68,26 @@ class CommandResponse(CommandInterface):
         )
         self.parser_show_cookies.set_defaults(func=self._show_cookies)
         super().add_help(self.parser_show_cookies)
+
+        # response show headers.
+        self.parser_show_headers = self.parser_show_subparser.add_parser(
+            'headers',
+            description='Show the headers of the response',
+            help='Show the headers of the response',
+            add_help=False,
+        )
+        self.parser_show_headers.set_defaults(func=self._show_headers)
+        super().add_help(self.parser_show_headers)
+
+        # response show redirects.
+        self.parser_show_redirs = self.parser_show_subparser.add_parser(
+            'redirs',
+            description='Show the redirects of the response',
+            help='Show the redirects of the response',
+            add_help=False,
+        )
+        self.parser_show_redirs.set_defaults(func=self._show_redirs)
+        super().add_help(self.parser_show_redirs)
 
         # response export.
         self.parser_export = self.subparser.add_parser(
@@ -199,6 +219,12 @@ class CommandResponse(CommandInterface):
 
     def _show_cookies(self, args: argparse.Namespace, context: Context):
         context.response.print_cookies()
+
+    def _show_headers(self, args: argparse.Namespace, context: Context):
+        context.response.print_headers()
+
+    def _show_redirs(self, args: argparse.Namespace, context: Context):
+        context.response.print_redirects()
 
     def _export(self, args: argparse.Namespace, context: Context):
         filename = args.path
