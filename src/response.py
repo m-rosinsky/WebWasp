@@ -138,7 +138,7 @@ class Response:
             log("No response captured", log_type='warning')
             return
         
-        log("Response cookies:", log_type='info')
+        log("Response cookies:", log_type='cookie')
 
         for cookie, value in self.req.cookies.items():
             log(f"   \033[36m{cookie}\033[0m: {value}")

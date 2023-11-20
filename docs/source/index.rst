@@ -616,6 +616,11 @@ This command will also format the HTML source into a more readable format:
    </li>
   </ul>
 
+Exporting Responses
+===================
+
+TODO
+
 Headers
 =======
 
@@ -732,7 +737,7 @@ Then we can perform a POST request with the parameters we made:
     'key2' : 'value2'
     -- truncated --
 
-.. code-block:: json
+.. code-block::
 
   > response show text
   -- truncated --
@@ -745,14 +750,65 @@ Then we can perform a POST request with the parameters we made:
 Cookies
 =======
 
-TODO
+Response Cookies
+----------------
+
+When we make a request, we can see the cookies that a site returns by using the ``response show cookies`` command:
+
+Here's an example from the Natas walkthrough `level 5 <https://github.com/m-rosinsky/WebWasp/blob/main/docs/natas.md#level-5>`_:
+
+.. code-block::
+
+  > response show cookies
+  [🍪] Response cookies:
+    loggedin     : 0
+
+Request Cookies
+---------------
+
+If we want to send cookie values within our requests, we can use the ``cookies`` command.
+
+It operates nearly identically to the ``params`` command, for ``add``, ``remove`` and ``clear`` subcommands.
+
+.. code-block::
+
+  > cookies add loggedin '1'
+  [🍪] Added cookie:
+    'loggedin' : '1'
+
+Also similar to the ``params`` command, any cookies we have stored are automatically shipped along with requests we make.
+
+.. code-block::
+
+  > get https://httpbin.org/get
+  [🐝] Sending GET request to https://httpbin.org/get...
+  [🐝] GET request completed. Status code: 200 (OK)
+  [🐝] Response captured! Type 'response show' for summary
+  > 
+  > response show text
+  {
+    "args": {}, 
+    "headers": {
+      "Accept": "*/*", 
+      "Accept-Encoding": "gzip, deflate", 
+      "Cookie": "loggedin=1",
+  -- truncated --
+
+Timeouts
+========
 
 Planned Features
 ================
 
-TODO
+WebWasp is very much still in development, but here's a sneak preview of the features I plan to add:
+
+- Directory brute-forcing, similar to gobuster
+- WebSocket support
+- Further syntax highlighting
 
 Contributors
 ============
 
-TODO
+If you've been brushing up on your Python and want to do some open-source contributing, WebWasp would love to have you!
+
+Check out the `Contribution Guide (LINK PENDING)`_ to get started! 🐝
