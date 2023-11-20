@@ -510,15 +510,237 @@ We can also specify the ``--strip`` option to only see *inside* the tags:
   File2
   File3
 
+``--tag`` is just one of several find options. Run ``response find -h`` to see a full list!
+
+Syntax Highlighting
+-------------------
+
+By default, when we run ``response show text``, WebWasp will attempt to use HTML syntax highlighting.
+
+WebWasp has built-in support for both PHP and Javascript as well!
+
+We can specify the ``--syntax [language]`` option to change the highlighting method.
+
+Here's an example with some sample PHP code:
+
+.. code-block::
+
+  > get localhost:8000/sample.php
+  [🐝] Sending GET request to http://localhost:8000/sample.php...
+  [🐝] GET request completed. Status code: 200 (OK)
+  [🐝] Response captured! Type 'response show' for summary
+
+.. code-block:: php
+
+  > response show text --syntax php
+  <?php
+  // Sample PHP code
+  $greeting = "Hello, PHP!";
+  echo "<h1>$greeting</h1>";
+
+  // Simple loop
+  for ($i = 1; $i <= 5; $i++) {
+      echo "Iteration $i<br>";
+  }
+
+  // Associative array
+  $person = array(
+      "name" => "John",
+      "age" => 30,
+      "city" => "New York"
+  );
+
+  // Accessing array elements
+  echo "<p>{$person['name']} is {$person['age']} years old and lives in {$person['city']}.</p>";
+  ?>
+
+Response Beautify
+-----------------
+
+WebWasp comes with functionality to decode any HTML entities that are in their encoded state when sent by the server.
+
+Some examples of these entities are the ``&gt;`` for ``>`` and ``&nbsp;`` for a non-break space.
+
+If the response has some of these entities in it, we can run ``response beautify`` to perform decoding.
+
+This command will also format the HTML source into a more readable format:
+
+.. code-block::
+
+  > get localhost:8000/sample.html
+  [🐝] Sending GET request to http://localhost:8000/sample.html...
+  [🐝] GET request completed. Status code: 200 (OK)
+  [🐝] Response captured! Type 'response show' for summary
+
+.. code-block:: html
+
+  -- truncated --
+  <ul>
+    <li>&lt;p&gt; represents &lt;paragraph&gt;</li>
+    <li>&amp;copy; represents the copyright symbol &copy;</li>
+    <li>&amp;trade; represents the trademark symbol &trade;</li>
+    <li>&lt;br&gt; represents a line break <br></li>
+    <li>&amp;lt; represents the less-than symbol &lt;</li>
+    <li>&amp;gt; represents the greater-than symbol &gt;</li>
+  </ul>
+  -- truncated --
+
+.. code-block:: 
+
+  > response beautify 
+  [🐝] Beautifying response text...
+    Ran prettify.
+    Made 13 entity decodes.
+
+.. code-block:: html
+
+  <ul>
+   <li>
+    <p> represents <paragraph>
+   </li>
+   <li>
+    &copy; represents the copyright symbol ©
+   </li>
+   <li>
+    &trade; represents the trademark symbol ™
+   </li>
+   <li>
+    <br> represents a line break
+    <br/>
+   </li>
+   <li>
+    &lt; represents the less-than symbol <
+   </li>
+   <li>
+    &gt; represents the greater-than symbol >
+   </li>
+  </ul>
+
 Headers
 =======
 
-TODO
+HTTP headers can be ``set`` and ``unset`` on a per-session basis.
+
+To see a list of headers that can be configured and sent, run ``headers``:
+
+.. code-block:: 
+
+  > headers
+  [🐝] Current header fields:
+    auth-pass    : ''
+    auth-user    : ''
+    referer      : ''
+    user-agent   : ''
+    -- truncated --
+
+When we set a field with the ``set`` command, it will be displayed here:
+
+.. code-block::
+
+  > headers set referer "myreferringsite.com"
+  [🐝] Set header field:
+    referer : 'myreferringsite.com'
+
+We can use ``headers unset`` to unset specific header fields, or ``headers clear`` to unset *all* header fields.
+
+When a request is made within this session now, any header fields that have been set will automatically be shipped with it.
+
+Checkout the Natas OverTheWire WebWasp walkthrough `level 4 <https://github.com/m-rosinsky/WebWasp/blob/main/docs/natas.md#level-4>`_ to see this in a practical example.
+
+HTTP Authorization
+------------------
+
+The ``auth-user`` and ``auth-pass`` headers have to do with HTTP authorization. If you're getting a ``401 Unauthorized`` error, you may need to set these fields and try the request again.
+
+All levels of the Natas walkthrough deal with these fields, for an example.
+
+Headers and Sessions
+--------------------
+
+As mentioned above, header fields (just like variables, parameters, etc), are saved on a per-session basis.
+
+This means if we move to a new session, the headers we created won't be there (unless we copied this session).
+
+This allows freedom to work on other tasks without having to delete any header fields we've configured.
 
 Parameters and POST Requests
 ============================
 
-TODO
+Parameters with GET Requests
+----------------------------
+
+Parameters are used to send data as part of the URL query string.
+
+We can add a new parameter using the ``params add`` command:
+
+.. code-block:: 
+
+  > params add key1 value1
+  [🐝] Added param:
+    'key1' : 'value1'
+
+And we can list all currently stored parameters for the session with just the ``params`` command:
+
+.. code-block::
+
+  > params
+  [🐝] Current stored parameters:
+    'key1' : 'value1'
+
+Now when we send a GET request, the parameters, similar to the headers, will automatically be sent with it:
+
+.. code-block:: 
+
+  > get localhost:8000
+  [🐝] Sending GET request to http://localhost:8000/?key1=value1...
+
+We can see in the first line of the feedback there that our parameter was automatically added onto the URL.
+
+If we don't wish to send our parameters, we can specify the ``--no-params`` option:
+
+.. code-block::
+
+  > get localhost:8000 --no-params
+  [🐝] Sending GET request to http://localhost:8000/...
+
+Parameters with POST Requests
+-----------------------------
+
+POST requests can be sent using WebWasp's ``post`` command.
+
+In order to send encoded data with our POST requests, we need to first create specific parameters with the ``params`` command, then pass these to the POST request:
+
+Let's create the params first:
+
+.. code-block::
+
+  > params add key1 value1
+  [🐝] Added param:
+    'key1' : 'value1'
+  > params add key2 value2
+  [🐝] Added param:
+    'key2' : 'value2
+
+Then we can perform a POST request with the parameters we made:
+
+.. code-block::
+
+  > post https://httpbin.org/post key1 key2
+  [🐝] Sending POST request to https://httpbin.org/post...
+  POST request made with parameters:
+    'key1' : 'value1'
+    'key2' : 'value2'
+    -- truncated --
+
+.. code-block:: json
+
+  > response show text
+  -- truncated --
+  "form": {
+    "key1": "value1", 
+    "key2": "value2"
+  },
+  -- truncated --
 
 Cookies
 =======
