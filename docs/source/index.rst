@@ -101,12 +101,14 @@ To view the response of the request we just made, we can use the ``response show
       11/09/2023   11:30:05
   Status code:
       200 (OK)
+  Encoding:
+      utf-8
   
-  Re-run 'response show' with '-t' option to show response text
+  Re-run 'response show text' to show response text
 
 This gives us a quick summary about the response we just received.
 
-If we want to see the actual source code of the response, we can use the ``-t`` or ``--text`` option:
+If we want to see the actual source code of the response, we can use the ``text`` subcommand:
 
 .. code-block::
 
@@ -619,7 +621,17 @@ This command will also format the HTML source into a more readable format:
 Exporting Responses
 ===================
 
-TODO
+To export responses we gather to a file, we can use the ``response export`` command.
+
+If we don't provide a path, it will auto-configure a name for us and save it within the current directory.
+
+.. code-block:: 
+
+  > response export sample.html
+  [🐝] Exported response to file 'sample.html'
+  >
+  > response export
+  [🐝] Exported response to file 'webwasp11_21_2023_10_37_10'
 
 Headers
 =======
@@ -797,6 +809,26 @@ Also similar to the ``params`` command, any cookies we have stored are automatic
 Timeouts
 ========
 
+We can set the timeout value for requests with the ``timeout`` command.
+
+.. code-block::
+
+  > timeout 0.5
+  [🐝] Timeout -> 0.5 seconds
+
+The timeout value is saved on a per-session basis.
+
+The default timeout value is 2.0 seconds.
+
+If we set the timeout to 0, or a negative number, the timeout will set to ``None``, and there will be no timeout.
+
+.. code-block::
+
+  > timeout 0
+  [🐝] Timeout -> None
+
+This is **NOT** recommended, since it can cause the program to hang indefinitely if the request does not complete.
+
 Planned Features
 ================
 
@@ -805,6 +837,7 @@ WebWasp is very much still in development, but here's a sneak preview of the fea
 - Directory brute-forcing, similar to gobuster
 - WebSocket support
 - Further syntax highlighting
+- GUI interface alternative
 
 Contributors
 ============
