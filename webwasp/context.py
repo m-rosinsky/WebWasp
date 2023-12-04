@@ -9,9 +9,9 @@ Brief:
 import os
 import yaml
 
-from src.response import Response
-from src.headers import Headers
-from src.logger import log
+from webwasp.response import Response
+from webwasp.headers import Headers
+from webwasp.logger import log
 
 # The default request timeout value in seconds.
 DEFAULT_TIMEOUT = 2.0

@@ -6,10 +6,10 @@ This file contains the var command class.
 
 import argparse
 
-from src.logger import log
-from src.context import Context
-from src.node import CommandNode
-from src.command.command_interface import CommandInterface
+from webwasp.logger import log
+from webwasp.context import Context
+from webwasp.node import CommandNode
+from webwasp.command.command_interface import CommandInterface
 
 class CommandVar(CommandInterface):
     """

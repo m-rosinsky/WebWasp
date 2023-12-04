@@ -13,21 +13,21 @@ Brief:
 import os
 import shlex
 
-from src.console import Console
-from src.context import Context
-from src.logger import log
-from src.node import CommandNode
+from webwasp.console import Console
+from webwasp.context import Context
+from webwasp.logger import log
+from webwasp.node import CommandNode
 
-from src.command.command_clear import CommandClear
-from src.command.command_console import CommandConsole
-from src.command.command_cookies import CommandCookies
-from src.command.command_get import CommandGet
-from src.command.command_headers import CommandHeaders
-from src.command.command_params import CommandParams
-from src.command.command_post import CommandPost
-from src.command.command_response import CommandResponse
-from src.command.command_timeout import CommandTimeout
-from src.command.command_var import CommandVar
+from webwasp.command.command_clear import CommandClear
+from webwasp.command.command_console import CommandConsole
+from webwasp.command.command_cookies import CommandCookies
+from webwasp.command.command_get import CommandGet
+from webwasp.command.command_headers import CommandHeaders
+from webwasp.command.command_params import CommandParams
+from webwasp.command.command_post import CommandPost
+from webwasp.command.command_response import CommandResponse
+from webwasp.command.command_timeout import CommandTimeout
+from webwasp.command.command_var import CommandVar
 
 # The name for file to write command history to.
 HISTORY_FILE = "~/.wwhistory"

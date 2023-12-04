@@ -8,11 +8,11 @@ import argparse
 import re
 from bs4 import BeautifulSoup
 
-from src.logger import log
-from src.context import Context
-from src.node import CommandNode
-from src.response import text_highlight
-from src.command.command_interface import CommandInterface
+from webwasp.logger import log
+from webwasp.context import Context
+from webwasp.node import CommandNode
+from webwasp.response import text_highlight
+from webwasp.command.command_interface import CommandInterface
 
 class CommandResponse(CommandInterface):
     """

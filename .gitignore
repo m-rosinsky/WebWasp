@@ -1,3 +1,11 @@
+# Cache files
 *__pycache*
-*.html
 *.vscode
+
+# Distribution items.
+*.egg-info
+build
+dist
+
+# Test files.
+*.html
