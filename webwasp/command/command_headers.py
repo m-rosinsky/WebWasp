@@ -6,11 +6,11 @@ This file contains the headers command class.
 
 import argparse
 
-from src.logger import log
-from src.context import Context
-from src.node import CommandNode
-from src.headers import Headers
-from src.command.command_interface import CommandInterface
+from webwasp.logger import log
+from webwasp.context import Context
+from webwasp.node import CommandNode
+from webwasp.headers import Headers
+from webwasp.command.command_interface import CommandInterface
 
 class CommandHeaders(CommandInterface):
     """

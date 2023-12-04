@@ -8,11 +8,11 @@ import os
 import shlex
 import sys
 
-from src.node import CommandNode
-from src.logger import log
-from src.get_key import get_key, Key
+from webwasp.node import CommandNode
+from webwasp.logger import log
+from webwasp.get_key import get_key, Key
 
-from src.command.command_interface import CommandInterface
+from webwasp.command.command_interface import CommandInterface
 
 # Key macros.
 ESC_SEQUENCE = '\x1b'

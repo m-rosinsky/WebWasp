@@ -17,7 +17,7 @@ from pygments.lexers import get_lexer_by_name
 from pygments.formatters import Terminal256Formatter
 from pygments.styles import get_style_by_name, get_all_styles
 
-from src.logger import log
+from webwasp.logger import log
 
 _DEFAULT_STYLE = 'lovelace'
 
