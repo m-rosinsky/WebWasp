@@ -93,14 +93,14 @@ class CommandGet(CommandInterface):
         # Construct the headers dictionary with only fields are are not None
         # in the console's headers object.
         headers = {}
-        for field, value in context.headers.fields.items():
+        for field, value in context.headers.items():
             if value is not None:
                 headers[field] = value
 
         # Construct the auth dictionary.
         auth = None
-        if context.headers.auth['auth-user'] is not None:
-            auth = (context.headers.auth['auth-user'], context.headers.auth['auth-pass'])
+        if context.auth.get('user') is not None:
+            auth = (context.auth['user'], context.auth.get('pass', ''))
 
         # Perform get request from request lib.
         req = None

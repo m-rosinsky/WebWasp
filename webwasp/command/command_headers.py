@@ -9,17 +9,25 @@ import argparse
 from webwasp.logger import log
 from webwasp.context import Context
 from webwasp.node import CommandNode
-from webwasp.headers import Headers
 from webwasp.command.command_interface import CommandInterface
+
+# This holds header info fields.
+INFO_FIELDS = {
+    'accept': 'Media types that are acceptable for the response',
+    'accept-language': 'Preferred language for the response',
+    'accept-encoding': 'Types of client-supported encoding schemes',
+    'cache-control': 'Directives for caching mechanisms',
+    'connection': 'Should network connection stay open after transaction?',
+    'if-modified-since': 'Conditional GET requests based on modif. time of resource',
+    'host': 'Domain name of the server (for virtual hosting)',
+    'referer': 'URL of the previous webpage, from which the request was initiated',
+    'user-agent': 'Client application making the request',
+}
 
 class CommandHeaders(CommandInterface):
     """
     This class handles the headers command, which is used
     to set and unset different HTTP 1.1 header values.
-
-    The specific header fields that can be set/unset are
-    hardcoded, and if an improper selection is made, an error
-    is returned.
     """
     def __init__(self, name):
         super().__init__(name)
@@ -27,7 +35,7 @@ class CommandHeaders(CommandInterface):
         # Create argument parser and help.
         self.parser = argparse.ArgumentParser(
             prog=self.name,
-            description='Set and unset custom HTTP 1.1 headers',
+            description='Modify the HTTP header fields for requests',
             add_help=False
         )
         super().add_help(self.parser)
@@ -35,70 +43,74 @@ class CommandHeaders(CommandInterface):
         # Create the subparser object.
         self.subparser = self.parser.add_subparsers()
 
-        # Create the headers set command subparser.
-        self.parser_set = self.subparser.add_parser(
-            'set',
-            description='Set the value for a header field',
-            help='Set the value for a header field',
+        # Create the headers add command subparser.
+        self.parser_add = self.subparser.add_parser(
+            'add',
+            description='Add a header field',
+            help='Add a header field',
             add_help=False
         )
-        super().add_help(self.parser_set)
-        self.parser_set.set_defaults(func=self._set)
-        self.parser_set.add_argument(
-            'field',
+        super().add_help(self.parser_add)
+        self.parser_add.set_defaults(func=self._add)
+        self.parser_add.add_argument(
+            'name',
             type=str,
-            help='The header field to set'
+            help='The name of the header field',
         )
-        self.parser_set.add_argument(
+        self.parser_add.add_argument(
             'value',
             type=str,
-            help='The header field value'
+            help='The header field value',
         )
 
-        # Create the headers unset command subparser.
-        self.parser_unset = self.subparser.add_parser(
-            'unset',
-            description='Unset the value for a header field',
-            help='Unset the value for a header field',
-            add_help=False
+        # Create the headers remove command subparser.
+        self.parser_remove = self.subparser.add_parser(
+            'remove',
+            description='Remove a header field',
+            help='Remove a header field',
+            add_help=False,
         )
-        super().add_help(self.parser_unset)
-        self.parser_unset.set_defaults(func=self._unset)
-        self.parser_unset.add_argument(
-            'field',
+        super().add_help(self.parser_remove)
+        self.parser_remove.set_defaults(func=self._remove)
+        self.parser_remove.add_argument(
+            'name',
             type=str,
-            help='The header field to unset'
+            help='The header field to remove',
         )
 
         # Create the headers clear command subparser.
         self.parser_clear = self.subparser.add_parser(
             'clear',
-            description='Unset all header field values',
-            help='Unset all header field values',
-            add_help=False
+            description='Remove all header fields',
+            help='Remove all header fields',
+            add_help=False,
         )
         super().add_help(self.parser_clear)
         self.parser_clear.set_defaults(func=self._clear)
 
+        # Create the headers info command subparser.
+        self.parser_info = self.subparser.add_parser(
+            'info',
+            description='Get info on common header field names',
+            help='Get info on common header field names',
+            add_help=False,
+        )
+        super().add_help(self.parser_info)
+        self.parser_info.set_defaults(func=self._info)
+
     def create_cmd_tree(self) -> CommandNode:
-        root = super().create_cmd_tree()
+        t = super().create_cmd_tree()
 
-        # Special command additions here to add the
-        # header fields to the 'set' and 'unset' commands.
-        if root is None:
-            return root
-        
-        h = Headers()
-        for child in root.children:
-            if child.name in ["set", "unset"]:
-                for field in h.fields:
-                    node = CommandNode(field)
-                    child.children.append(node)
-                for auth in h.auth:
-                    node = CommandNode(auth)
-                    child.children.append(node)
+        nodes = []
+        for field in INFO_FIELDS.keys():
+            node = CommandNode(field)
+            nodes.append(node)
 
-        return root
+        for child in t.children:
+            if child.name in ['add', 'remove']:
+                child.children = nodes
+
+        return t
 
     def run(self, parse: list, context: Context, cmd_tree: CommandNode) -> bool:
         # Resolve command shortening.
@@ -132,40 +144,48 @@ class CommandHeaders(CommandInterface):
         This function lists all headers currently stored.
         """
         log("Current header fields:", log_type='info')
-        context.headers.print_fields()
+        for name, value in context.headers.items():
+            log(f"   '{name}' : '{value}'")
 
-    def _set(self, args: argparse.Namespace, context: Context):
+    def _add(self, args: argparse.Namespace, context: Context):
         """
-        This function sets a header field to a specified value.
+        This function adds a header field.
         """
-        if not context.headers.field_valid(args.field):
-            log(f"Invalid header field: '{args.field}'", log_type='error')
-            log("Run 'headers' to see list of valid fields")
+        context.headers[args.name] = args.value
+        log("Added header field:", log_type='info')
+        log(f"   '{args.name}' : '{args.value}'")
+
+    def _remove(self, args: argparse.Namespace, context: Context):
+        """
+        This function removes a header field.
+        """
+        if args.name not in context.headers:
+            log(f"Unknown header field: '{args.name}'", log_type='error')
             return
-
-        context.headers.set_field(args.field, args.value)
-        log(
-            f"Set header field:\n   {args.field} : '{args.value}'",
-            log_type='info',
-        )
-
-    def _unset(self, args: argparse.Namespace, context: Context):
-        """
-        This function unsets a header field.
-        """
-        if not context.headers.field_valid(args.field):
-            log(f"Invalid header field: '{args.field}'", log_type='error')
-            log("Run 'headers' to see list of valid fields")
-            return
-
-        context.headers.set_field(args.field, None)
-        log(f"Unset header field:\n   {args.field}", log_type='info')
+        del context.headers[args.name]
+        log("Removed header field", log_type='info')
+        log(f"   '{args.name}'")
 
     def _clear(self, args: argparse.Namespace, context: Context):
         """
         This function unsets all header fields.
         """
-        context.headers.clear_fields()
+        context.headers = {}
         log("Cleared all header fields", log_type='info')
+
+    def _info(self, args: argparse.Namespace, context: Context):
+        """
+        This function gives some basic info about header fields.
+        """
+        longest_field_len = 0
+        for name in INFO_FIELDS.keys():
+            l = len(name)
+            if l > longest_field_len:
+                longest_field_len = l
+
+        log("Common HTTP header fields:", log_type='info')
+        for field, desc in INFO_FIELDS.items():
+            num_spaces = longest_field_len - len(field) + 1
+            log(f"   '\033[36m{field}\033[0m':{' '*num_spaces}{desc}")
 
 ###   end of file   ###
