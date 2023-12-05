@@ -65,7 +65,7 @@ And the level is complete!
 Now let's try this in WebWasp! Fire up the WebWasp console by typing:
 
 ```
-python3 webwasp.py
+python3 -m webwasp
 ```
 
 Let's create a new session to work in. Sessions are a feature of WebWasp
@@ -117,34 +117,29 @@ As we expect, we never provided any credentials to the page! So it returned a st
 
 This authorization is part of the HTTP Authorization header. The server will check the credentials we provide there, and decide whether we are authorized or not.
 
-We can provide those credentials in our GET request by setting the appropriate header fields!
-
-First, let's take a look at the header fields by running the `headers` command:
+We can provide those credentials in our GET request by using the `auth` command:
 
 ```
-> headers
-[🐝] Current header fields:
-   auth-pass    : ''
-   auth-user    : ''
-   referer      : ''
-   user-agent   : ''
-   -- truncated --
+> auth
+[🐝] Current auth fields:
+   'user': ''
+   'pass': ''
 ```
 
-The `auth-user` and `auth-pass` are exactly what we're looking for! Let's set those:
+Let's set the `user` and `pass` fields to match our credentials:
 
 ```
-> headers set auth-user natas0
-[🐝] Set header field:
-   auth-user : 'natas0'
-> headers set auth-pass $pass0 
-[🐝] Set header field:
-   auth-pass : 'natas0'
+> auth user 'natas0'
+[🐝] Set 'user' auth field:
+   'natas0'
+> auth pass $pass0
+[🐝] Set 'pass' auth field:
+   'natas0'
 ```
 
-(notice we set the `auth-pass` field with the variable we saved in `$pass0`).
+(notice we set the `pass` field with the variable we saved in `$pass0`).
 
-Any headers we've set will automatically be shipped with our requests! So let's try it again:
+Our credentials that we've set will automatically be shipped with our requests! So let's try it again:
 
 ```
 > get $url0                   
@@ -209,12 +204,12 @@ Of course, there are a multitude of ways to solve this issue, but let's do it wi
 Let's first update our credentials in the headers:
 
 ```
-> headers set auth-user natas1
-[🐝] Set header field:
-   auth-user : 'natas1'
-> headers set auth-pass $pass1
-[🐝] Set header field:
-   auth-pass : 'g9D9cREhslqBKtcA2uocGHPfMZVzeFK6'
+> auth user natas1
+[🐝] Set 'user' auth field:
+   'natas1'
+> auth pass $pass1
+[🐝] Set 'pass' auth field:
+   'g9D9cREhslqBKtcA2uocGHPfMZVzeFK6'
 ```
 
 and then make the request:
@@ -261,12 +256,12 @@ We'll make a habit of saving these passwords as we find them. Since variables ar
 Let's set the headers again for the next level:
 
 ```
-> headers set auth-user natas2
-[🐝] Set header field:
-   auth-user : 'natas2'
-> headers set auth-pass $pass2
-[🐝] Set header field:
-   auth-pass : 'h4ubbcXrWqsTo7GGnnUMLppXbOogfBZ7'
+> auth user natas2
+[🐝] Set 'user' auth field:
+   'natas2'
+> auth pass $pass2
+[🐝] Set 'pass' auth field:
+   'h4ubbcXrWqsTo7GGnnUMLppXbOogfBZ7'
 ```
 
 <b>Note:</b> In future levels we won't show the headers being set, since it's the same process each time.
@@ -494,13 +489,11 @@ Hmm. This time we were disallowed access because we weren't coming from the righ
 
 What this is referencing is the `referer` tag within the header of an HTTP request.
 
-WebWasp makes setting these header fields easy, as we've already seen with the `auth-user` and `auth-pass` fields.
-
-Let's set the `referer` field the same way:
+Let's set the `referer` field using the `headers` command:
 
 ```
-> headers set referer http://natas5.natas.labs.overthewire.org/
-[🐝] Set header field:
+> headers add referer http://natas5.natas.labs.overthewire.org/
+[🐝] Added header field:
    referer : 'http://natas5.natas.labs.overthewire.org/'
 ```
 
@@ -536,11 +529,11 @@ Save that password into `pass5` and we're onto the next one.
 
 ## Level 5
 
-Since we don't necessarily want to use the same `referer` tag from the previous level, let's go ahead and unset it before we make our get request to level 5:
+Since we don't necessarily want to use the same `referer` tag from the previous level, let's go ahead and remove it before we make our get request to level 5:
 
 ```
-> headers unset referer 
-[🐝] Unset header field:
+> headers remove referer 
+[🐝] Removed header field:
    referer
 ```
 

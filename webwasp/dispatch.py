@@ -18,6 +18,7 @@ from webwasp.context import Context
 from webwasp.logger import log
 from webwasp.node import CommandNode
 
+from webwasp.command.command_auth import CommandAuth
 from webwasp.command.command_clear import CommandClear
 from webwasp.command.command_console import CommandConsole
 from webwasp.command.command_cookies import CommandCookies
@@ -54,6 +55,7 @@ class Dispatcher:
         # The command dictionary, consisting of all command classes and
         # the associated command names.
         self.command_dict = {
+            'auth'      : CommandAuth('auth'),
             'clear'     : CommandClear('clear'),
             'console'   : CommandConsole('console'),
             'cookies'   : CommandCookies('cookies'),

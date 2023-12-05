@@ -78,14 +78,14 @@ class CommandPost(CommandInterface):
         # Construct the headers dictionary with only fields are are not None
         # in the console's headers object.
         headers = {}
-        for field, value in context.headers.fields.items():
+        for field, value in context.headers.items():
             if value is not None:
                 headers[field] = value
 
         # Construct the auth dictionary.
         auth = None
-        if context.headers.auth['auth-user'] is not None:
-            auth = (context.headers.auth['auth-user'], context.headers.auth['auth-pass'])
+        if context.auth['user'] is not None:
+            auth = (context.auth['user'], context.auth.get('pass', ''))
 
         log(
             f"Sending POST request to \033[36m{url}\033[0m...",
