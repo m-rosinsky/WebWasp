@@ -19,33 +19,17 @@ Getting Started
 Installation
 ------------
 
-WebWasp has yet to be packaged, so it will need to be cloned from source:
+WebWasp can be installed via the pip package manager...
 
 .. code-block:: rst
 
-  git clone https://github.com/m-rosinsky/WebWasp.git
+  pip install webwasp
+
+... and can be run by calling the module directly:
 
 .. code-block:: rst
 
-  cd WebWasp
-
-Ensure at least Python3.7 is installed:
-
-.. code-block:: rst
-
-  python3 --version
-
-Install the ``pip`` dependencies:
-
-.. code-block:: rst
-
-  python3 -m pip install -r requirements.txt
-
-and then...
-
-.. code-block:: rst
-
-  python3 webwasp.py
+  python3 -m webwasp
 
 That should get us started, and will drop us into the WebWasp command line!
 
@@ -229,13 +213,13 @@ For example if we type:
 
 .. code-block::
 
-  > headers set r
+  > headers add r
 
 and press ``TAB``:
 
 .. code-block::
 
-  > headers set referer 
+  > headers add referer 
 
 WebWasp will autofill the rest of the command, since ``referer`` was the only
 option for completion given the partial command ``r``.
@@ -636,29 +620,35 @@ If we don't provide a path, it will auto-configure a name for us and save it wit
 Headers
 =======
 
-HTTP headers can be ``set`` and ``unset`` on a per-session basis.
+HTTP headers can be added and removed on a per-session basis, similar to parameters.
 
-To see a list of headers that can be configured and sent, run ``headers``:
+Any header field value can be set, but to see some common HTTP header fields, we can run the ``headers info`` command:
 
 .. code-block:: 
 
-  > headers
-  [🐝] Current header fields:
-    auth-pass    : ''
-    auth-user    : ''
-    referer      : ''
-    user-agent   : ''
-    -- truncated --
+  > headers info
+  [🐝] Common HTTP header fields:
+    'accept':            Media types that are acceptable for the response
+    'accept-language':   Preferred language for the response
+    'accept-encoding':   Types of client-supported encoding schemes
+    'cache-control':     Directives for caching mechanisms
+    'connection':        Should network connection stay open after transaction?
+    'if-modified-since': Conditional GET requests based on modif. time of resource
+    'host':              Domain name of the server (for virtual hosting)
+    'referer':           URL of the previous webpage, from which the request was initiated
+    'user-agent':        Client application making the request
 
-When we set a field with the ``set`` command, it will be displayed here:
+These fields are supported with TAB autocompletion when using the ``add`` and ``remove`` commands.
+
+When we add a field with the ``add`` command, it will be displayed here:
 
 .. code-block::
 
-  > headers set referer "myreferringsite.com"
-  [🐝] Set header field:
+  > headers add referer "myreferringsite.com"
+  [🐝] Added header field:
     referer : 'myreferringsite.com'
 
-We can use ``headers unset`` to unset specific header fields, or ``headers clear`` to unset *all* header fields.
+We can use ``headers remove`` to unset specific header fields, or ``headers clear`` to unset *all* header fields.
 
 When a request is made within this session now, any header fields that have been set will automatically be shipped with it.
 
@@ -667,9 +657,20 @@ Checkout the Natas OverTheWire WebWasp walkthrough `level 4 <https://github.com/
 HTTP Authorization
 ------------------
 
-The ``auth-user`` and ``auth-pass`` headers have to do with HTTP authorization. If you're getting a ``401 Unauthorized`` error, you may need to set these fields and try the request again.
+The ``auth`` command is used to set the Authorization header field for requests.
 
-All levels of the Natas walkthrough deal with these fields, for an example.
+We can set the username and password by running ``auth user {value}`` and ``auth pass {value}``:
+
+This is an example from the natas walkthrough level 0:
+
+.. code-block::
+
+  > auth user 'natas0'
+  [🐝] Set 'user' auth field:
+    'natas0'
+  > auth pass $pass0
+  [🐝] Set 'pass' auth field:
+    'natas0'
 
 Headers and Sessions
 --------------------

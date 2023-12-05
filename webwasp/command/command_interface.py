@@ -8,9 +8,9 @@ interface that all command classes must follow.
 import argparse
 from abc import ABC, abstractmethod
 
-from src.logger import log
-from src.context import Context
-from src.node import CommandNode
+from webwasp.logger import log
+from webwasp.context import Context
+from webwasp.node import CommandNode
 
 class CommandInterface(ABC):
     """

@@ -1,23 +1,23 @@
 """
-file: src/command_post.py
+file: src/command_get.py
 
-This file contains the post command class.
+This file contains the get command class.
 """
 
+import http
 import argparse
 import datetime
-import http
 import requests
 
-from src.logger import log
-from src.context import Context
-from src.node import CommandNode
-from src.command.command_interface import CommandInterface
+from webwasp.logger import log
+from webwasp.context import Context
+from webwasp.node import CommandNode
+from webwasp.command.command_interface import CommandInterface
 
-class CommandPost(CommandInterface):
+class CommandGet(CommandInterface):
     """
-    This class handles the post command, which sends
-    HTTP POST requests to a url/server.
+    This class handles the get command, which sends
+    HTTP 1.1 GET requests to a url/server.
     """
     def __init__(self, name):
         super().__init__(name)
@@ -25,8 +25,8 @@ class CommandPost(CommandInterface):
         # Create argument parser and help.
         self.parser = argparse.ArgumentParser(
             prog=self.name,
-            description='Send an HTTP POST request to a server/url',
-            add_help=False,
+            description='Send an HTTP 1.1 GET request to a server/url',
+            add_help=False
         )
         super().add_help(self.parser)
 
@@ -34,13 +34,17 @@ class CommandPost(CommandInterface):
         self.parser.add_argument(
             'url',
             type=str,
-            help='The url to make a request to',
+            help='The url to make a request to'
         )
         self.parser.add_argument(
-            'params',
-            nargs='*',
-            default=[],
-            help='Parameters from params to send with post request',
+            '--no-params',
+            action='store_true',
+            help='Perform request without stored parameters in url'
+        )
+        self.parser.add_argument(
+            '--no-cookies',
+            action='store_true',
+            help='Perform request without stored cookies'
         )
 
     def run(self, parse: list, context: Context, cmd_tree: CommandNode) -> bool:
@@ -67,44 +71,46 @@ class CommandPost(CommandInterface):
         if not url.startswith('http://') and not url.startswith('https://'):
             url = 'http://' + url
 
-        # Prepare the parameters.
-        data = {}
-        for param in args.params:
-            if not param in context.params:
-                log(f"Parameter {param} not in params list", log_type='error')
-                return True
-            data[param] = context.params[param]
+        # If the --no-params flag was specified, unset params.
+        params = context.params
+        if args.no_params:
+            params = {}
+
+        # Prepare the full URL.
+        prep = requests.Request('GET', url, params=params).prepare()
+
+        # If the --no-cookies flag was specified, unset cookies.
+        cookies = context.cookies
+        if args.no_cookies:
+            cookies = {}
+
+        # Inform the user the full URL.
+        log(
+            f"Sending GET request to \033[36m{prep.url}\033[0m...",
+            log_type='info',
+        )
 
         # Construct the headers dictionary with only fields are are not None
         # in the console's headers object.
         headers = {}
-        for field, value in context.headers.fields.items():
+        for field, value in context.headers.items():
             if value is not None:
                 headers[field] = value
 
         # Construct the auth dictionary.
         auth = None
-        if context.headers.auth['auth-user'] is not None:
-            auth = (context.headers.auth['auth-user'], context.headers.auth['auth-pass'])
+        if context.auth.get('user') is not None:
+            auth = (context.auth['user'], context.auth.get('pass', ''))
 
-        log(
-            f"Sending POST request to \033[36m{url}\033[0m...",
-            log_type='info',
-        )
-        log(f"POST request made with parameters:")
-        for name, value in data.items():
-            log(f"   '{name}' : '{value}'")
-
-        # Perform the POST request.
+        # Perform get request from request lib.
         req = None
         try:
-            req = requests.post(
-                url,
-                data=data,
+            req = requests.get(
+                prep.url,
                 timeout=context.timeout,
                 auth=auth,
                 headers=headers,
-                cookies=context.cookies,
+                cookies=cookies,
             )
         except requests.exceptions.RequestException as req_ex:
             print(f"{req_ex}")
@@ -114,9 +120,9 @@ class CommandPost(CommandInterface):
             if req:
                 req.close()
             return True
-        
+
         # Print the status code.
-        log("POST request completed. Status code: ", log_type='info', end='')
+        log("GET request completed. Status code: ", log_type='info', end='')
 
         if req.status_code >= 200 and req.status_code < 300:
             print("\033[32m", end="")
@@ -134,7 +140,7 @@ class CommandPost(CommandInterface):
         # Save the response fields to the console.
         context.response.date_time = datetime.datetime.now()
         context.response.set_req(req)
-        context.response.post_data = data
+        context.response.post_data = None
 
         # Set the console flag to indicate a response has been captured,
         # and report.

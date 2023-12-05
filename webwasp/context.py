@@ -9,9 +9,8 @@ Brief:
 import os
 import yaml
 
-from src.response import Response
-from src.headers import Headers
-from src.logger import log
+from webwasp.response import Response
+from webwasp.logger import log
 
 # The default request timeout value in seconds.
 DEFAULT_TIMEOUT = 2.0
@@ -52,7 +51,9 @@ class Context:
         self.has_response = False
 
         # This holds the request headers.
-        self.headers = Headers()
+        self.headers = {}
+
+        self.auth = {}
 
         # This holds the console variables.
         self.vars = {}
@@ -76,7 +77,8 @@ class Context:
             DataError on I/O errors.
         """
         self.timeout = DEFAULT_TIMEOUT
-        self.headers = Headers()
+        self.auth = {}
+        self.headers = {}
         self.vars = {}
         self.params = {}
         self.cookies = {}
@@ -144,11 +146,9 @@ class Context:
             
         # Create the session data.
         session_data = {
+            'auth': self.auth,
             'cookies': self.cookies,
-            'headers': {
-                'auth': self.headers.auth,
-                'fields': self.headers.fields,
-            },
+            'headers': self.headers,
             'params': self.params,
             'vars': self.vars,
             'timeout': self.timeout,
@@ -360,6 +360,8 @@ class Context:
                 raise
         
         # If the session does exist, load its values into the context variables.
+        if 'auth' in yaml_data[self.cur_session]:
+            self.auth = yaml_data[self.cur_session]['auth']
         if 'cookies' in yaml_data[self.cur_session]:
             self.cookies = yaml_data[self.cur_session]['cookies']
         if 'params' in yaml_data[self.cur_session]:
@@ -369,10 +371,7 @@ class Context:
         if 'timeout' in yaml_data[self.cur_session]:
             self.timeout = yaml_data[self.cur_session]['timeout']
         if 'headers' in yaml_data[self.cur_session]:
-            if 'auth' in yaml_data[self.cur_session]['headers']:
-                self.headers.auth = yaml_data[self.cur_session]['headers']['auth']
-            if 'fields' in yaml_data[self.cur_session]['headers']:
-                self.headers.fields = yaml_data[self.cur_session]['headers']['fields']
+            self.headers = yaml_data[self.cur_session]['headers']
 
     def _create_data_file(self):
         """
