@@ -19,33 +19,17 @@ Getting Started
 Installation
 ------------
 
-WebWasp has yet to be packaged, so it will need to be cloned from source:
+WebWasp can be installed via the pip package manager...
 
 .. code-block:: rst
 
-  git clone https://github.com/m-rosinsky/WebWasp.git
+  pip install webwasp
+
+... and can be run by calling the module directly:
 
 .. code-block:: rst
 
-  cd WebWasp
-
-Ensure at least Python3.7 is installed:
-
-.. code-block:: rst
-
-  python3 --version
-
-Install the ``pip`` dependencies:
-
-.. code-block:: rst
-
-  python3 -m pip install -r requirements.txt
-
-and then...
-
-.. code-block:: rst
-
-  python3 webwasp.py
+  python3 -m webwasp.py
 
 That should get us started, and will drop us into the WebWasp command line!
 

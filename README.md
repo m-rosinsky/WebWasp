@@ -21,46 +21,18 @@ Primary features include:
 - Packet header manipulation
 - File downloading
 
-# Contents
+## Installation
 
-1. [Installation](#1-installation)
-2. [Quick Start Guide](#2-quick-start-guide)
-    - a. [GET Requests](#2a-get-requests)
-    - b. [Viewing the Response](#2b-viewing-the-response)
-3. [Documentation](#3-documentation)
-4. [Planned Features](#4-planned-features)
-5. [Contributors](#5-contributors)
-
-## 1. Installation
-
-WebWasp has yet to be packaged, since it is still in its alpha stages.
-
-Therefore, we will need to clone from source:
+WebWasp can be installed using the `pip` package manager...
 
 ```bash
-git clone https://github.com/m-rosinsky/WebWasp.git
+pip install webwasp
 ```
 
-```bash
-cd WebWasp
-```
-
-Ensure we have at least Python3.7 installed:
+... and can be run by calling the module directly:
 
 ```bash
-python3 --version
-```
-
-Install the ```pip``` dependencies:
-
-```bash
-python3 -m pip install -r requirements.txt
-```
-
-and then...
-
-```bash
-python3 webwasp.py
+python3 -m webwasp
 ```
 
 That should get us started, and will drop us into the WebWasp command line!
@@ -78,11 +50,11 @@ That should get us started, and will drop us into the WebWasp command line!
 > 
 ```
 
-## 2. Quick Start Guide
+## Quick Start Guide
 
 It's recommended to read the full [documentation](#3-documentation) to get a feel for all WebWasp has to offer, but here's a few things to get you started!
 
-### 2.a. GET Requests
+### GET Requests
 
 Making an HTTP GET request is as easy! Here's a simple get request to google:
 
@@ -101,44 +73,45 @@ You should see the following output:
 [🐝] Response captured! Type 'response show' for summary
 ```
 
-### 2.b. Viewing the Response
+### Viewing the Response
 
 To view the response of the request we just made, we can use the ```response show``` command:
 
 ```
-> response show
+> response show  
 [🐝] Summary of captured response:
 
 Response url:
    http://www.google.com/
 Response date/time:
-   11/09/2023   11:30:05
+   12/05/2023   00:51:33
 Status code:
    200 (OK)
+Encoding:
+   ISO-8859-1
 
-Re-run 'response show' with '-t' option to show response text
+Re-run 'response show text' to show response text
 ```
 
 This gives us a quick summary about the response we just made.
 
-If we want to see the actual source code of the response, we can use the ```-t```, or ```--text``` option:
+If we want to see the actual source code of the response, we can use the ```text``` argument:
 
-```
-> response show -t
-<!doctype html>... (truncated google.com's source code is long)
+```HTML
+> response show text
+<!doctype html><html itemscope="" itemtype="http://schema.org/WebPage" lang="en"><head><meta content="Search the world's information, ...
 ```
 
-## 3. Documentation
+## Documentation
 
 The full WebWasp documentation along with some walkthroughs that demonstrate WebWasp's capabilities can be found here:
 
 > [ReadTheDocs](https://webwasp.readthedocs.io/en/latest/)
 
-## 4. Planned Features
+## Contributors
 
-- Directory bruteforcing, similar to dirbuster
-- Response syntax highlighting
+WebWasp is completely open-source, and anyone willing to make improvements or additions to the project is encouraged to submit a PR!
 
-## 5. Contributors
+Any bugs, issues, requests, etc can be submitted as an issue:
 
-TODO
+https://github.com/m-rosinsky/WebWasp/issues
