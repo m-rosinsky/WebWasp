@@ -13,13 +13,26 @@ import unittest
 import urllib.request
 
 from http.server import SimpleHTTPRequestHandler, HTTPServer
+from http.cookies import SimpleCookie
 
 from webwasp import context
 from webwasp.command.command_get import CommandGet
 
+g_referer = ''
+g_cookie_names = []
+g_cookie_values = []
+
+def test_func(func):
+    def wrapper(*args, **kwargs):
+        print(f"\nRunning test: {func.__name__}...")
+        return func(*args, **kwargs)
+    return wrapper
+
 class MyTest(unittest.TestCase):
     SERVER_URL = 'http://localhost:8000'
     FILENAME = 'sample.html'
+    FULL_URL = f"{SERVER_URL}/{FILENAME}"
+    
 
     SAMPLE_CONTENT = """
 <!DOCTYPE html>
@@ -33,8 +46,33 @@ class MyTest(unittest.TestCase):
 </html>
 """
 
+    class GetHandler(SimpleHTTPRequestHandler):
+        def do_GET(self) -> None:
+            global g_referer
+            global g_cookie_names
+            global g_cookie_values
+
+            g_referer = self.headers.get('referer')
+            if g_referer is not None:
+                print(f"Got 'referer': '{g_referer}'")
+            
+            cookie_header = self.headers.get('Cookie')
+            cookies = SimpleCookie(cookie_header)
+
+            for cookie in cookies.values():
+                print(f"Got cookie: '{cookie.key}' : '{cookie.value}'")
+                g_cookie_names.append(cookie.key)
+                g_cookie_values.append(cookie.value)
+
+            return super().do_GET()
+
     @classmethod
     def setUpClass(cls):
+        # Write sample data.
+        with open(cls.FILENAME, 'w', encoding='utf-8') as f:
+            f.write(cls.SAMPLE_CONTENT)
+
+        # Spawn a thread to stand up the server.
         cls.server_thread = threading.Thread(target=cls.run_http_server)
         cls.server_thread.start()
 
@@ -43,28 +81,30 @@ class MyTest(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        # Close the HTTP server.
         cls.httpd.shutdown()
         cls.httpd.server_close()
+
+        # Join the thread.
         cls.server_thread.join()
+
+        # Remove sample data.
+        os.remove(cls.FILENAME)
 
     @classmethod
     def run_http_server(cls):
         server_address = ('', 8000)
-        cls.httpd = HTTPServer(server_address, SimpleHTTPRequestHandler)
+        cls.httpd = HTTPServer(server_address, cls.GetHandler)
         cls.httpd.serve_forever()
 
+    @test_func
     def test_get_sample(self):
-        # Write sample data.
-        with open(self.FILENAME, 'w', encoding='utf-8') as f:
-            f.write(self.SAMPLE_CONTENT)
-
         # Create the context object.
         c = context.Context()
         self.assertIsNotNone(c)
 
         # Create the URL and the command parse.
-        url = f"{self.SERVER_URL}/{self.FILENAME}"
-        parse = [url]
+        parse = [self.FULL_URL]
 
         # Create the command class and execute it with the command parse and
         # context.
@@ -74,10 +114,44 @@ class MyTest(unittest.TestCase):
         # Perform assertions about the response.
         self.assertTrue(c.has_response)
         self.assertEqual(c.response.req.status_code, 200)
-        self.assertEqual(c.response.req_text, self.SAMPLE_CONTENT)
+        self.assertEqual(c.response.req_text, self.SAMPLE_CONTENT)        
 
-        # Remove sample data.
-        os.remove(self.FILENAME)
+    @test_func
+    def test_get_referer(self):
+        c = context.Context()
+        c.headers['referer'] = 'myref'
+
+        # Create the command parse.
+        parse = [self.FULL_URL]
+
+        # Create the command class and execute it with the command parse and
+        # context.
+        get_command = CommandGet('get')
+        get_command.run(parse, c)
+
+        self.assertTrue(c.has_response)
+        self.assertEqual(c.response.req.status_code, 200)
+        self.assertEqual(c.response.req_text, self.SAMPLE_CONTENT)
+        self.assertEqual('myref', g_referer)
+
+    @test_func
+    def test_get_cookies(self):
+        c = context.Context()
+        c.cookies['my_cookie'] = 'cookie_value'
+
+        # Create the command parse.
+        parse = [self.FULL_URL]
+
+        # Create the command class and execute it with the command parse and
+        # context.
+        get_command = CommandGet('get')
+        get_command.run(parse, c)
+
+        self.assertTrue(c.has_response)
+        self.assertEqual(c.response.req.status_code, 200)
+        self.assertEqual(c.response.req_text, self.SAMPLE_CONTENT)
+        self.assertEqual('my_cookie', g_cookie_names[0])
+        self.assertEqual('cookie_value', g_cookie_values[0])
 
 if __name__=='__main__':
     unittest.main()
