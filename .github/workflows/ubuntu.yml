@@ -2,27 +2,30 @@ name: Ubuntu
 on: [push, pull_request]
 
 jobs:
-  tests:
+  tox:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        python-version:
+          - 3.7
+          - 3.8
+          - 3.9
+          - 3.10
+          - 3.11
+      
     steps:
 
-      # Step 1. Checkout repo.
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      # Step 2. Install python.
       - name: Set up Python
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y python3
-          sudo apt-get install -y pip
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
 
-      # Step 3. Install tox
       - name: Install tox
-        run: |
-          python3 -m pip install tox
+        run: pip install tox
 
-      - name: Run tests
-        run: |
-          tox
+      - name: Run tox
+        run: tox
