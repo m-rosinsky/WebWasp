@@ -76,6 +76,8 @@ class MyTest(unittest.TestCase):
         self.assertEqual(c.response.req.status_code, 200)
         self.assertEqual(c.response.req_text, self.SAMPLE_CONTENT)
 
+        self.assertEqual(1, 2)
+
         # Remove sample data.
         os.remove(self.FILENAME)
 
