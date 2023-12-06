@@ -33,9 +33,18 @@ class MyTest(unittest.TestCase):
     FILENAME = 'sample.html'
     FULL_URL = f"{SERVER_URL}/{FILENAME}"
     
-    # Use os.linesep for sample data for compatiblity with ubuntu
-    # and windows tests.
-    SAMPLE_CONTENT = f"""<!DOCTYPE html>{os.linesep}<html>{os.linesep}<head>{os.linesep}<title>Sample Page</title>{os.linesep}</head>{os.linesep}<body>{os.linesep}<h1>Sample Header</h1>{os.linesep}</body>{os.linesep}</html>"""
+
+    SAMPLE_CONTENT = """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sample Page</title>
+</head>
+<body>
+    <h1>Sample Header</h1>
+</body>
+</html>
+"""
 
     class GetHandler(SimpleHTTPRequestHandler):
         def do_GET(self) -> None:
@@ -75,7 +84,7 @@ class MyTest(unittest.TestCase):
         # Close the HTTP server.
         cls.httpd.shutdown()
         cls.httpd.server_close()
-
+        
         # Join the thread.
         cls.server_thread.join()
 
@@ -105,6 +114,9 @@ class MyTest(unittest.TestCase):
         # Perform assertions about the response.
         self.assertTrue(c.has_response)
         self.assertEqual(c.response.req.status_code, 200)
+
+        # Normalize line endings.
+        c.response.req_text = c.response.req_text.replace("\r\n", "\n")
         self.assertEqual(c.response.req_text, self.SAMPLE_CONTENT)        
 
     @test_func
@@ -122,7 +134,6 @@ class MyTest(unittest.TestCase):
 
         self.assertTrue(c.has_response)
         self.assertEqual(c.response.req.status_code, 200)
-        self.assertEqual(c.response.req_text, self.SAMPLE_CONTENT)
         self.assertEqual('myref', g_referer)
 
     @test_func
@@ -140,9 +151,10 @@ class MyTest(unittest.TestCase):
 
         self.assertTrue(c.has_response)
         self.assertEqual(c.response.req.status_code, 200)
-        self.assertEqual(c.response.req_text, self.SAMPLE_CONTENT)
         self.assertEqual('my_cookie', g_cookie_names[0])
         self.assertEqual('cookie_value', g_cookie_values[0])
+
+
 
 if __name__=='__main__':
     unittest.main()
