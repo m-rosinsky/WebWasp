@@ -33,18 +33,9 @@ class MyTest(unittest.TestCase):
     FILENAME = 'sample.html'
     FULL_URL = f"{SERVER_URL}/{FILENAME}"
     
-
-    SAMPLE_CONTENT = """
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Sample Page</title>
-</head>
-<body>
-    <h1>Sample Header</h1>
-</body>
-</html>
-"""
+    # Use os.linesep for sample data for compatiblity with ubuntu
+    # and windows tests.
+    SAMPLE_CONTENT = f"""<!DOCTYPE html>{os.linesep}<html>{os.linesep}<head>{os.linesep}<title>Sample Page</title>{os.linesep}</head>{os.linesep}<body>{os.linesep}<h1>Sample Header</h1>{os.linesep}</body>{os.linesep}</html>"""
 
     class GetHandler(SimpleHTTPRequestHandler):
         def do_GET(self) -> None:
