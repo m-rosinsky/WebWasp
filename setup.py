@@ -28,7 +28,7 @@ setup(
     maintainer="Mike Rosinsky",
     maintainer_email="rosinskymike@gmail.com",
     license="MIT",
-    packages=find_packages(),
+    packages=find_packages(exclude=("tests", "tests.*")),
     include_package_data=True,
     zip_safe=False,
     entry_points={"console": ["webwasp = webwasp.webwasp:main"]},
