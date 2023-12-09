@@ -9,3 +9,6 @@ dist
 
 # Test files.
 *.html
+
+# Tox files.
+*.tox
