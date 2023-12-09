@@ -47,9 +47,10 @@ class CommandGet(CommandInterface):
             help='Perform request without stored cookies'
         )
 
-    def run(self, parse: list, context: Context, cmd_tree: CommandNode) -> bool:
+    def run(self, parse: list, context: Context, cmd_tree: CommandNode=None) -> bool:
         # Resolve command shortening.
-        parse = super()._resolve_parse(self.name, parse, cmd_tree)
+        if cmd_tree is not None:
+            parse = super()._resolve_parse(self.name, parse, cmd_tree)
 
         if parse is None:
             return True

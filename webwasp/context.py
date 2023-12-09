@@ -66,7 +66,8 @@ class Context:
 
         # Persistent data file.
         self.data_file = filename
-        self._load_data()
+        if filename is not None:
+            self._load_data()
 
     def reset_data(self):
         """
@@ -137,6 +138,9 @@ class Context:
             This function saves the current session data into the persistent
             data file.
         """
+        if self.data_file is None:
+            return
+
         # If the data file does not exist, create a blank one.
         if not os.path.exists(self.data_file):
             try:
