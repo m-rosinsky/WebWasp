@@ -89,6 +89,16 @@ class CommandResponse(CommandInterface):
         self.parser_show_redirs.set_defaults(func=self._show_redirs)
         super().add_help(self.parser_show_redirs)
 
+        # response show request.
+        self.parser_show_request = self.parser_show_subparser.add_parser(
+            'request',
+            description='Show the headers of the last request',
+            help='Show the headers of the last request',
+            add_help=False,
+        )
+        self.parser_show_request.set_defaults(func=self._show_request)
+        super().add_help(self.parser_show_request)
+
         # response export.
         self.parser_export = self.subparser.add_parser(
             'export',
@@ -225,6 +235,9 @@ class CommandResponse(CommandInterface):
 
     def _show_redirs(self, args: argparse.Namespace, context: Context):
         context.response.print_redirects()
+
+    def _show_request(self, args: argparse.Namespace, context: Context):
+        context.response.print_request()
 
     def _export(self, args: argparse.Namespace, context: Context):
         filename = args.path

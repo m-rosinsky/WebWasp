@@ -6,10 +6,7 @@ to store the most recent response.
 """
 
 import http
-import re
 import requests
-
-from bs4 import BeautifulSoup
 
 from pygments import highlight
 from pygments.util import ClassNotFound
@@ -170,5 +167,19 @@ class Response:
         log("Response redirect history:", log_type='info')
         for redir in self.req.history:
             log(f"   \033[36m{redir}\033[0m")
+
+    def print_request(self):
+        """
+        Brief:
+            This function shows details of the request last passed
+            to generate the response.
+        """
+        if not self.req:
+            log("No response captured", log_type='warning')
+            return
+        
+        log("Headers for last request:", log_type='info')
+        for name, value in self.req.request.headers.items():
+            log(f"   \033[36m{name}\033[0m: {value}")
 
 ###   end of file   ###
